@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SHIV A2 Ghee</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'store/styles.css' %}" />
+</head>
+<body>
+
+    <header class="header-container" style="background-color:#e1dd50;">
+        <img src="{% static 'store/images/Shiv Logo (1).png' %}" alt="SHIV Logo" class="header-logo" />
+        <div class="header-title">
+            <h1 style="font-size: 2rem;">SHIV Organic Dairy Farm</h1>
+            <p>Pure, organic, and traditional ghee made from desi Gir cows.</p>
+        </div>
+        <div style="width: 150px"></div>
+    </header>
+
+    <nav class="main-nav">
+        <a href="#home">Home</a>
+        <a href="#about">About</a>
+        <a href="#benefits">Benefits</a>
+        <a href="#buy">Buy Now</a>
+        <a href="#contact">Reviews</a>
+        <a href="#contact">Contact</a>
+    </nav>
+
+    <section id="home">
+        <h2>Home</h2>
+        <p>Welcome to SHIV Organic Farm!</p>
+        <p>We are dedicated to providing you with the purest and most authentic A2 Gir Cow Ghee, made using traditional methods.</p>
+        <img src="{% static 'store/images/st.jpg' %}" alt="St" class="header" width="100%" height="100%"/>
+    </section>
+
+    <section id="about">
+        <h2>About Our Ghee</h2>
+        <div class="method-grid">
+            <div class="method-box">
+                <img src="{% static 'store/images/Bilona.png' %}" alt="Gir Cow" />
+                <p><strong>Bilona Method:</strong> We follow the ancient bilona method which is a time-honored, artisanal technique for crafting authentic ghee: fresh milk is cultured into curd, which is then hand-churned using a wooden bilona to extract butter, and finally gently heated until the water evaporates and pure, golden ghee remains </p>
+            </div>
+            <div class="method-box">
+                <img src="{% static 'store/images/100%.png' %}" alt="Bilona Method" />
+                <p><strong>100% Natural:</strong> Our 100% Pure Ghee is crafted from thoughtfully sourced cow’s milk using traditional methods—completely free of preservatives, additives, or vegetable oils—ensuring a rich, authentic flavor, granular texture, and all the nutrition of full-fat, unadulterated ghee </p>
+            </div>
+            <div class="method-box">
+                <img src="{% static 'store/images/COW.png' %}" alt="Ghee Image" />
+                <p><strong>Traditional Process:</strong>Our 100% Pure Gir Cow Ghee comes exclusively from A2 milk of free-grazing Gir cows, ethically raised on lush pastures under the open sky. Crafted using the revered Bilona method, this ghee preserves the rich golden hue, nutty aroma, and nutrient-packed goodness—rich in omega-3 fatty acids, vitamins A, D, E, K, and butyric acid—offering an authentic, wholesome superfood with no additives or impurities.</p>
+            </div>
+            <div class="method-box">
+                <img src="{% static 'store/images/500 Ml.png' %}" alt="Ghee Image" />
+                <p><strong>Grass-fed Cows:</strong> Our Ghee is made from the rich, nutritious milk of Gir cows—an indigenous breed renowned for its high-quality A2 milk. Made traditionally by slowly simmering this pure butter to retain natural flavor, aroma, and nutrients, it's free from additives, preservatives, and any artificial ingredients—just authentic, wholesome goodness in every spoonful. </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="benefits" aria-labelledby="benefits-title" style="padding:40px 20px; background:linear-gradient(180deg,#fff8f0,#fff);">
+        <h2 id="benefits-title" style="text-align:center; font-size:1.6rem; margin-bottom:18px;">Why Choose SHIV A2 Gir Cow Ghee</h2>
+        <p style="max-width:900px; margin:0 auto 28px; text-align:center; color:#444;">Pure, traditional A2 Gir cow ghee — made with care. Here are the main benefits that set us apart.</p>
+        <div class="benefits">
+            <div class="grid-4">
+                <div class="benefit">
+                    <img src="{% static 'store/images/B1.png' %}" alt="Boosts Immunity">
+                    <h4>Boosts Immunity</h4>
+                </div>
+                <div class="benefit">
+                    <img src="{% static 'store/images/B2.png' %}" alt="Improves Digestion">
+                    <h4>Boosts Memory</h4>
+                </div>
+                <div class="benefit">
+                    <img src="{% static 'store/images/B3.png' %}" alt="Rich in Nutrients">
+                    <h4>Natural Energy</h4>
+                </div>
+                <div class="benefit">
+                    <img src="{% static 'store/images/B4.png' %}" alt="Natural Energy">
+                    <h4>Improves Heart Health</h4>
+                </div>
+            </div>
+            <div class="grid-3" style="margin-top:16px;">
+                <div class="benefit">
+                    <img src="{% static 'store/images/B5.png' %}" alt="Skin Health">
+                    <h4>Improves Digestion</h4>
+                </div>
+                <div class="benefit">
+                    <img src="{% static 'store/images/B6.png' %}" alt="Gut Support">
+                    <h4>Improves Skin Health</h4>
+                </div>
+                <div class="benefit">
+                    <img src="{% static 'store/images/B7.png' %}" alt="Heart & Vision">
+                    <h4>Rich in Nutrients</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="buy">
+        <h2>🛒 Buy SHIV A2 Ghee</h2>
+        <div class="buy-grid">
+            <div class="product-box">
+                <img src="{% static 'store/images/250ml.png' %}" alt="250ml Ghee">
+                <h3>250ml Ghee</h3>
+                <p class="price">₹499</p>
+                <p class="description">Perfect for small families and first-time buyers. Experience the authentic taste of pure A2 Gir cow ghee.</p>
+                <a href="{% url 'place_order' %}?product=250" class="buy-btn">Buy Now</a>
+            </div>
+            <div class="product-box">
+                <img src="{% static 'store/images/500 Ml.png' %}" alt="500ml Ghee">
+                <h3>500ml Ghee</h3>
+                <p class="price">₹999</p>
+                <p class="description">Most popular choice! Ideal for regular cooking and daily use. Premium quality at great value.</p>
+                <a href="{% url 'place_order' %}?product=500" class="buy-btn">Buy Now</a>
+            </div>
+            <div class="product-box">
+                <img src="{% static 'store/images/1000 Ml.png' %}" alt="1000ml Ghee">
+                <h3>1000ml Ghee</h3>
+                <p class="price">₹1899</p>
+                <p class="description">Best value for large families! Stock up on premium A2 Gir cow ghee with maximum savings.</p>
+                <a href="{% url 'place_order' %}?product=1000" class="buy-btn">Buy Now</a>
+            </div>
+        </div>
+        <div class="feature-list">
+            <span class="pure">✅ 100% Pure</span>
+            <span class="secure">🔒 Secure Payment</span>
+            <span class="delivery">🚚 Fast Delivery</span>
+        </div>
+    </section>
+
+    
+    
+    <section id="check-status">
+        <h2>🔍 Check Your Order Status</h2>
+        <div class="status-wrap">
+            <input type="number" id="orderIdInput" placeholder="Enter your Order ID" />
+            <button onclick="checkOrderStatus()">Check Status</button>
+        </div>
+        <div id="orderStatusResult"></div>
+    </section>
+
+    <section id="Reviews">
+        <h2>Reviews</h2>
+        <div id="reviews" class="carousel-section">
+            <h2 class="carousel-heading">🌟 OUR CUSTOMER TESTIMONIALS🌟</h2>
+            <div class="carousel">
+                <div class="carousel-track">
+                    <!-- Clone last slides at beginning for seamless loop -->
+                    <div class="carousel-slide">
+                        <img src="{% static 'store/images/rev4.jpg' %}" alt="Review Image">
+                        <blockquote>
+                            <p>"High quality and traditional taste. Reminds me of my grandma's ghee!"</p>
+                            <footer>- Aniket Joshi</footer>
+                        </blockquote>
+                    </div>
+                    <div class="carousel-slide">
+                        <video autoplay loop muted controls>
+                            <source src="{% static 'store/images/reviewvid.mp4' %}" type="video/mp4">
+                        </video>
+                        <blockquote>
+                            <p>"Every time I open the jar, the calming, buttery scent gently fills the room—an unmistakable sign of its authenticity."</p>
+                            <footer>- Rachana Bhor</footer>
+                        </blockquote>
+                    </div>
+                    <!-- Original slides -->
+                    <div class="carousel-slide">
+                        <img src="{% static 'store/images/rev5.jpg' %}" alt="Review Image">
+                        <blockquote>
+                            <p>"I have ordered 2kg A2 gir cow ghee. The ghee taste is too good and quality is also good and I am happy said that I am there repeat customer....... must try.."</p>
+                            <footer>- Sanskruti Bhosale</footer>
+                        </blockquote>
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="{% static 'store/images/rev1.jpg' %}" alt="Review Image">
+                        <blockquote>
+                            <p>"Absolutely Divine & 100% Pure! I've tried many types of ghee before, but nothing compares to this one! The aroma is rich, the texture is perfect, and the taste is truly authentic... Worth every rupee!"</p>
+                            <footer>- Sanskruti Bhosale</footer>
+                        </blockquote>
+                    </div>
+                    <div class="carousel-slide">
+                        <video autoplay loop muted controls>
+                            <source src="{% static 'store/images/reviewvid.mp4' %}" type="video/mp4">
+                        </video>
+                        <blockquote>
+                            <p>"Every time I open the jar, the calming, buttery scent gently fills the room—an unmistakable sign of its authenticity."</p>
+                            <footer>- Rachana Bhor</footer>
+                        </blockquote>
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="{% static 'store/images/rev2.jpg' %}" alt="Review Image">
+                        <blockquote>
+                            <p>"Definitely recommend it to anyone looking for Pure, Desi-style Ghee. Worth the price for the quality it offers!"</p>
+                            <footer>- Shrushti Kachare</footer>
+                        </blockquote>
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="{% static 'store/images/rev3.jpg' %}" alt="Review Image">
+                        <blockquote>
+                            <p>"I had a fantastic experience with this ghee! The quality of their ghee is truly exceptional-rich, pure, and aromatic, just like homemade."</p>
+                            <footer>- Harsh Bhosale </footer>
+                        </blockquote>
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="{% static 'store/images/rev4.jpg' %}" alt="Review Image">
+                        <blockquote>
+                            <p>"High quality and traditional taste. Reminds me of my grandma's ghee!"</p>
+                            <footer>- Aniket Joshi</footer>
+                        </blockquote>
+                    </div>
+                    <!-- Clone first slides at end for seamless loop -->
+                    <div class="carousel-slide">
+                        <img src="{% static 'store/images/rev5.jpg' %}" alt="Review Image">
+                        <blockquote>
+                            <p>"I have ordered 2kg A2 gir cow ghee. The ghee taste is too good and quality is also good and I am happy said that I am there repeat customer....... must try.."</p>
+                            <footer>- Sanskruti Bhosale</footer>
+                        </blockquote>
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="{% static 'store/images/rev1.jpg' %}" alt="Review Image">
+                        <blockquote>
+                            <p>"Absolutely Divine & 100% Pure! I've tried many types of ghee before, but nothing compares to this one! The aroma is rich, the texture is perfect, and the taste is truly authentic... Worth every rupee!"</p>
+                            <footer>- Sanskruti Bhosale</footer>
+                        </blockquote>
+                    </div>
+                </div>
+                <!-- Navigation Arrows -->
+                <div class="carousel-nav">
+                    <button class="prev" onclick="moveCarousel(-1)">‹</button>
+                    <button class="next" onclick="moveCarousel(1)">›</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact">
+        <div class="location-container">
+            <h2>📍 Our Location</h2>
+            <div class="location-content">
+                <div class="location-text">
+                    <div class="location-header">
+                        <h3>🏡 SHIV Organic Dairy Farm</h3>
+                        <p class="location-description">Nestled in the serene surroundings of Bhosari, Pune, Maharashtra, our farm is where tradition meets purity. We craft authentic A2 Gir Cow Ghee using age-old methods passed down through generations.</p>
+                    </div>
+                    
+                    <div class="address-section">
+                        <h4>📍 Address</h4>
+                        <p><strong>SHIV Organic Dairy Farm</strong><br>
+                        Bhosari, Pune, Maharashtra 411039<br>
+                        India</p>
+                    </div>
+
+                    <div class="contact-section">
+                        <h4>📞 Contact Information</h4>
+                        <div class="contact-grid">
+                            <div class="contact-item">
+                                <span class="contact-icon">📞</span>
+                                <div>
+                                    <strong>Phone:</strong><br>
+                                    <a href="tel:+919158019119">+91-9158019119</a>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <span class="contact-icon">📧</span>
+                                <div>
+                                    <strong>Email:</strong><br>
+                                    <a href="mailto:shivagrofoodsltd@gmail.com">shivagrofoodsltd@gmail.com</a>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <span class="contact-icon">🌐</span>
+                                <div>
+                                    <strong>Instagram:</strong><br>
+                                    <a href="https://instagram.com/shivA2gircowghee" target="_blank">@shivA2gircowghee</a>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <span class="contact-icon">📘</span>
+                                <div>
+                                    <strong>Facebook:</strong><br>
+                                    <a href="https://facebook.com/shivagrofoodsltd" target="_blank">shivagrofoodsltd</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="map-container">
+                    <h4>🗺️ Find Us on Google Maps</h4>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15124.965940422111!2d73.81884485!3d18.61869505!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2b95085e6a32f%3A0x6e8a0f5e1a38a39e!2sPune%2C%20Maharashtra%2C%20India!5e0!3m2!1sen!2sus!4v1628185566098!5m2!1sen!2sus" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <div class="map-actions">
+                        <a href="https://maps.google.com/?q=Bhosari,Pune,Maharashtra" target="_blank" class="map-btn">🗺️ Open in Google Maps</a>
+                        <a href="https://maps.google.com/directions?daddr=Bhosari,Pune,Maharashtra" target="_blank" class="map-btn">🚗 Get Directions</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2025 Pure Gir Cow Ghee. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function openForm(productType) {
+            document.getElementById("orderFormModal").style.display = "block";
+            document.getElementById("product").value = productType;
+        }
+        function closeForm() {
+            document.getElementById("orderFormModal").style.display = "none";
+        }
+        function checkOrderStatus() {
+            const orderId = document.getElementById('orderIdInput').value;
+            const resultDiv = document.getElementById('orderStatusResult');
+            if (!orderId) {
+                resultDiv.innerHTML = '<p style="color:red;">Please enter your Order ID.</p>';
+                return;
+            }
+            fetch(`/check-status/${orderId}/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        resultDiv.innerHTML = `<p style="color:red;">${data.error}</p>`;
+                    } else {
+                        resultDiv.innerHTML = `
+                            <h3>📦 Order Details</h3>
+                            <p><strong>Order ID:</strong> ${data.order_id}</p>
+                            <p><strong>Name:</strong> ${data.name}</p>
+                            <p><strong>Product:</strong> ${data.product}</p>
+                            <p><strong>Total:</strong> ₹${data.total}</p>
+                            <p><strong>Payment:</strong> ${data.payment_method}</p>
+                            <p><strong>Status:</strong> <span style="color:green;">${data.status}</span></p>
+                            <p class="muted"><strong>Placed:</strong> ${data.created_at}</p>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `<p style="color:red;">Something went wrong. Try again.</p>`;
+                    console.error('Error:', error);
+                });
+        }
+
+        // Show QR when UPI selected
+        document.addEventListener('change', function(e){
+            if(e.target && e.target.id === 'payment'){
+                var wrap = document.getElementById('upiQrWrap');
+                if(e.target.value === 'upi'){ wrap.style.display = 'block'; } else { wrap.style.display = 'none'; }
+            }
+        });
+
+        // Geolocation + Map preview
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(pos) {
+                const lat = pos.coords.latitude.toFixed(6);
+                const lng = pos.coords.longitude.toFixed(6);
+                const latInput = document.getElementById('latitude');
+                const lngInput = document.getElementById('longitude');
+                if (latInput && !latInput.value) latInput.value = lat;
+                if (lngInput && !lngInput.value) lngInput.value = lng;
+                const mapUrl = `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
+                const mapPreview = document.getElementById('mapPreview');
+                const mapLink = document.getElementById('mapLink');
+                const mapBlock = document.getElementById('mapBlock');
+                if (mapPreview && mapLink && mapBlock){
+                    mapPreview.src = mapUrl;
+                    mapLink.href = `https://maps.google.com/?q=${lat},${lng}`;
+                    mapBlock.style.display = 'block';
+                }
+            });
+        }
+
+        // Carousel Navigation
+        let currentSlide = 2; // Start at the first real slide (after cloned slides)
+        const slides = document.querySelectorAll('.carousel-slide');
+        const totalSlides = slides.length;
+        const realSlides = totalSlides - 4; // 2 cloned at start + 2 cloned at end
+
+        function moveCarousel(direction) {
+            currentSlide += direction;
+            
+            // Handle seamless looping
+            if (currentSlide >= totalSlides - 2) {
+                // If we're at the end, jump to the beginning of real slides
+                setTimeout(() => {
+                    currentSlide = 2;
+                    updateCarouselPosition();
+                }, 500); // Wait for transition to complete
+            } else if (currentSlide < 2) {
+                // If we're at the beginning, jump to the end of real slides
+                setTimeout(() => {
+                    currentSlide = totalSlides - 3;
+                    updateCarouselPosition();
+                }, 500); // Wait for transition to complete
+            }
+            
+            updateCarouselPosition();
+        }
+
+        function updateCarouselPosition() {
+            const track = document.querySelector('.carousel-track');
+            const slideWidth = slides[0].offsetWidth;
+            track.style.transform = `translateX(-${currentSlide * slideWidth}px)`;
+        }
+
+        // Auto-advance carousel every 5 seconds
+        setInterval(() => {
+            moveCarousel(1);
+        }, 5000);
+
+        // Initialize carousel position
+        updateCarouselPosition();
+    </script>
+</body>
+</html>
