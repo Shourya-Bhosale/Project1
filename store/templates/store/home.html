@@ -106,21 +106,21 @@
                 <h3>250ml Ghee</h3>
                 <p class="price">₹499</p>
                 <p class="description">Perfect for small families and first-time buyers. Experience the authentic taste of pure A2 Gir cow ghee.</p>
-                <a href="#" onclick="openForm('250'); return false;" class="buy-btn">Buy Now</a>
+                <a href="{% url 'place_order' %}?product=250" class="buy-btn">Buy Now</a>
             </div>
             <div class="product-box">
                 <img src="{% static 'store/images/500 Ml.png' %}" alt="500ml Ghee">
                 <h3>500ml Ghee</h3>
                 <p class="price">₹999</p>
                 <p class="description">Most popular choice! Ideal for regular cooking and daily use. Premium quality at great value.</p>
-                <a href="#" onclick="openForm('500'); return false;" class="buy-btn">Buy Now</a>
+                <a href="{% url 'place_order' %}?product=500" class="buy-btn">Buy Now</a>
             </div>
             <div class="product-box">
                 <img src="{% static 'store/images/1000 Ml.png' %}" alt="1000ml Ghee">
                 <h3>1000ml Ghee</h3>
                 <p class="price">₹1899</p>
                 <p class="description">Best value for large families! Stock up on premium A2 Gir cow ghee with maximum savings.</p>
-                <a href="#" onclick="openForm('1000'); return false;" class="buy-btn">Buy Now</a>
+                <a href="{% url 'place_order' %}?product=1000" class="buy-btn">Buy Now</a>
             </div>
         </div>
         <div class="feature-list">
@@ -130,108 +130,6 @@
         </div>
     </section>
 
-    <!-- Order Form Modal -->
-    <div id="orderFormModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeForm()">&times;</span>
-            <h2>📝 Place Your Order</h2>
-            
-            <form id="orderForm" method="post" action="{% url 'submit_order' %}">
-                {% csrf_token %}
-                
-                <div class="form-group">
-                    <label for="customer_name">Full Name *</label>
-                    <input type="text" id="customer_name" name="customer_name" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="email">Email *</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="phone">Phone Number *</label>
-                    <input type="tel" id="phone" name="phone" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="address_line1">Complete Address *</label>
-                    <textarea id="address_line1" name="address_line1" rows="3" required onfocus="captureLocation()"></textarea>
-                    <div id="locationStatus" style="display:none; color:green; font-size:12px; margin-top:5px;">
-                        ✅ Location captured
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="city">City *</label>
-                    <input type="text" id="city" name="city" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="state">State *</label>
-                    <input type="text" id="state" name="state" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="postal_code">Postal Code *</label>
-                    <input type="text" id="postal_code" name="postal_code" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="notes">Delivery Instructions</label>
-                    <textarea id="notes" name="notes" rows="2" placeholder="Any special delivery instructions..."></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label for="product">Select Product *</label>
-                    <select id="product" name="product" required>
-                        <option value="">Choose your product...</option>
-                        <option value="250">250ml Ghee - ₹499</option>
-                        <option value="500">500ml Ghee - ₹999</option>
-                        <option value="1000">1000ml Ghee - ₹1899</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="payment_method">Payment Method *</label>
-                    <select id="payment" name="payment_method" required>
-                        <option value="">Select payment method...</option>
-                        <option value="cod">Cash on Delivery</option>
-                        <option value="upi">UPI Payment</option>
-                    </select>
-                </div>
-
-                <!-- Hidden fields for location -->
-                <input type="hidden" id="latitude" name="latitude">
-                <input type="hidden" id="longitude" name="longitude">
-
-                <!-- UPI QR Code (shown only when UPI is selected) -->
-                <div id="upiQrWrap" style="display:none; text-align:center; margin:20px 0; padding:20px; background:#f9f9f9; border-radius:8px;">
-                    <h4>📱 Complete Your Payment</h4>
-                    <p>Scan the QR code below to complete your UPI payment</p>
-                    <img src="{% static 'store/images/upi_qr.jpg' %}" alt="UPI QR Code" style="max-width:200px; height:auto; margin:10px 0;">
-                    <p><strong>Important:</strong> Please enter the last 6 digits of your UPI transaction in the payment reference field above.</p>
-                </div>
-
-                <div class="form-group">
-                    <label for="payment_reference">Payment Reference</label>
-                    <input type="text" id="payment_reference" name="payment_reference" placeholder="Enter transaction reference (for UPI) or leave blank for COD">
-                </div>
-
-                <button type="submit" class="submit-btn">🚀 Place Order</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Map Preview (shown after location capture) -->
-    <div id="mapBlock" style="display:none; margin:20px 0;">
-        <h4>📍 Location Preview</h4>
-        <iframe id="mapPreview" width="100%" height="300" style="border:0; border-radius:8px;" allowfullscreen="" loading="lazy"></iframe>
-        <p><a id="mapLink" href="#" target="_blank">🗺️ Open in Google Maps</a></p>
-    </div>
-
-    
-    
     <section id="check-status">
         <h2>🔍 Check Your Order Status</h2>
         <div class="status-wrap">
@@ -403,41 +301,6 @@
     </footer>
 
     <script>
-        function openForm(productType) {
-            document.getElementById("orderFormModal").style.display = "block";
-            document.getElementById("product").value = productType;
-        }
-        function closeForm() {
-            document.getElementById("orderFormModal").style.display = "none";
-        }
-        
-        function captureLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(pos) {
-                    const lat = pos.coords.latitude.toFixed(6);
-                    const lng = pos.coords.longitude.toFixed(6);
-                    
-                    document.getElementById('latitude').value = lat;
-                    document.getElementById('longitude').value = lng;
-                    document.getElementById('locationStatus').style.display = 'block';
-                    
-                    // Show map preview
-                    const mapUrl = `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
-                    const mapPreview = document.getElementById('mapPreview');
-                    const mapLink = document.getElementById('mapLink');
-                    const mapBlock = document.getElementById('mapBlock');
-                    
-                    if (mapPreview && mapLink && mapBlock) {
-                        mapPreview.src = mapUrl;
-                        mapLink.href = `https://maps.google.com/?q=${lat},${lng}`;
-                        mapBlock.style.display = 'block';
-                    }
-                }, function(error) {
-                    console.log('Location capture failed:', error);
-                });
-            }
-        }
-        
         function checkOrderStatus() {
             const orderId = document.getElementById('orderIdInput').value;
             const resultDiv = document.getElementById('orderStatusResult');
@@ -472,35 +335,6 @@
                     resultDiv.innerHTML = `<p style="color:red;">Something went wrong. Try again.</p>`;
                     console.error('Error:', error);
                 });
-        }
-
-        // Show QR when UPI selected
-        document.addEventListener('change', function(e){
-            if(e.target && e.target.id === 'payment'){
-                var wrap = document.getElementById('upiQrWrap');
-                if(e.target.value === 'upi'){ wrap.style.display = 'block'; } else { wrap.style.display = 'none'; }
-            }
-        });
-
-        // Geolocation + Map preview
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(pos) {
-                const lat = pos.coords.latitude.toFixed(6);
-                const lng = pos.coords.longitude.toFixed(6);
-                const latInput = document.getElementById('latitude');
-                const lngInput = document.getElementById('longitude');
-                if (latInput && !latInput.value) latInput.value = lat;
-                if (lngInput && !lngInput.value) lngInput.value = lng;
-                const mapUrl = `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`;
-                const mapPreview = document.getElementById('mapPreview');
-                const mapLink = document.getElementById('mapLink');
-                const mapBlock = document.getElementById('mapBlock');
-                if (mapPreview && mapLink && mapBlock){
-                    mapPreview.src = mapUrl;
-                    mapLink.href = `https://maps.google.com/?q=${lat},${lng}`;
-                    mapBlock.style.display = 'block';
-                }
-            });
         }
 
         // Carousel Navigation
