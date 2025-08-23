@@ -161,10 +161,10 @@ section{animation:fadeInScale .8s ease-out}
 section:nth-child(even){animation-delay:.2s}
 
 /* Beautiful header enhancements */
-.header-container{background:linear-gradient(135deg,#fef3c7,#fde68a,#fbbf24);border-bottom:3px solid #f59e0b;box-shadow:0 8px 25px rgba(251,191,36,.3);position:sticky;top:0;z-index:1000;overflow:hidden}
+.header-container{background:linear-gradient(135deg,#fef3c7,#fde68a,#fbbf24);border-bottom:3px solid #f59e0b;box-shadow:0 8px 25px rgba(251,191,36,.3);position:sticky;top:0;z-index:1000;overflow:hidden;display:flex;align-items:center;gap:20px;padding:15px 20px}
 .header-container::before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="headerPattern" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23ffffff" opacity="0.15"/></pattern></defs><rect width="100" height="100" fill="url(%23headerPattern)"/></svg>');opacity:.4}
-.header-title h1{color:#92400e;text-shadow:0 2px 4px rgba(0,0,0,.1);animation:fadeInScale .8s ease-out}
-.header-title p{color:#78350f;text-shadow:0 1px 2px rgba(0,0,0,.05)}
+.header-title h1{color:#92400e;text-shadow:0 2px 4px rgba(0,0,0,.1);animation:fadeInScale .8s ease-out;font-size:1.8rem;margin:0;line-height:1.2}
+.header-title p{color:#78350f;text-shadow:0 1px 2px rgba(0,0,0,.05);margin:5px 0 0;font-size:1rem}
 
 /* Enhanced navigation */
 .main-nav{background:linear-gradient(180deg,var(--primary),var(--primary-2));box-shadow:0 4px 20px rgba(20,108,46,.2)}
@@ -351,6 +351,7 @@ footer{background:linear-gradient(180deg,var(--primary-2),#0f2d12);color:#d6e8d8
         box-shadow: 0 4px 15px rgba(251,191,36,.2);
         align-items: center; /* Center items vertically */
         justify-content: flex-start; /* Align to left */
+        display: flex;
     }
     
     .header-logo {
@@ -522,6 +523,7 @@ footer{background:linear-gradient(180deg,var(--primary-2),#0f2d12);color:#d6e8d8
         flex-direction: row; /* Keep horizontal layout */
         align-items: center;
         justify-content: flex-start;
+        display: flex;
     }
     
     .header-logo {
