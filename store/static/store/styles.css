@@ -104,7 +104,7 @@ blockquote cite{font-style:normal;font-weight:600;color:var(--primary)}
 .header-title h1{margin:0;font-size:22px;color:var(--primary)}
 .header-title p{margin:4px 0 0;color:var(--muted)}
 
-.main-nav{display:flex;gap:16px;justify-content:center;align-items:center;background:linear-gradient(180deg,var(--primary),var(--primary-2));padding:10px 0;position:sticky;top:84px;z-index:55}
+.main-nav{display:flex;gap:16px;justify-content:center;align-items:center;background:linear-gradient(180deg,var(--primary),var(--primary-2));padding:10px 0;position:sticky;top:0;z-index:55;margin-top:0}
 .main-nav a{color:#eaf6ec;text-decoration:none;font-weight:600;padding:6px 10px;border-radius:8px}
 .main-nav a:hover{background:rgba(255,255,255,.12)}
 
@@ -264,7 +264,7 @@ footer{background:linear-gradient(180deg,var(--primary-2),#0f2d12);color:#d6e8d8
 
 /* Responsive tweaks for new sections */
 @media(max-width:900px){.method-grid{grid-template-columns:repeat(2,1fr)}.buy-grid{grid-template-columns:repeat(2,1fr)}.location-content{grid-template-columns:1fr}}
-@media(max-width:640px){.method-grid{grid-template-columns:1fr}.buy-grid{grid-template-columns:1fr}.header-title h1{font-size:18px}.header-logo{height:46px}.main-nav{top:72px}}
+@media(max-width:640px){.method-grid{grid-template-columns:repeat(2,1fr)}.buy-grid{grid-template-columns:1fr}.header-title h1{font-size:18px}.header-logo{height:46px}.main-nav{top:0}}
 
 /* About Our Ghee Section Enhancement */
 #about{background:linear-gradient(135deg,#f0fdf4,#dcfce7);padding:40px 20px;position:relative;overflow:hidden}
@@ -386,20 +386,21 @@ footer{background:linear-gradient(180deg,var(--primary-2),#0f2d12);color:#d6e8d8
     }
     
     /* Navigation improvements for mobile */
-    .main-nav {
-        position: fixed;
-        top: 130px;
-        left: 0;
-        right: 0;
-        padding: 8px 10px;
-        flex-wrap: nowrap; /* Keep items in one line */
-        gap: 15px; /* Reduce gap for mobile */
-        justify-content: center;
-        background: linear-gradient(135deg, #15803d, #16a34a);
-        box-shadow: 0 4px 15px rgba(21,128,61,.3);
-        z-index: 999;
-        overflow-x: auto; /* Allow horizontal scrolling if needed */
-    }
+         .main-nav {
+         position: sticky;
+         top: 0;
+         left: 0;
+         right: 0;
+         padding: 8px 10px;
+         flex-wrap: nowrap; /* Keep items in one line */
+         gap: 15px; /* Reduce gap for mobile */
+         justify-content: center;
+         background: linear-gradient(135deg, #15803d, #16a34a);
+         box-shadow: 0 4px 15px rgba(21,128,61,.3);
+         z-index: 999;
+         overflow-x: auto; /* Allow horizontal scrolling if needed */
+         margin-top: 0;
+     }
     
     .main-nav li {
         flex-shrink: 0; /* Prevent items from shrinking */
@@ -423,16 +424,19 @@ footer{background:linear-gradient(180deg,var(--primary-2),#0f2d12);color:#d6e8d8
         margin-bottom: 20px;
     }
     
-    /* Method boxes improvements */
-    .method-grid {
-        gap: 15px;
-        margin: 20px auto;
-    }
-    
-    .method-box {
-        max-width: 100%;
-        padding: 12px;
-    }
+         /* Method boxes improvements */
+     .method-grid {
+         gap: 15px;
+         margin: 20px auto;
+         display: grid;
+         grid-template-columns: repeat(2, 1fr);
+         max-width: 600px;
+     }
+     
+     .method-box {
+         max-width: 100%;
+         padding: 12px;
+     }
     
          .method-box img {
          height: 150px;
@@ -567,9 +571,17 @@ footer{background:linear-gradient(180deg,var(--primary-2),#0f2d12);color:#d6e8d8
         font-size: 20px;
     }
     
-    .method-box {
-        padding: 10px;
-    }
+         .method-grid {
+         gap: 12px;
+         margin: 15px auto;
+         display: grid;
+         grid-template-columns: repeat(2, 1fr);
+         max-width: 500px;
+     }
+     
+     .method-box {
+         padding: 10px;
+     }
     
          .method-box img {
          height: 140px;
@@ -696,9 +708,9 @@ footer{background:linear-gradient(180deg,var(--primary-2),#0f2d12);color:#d6e8d8
         gap: 15px;
     }
     
-    .main-nav {
-        top: 80px;
-    }
+         .main-nav {
+         top: 0;
+     }
     
     section {
         padding: 20px 15px;
