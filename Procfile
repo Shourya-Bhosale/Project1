@@ -1,1 +1,1 @@
-web: gunicorn shivdairy.wsgi:application
+shiv-dairy-dbweb: gunicorn shivdairy.wsgi:application

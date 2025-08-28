@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head style="background-color:;">
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -59,22 +59,39 @@
                         {{ form.postal_code }}
                     </div>
                     <div class="full">
-                        <label>Notes</label>
+                        <label>Order Instructions</label>
                         {{ form.notes }}
+                        <div class="muted">Any special instructions for your order (optional)</div>
                     </div>
                     <div>
                         <label>Payment Method</label>
                         {{ form.payment_method }}
-                        <div class="pay-helper" id="payHelper" style="display:none;margin-top:8px;">
-                            <div id="qrWrap" class="qr">
-                                <img src="{% static 'store/images/upi_qr.jpg' %}" alt="UPI QR" />
-                                <div class="muted">Scan and pay (UPI). Enter last 6 digits in reference.</div>
+                    </div>
+                    
+                    <!-- UPI QR Scanner Section -->
+                    <div class="upi-section" id="upiSection" style="display:none;">
+                        <div class="qr-scanner">
+                            <h4>📱 Scan UPI QR Code</h4>
+                            <div class="qr-container">
+                                <img src="{% static 'store/images/upi_qr.jpg' %}" alt="UPI QR Code" class="qr-image" />
+                            </div>
+                            <div class="qr-instructions">
+                                <p>1. Open your UPI app (PhonePe, Google Pay, Paytm, etc.)</p>
+                                <p>2. Scan this QR code</p>
+                                <p>3. Enter the amount: <strong>₹<span id="totalAmount">0</span></strong></p>
+                                <p>4. Complete the payment</p>
+                                <p>5. Enter the last 6 digits of transaction reference below</p>
                             </div>
                         </div>
                     </div>
+                    
                     <div>
-                        <label>Payment Reference (UPI last 6 / COD note)</label>
+                        <label id="paymentRefLabel">Payment Reference</label>
                         {{ form.payment_reference }}
+                        <div class="muted" id="paymentRefHelp">
+                            <span id="upiHelp" style="display:none;">Enter last 6 digits of UPI transaction reference</span>
+                            <span id="codHelp" style="display:none;">Enter any note for Cash on Delivery</span>
+                        </div>
                     </div>
                     {{ form.latitude }}
                     {{ form.longitude }}
@@ -86,7 +103,15 @@
                     {% for product in products %}
                     <div class="cart-row">
                         <div class="cart-info">
-                            <img src="{{ product.image_url }}" alt="{{ product.name }}">
+                            {% if product.size_ml == 250 %}
+                                <img src="{% static 'store/images/250ml.png' %}" alt="{{ product.name }}">
+                            {% elif product.size_ml == 500 %}
+                                <img src="{% static 'store/images/500 Ml.png' %}" alt="{{ product.name }}">
+                            {% elif product.size_ml == 1000 %}
+                                <img src="{% static 'store/images/1000 Ml.png' %}" alt="{{ product.name }}">
+                            {% else %}
+                                <img src="{% static 'store/images/COW.png' %}" alt="{{ product.name }}">
+                            {% endif %}
                             <div>
                                 <strong>{{ product.name }}</strong>
                                 <div class="muted">₹{{ product.price }}</div>
@@ -99,12 +124,7 @@
                     {% endfor %}
                 </div>
 
-                <div class="pay-helper" id="payHelper" style="display:none;">
-                    <div id="qrWrap" class="qr">
-                        <img src="{% static 'store/images/upi_qr.jpg' %}" alt="UPI QR" />
-                        <div class="muted">Scan and pay (UPI). Enter last 6 digits in reference.</div>
-                    </div>
-                </div>
+
 
                 <div class="actions">
                     <button class="btn btn-primary" type="submit">Place Order</button>
@@ -124,18 +144,61 @@
                 }
             });
         }
-        // Toggle QR only when UPI is selected
+        // Toggle UPI section and update payment reference label
         const pmSelect = document.querySelector('[name="payment_method"]');
-        const qrWrap = document.getElementById('qrWrap');
-        const payHelper = document.getElementById('payHelper');
-        function toggleQR(){
-            if (!pmSelect || !qrWrap) return;
-            const show = (pmSelect.value === 'UPI');
-            qrWrap.style.display = show ? 'block' : 'none';
-            if (payHelper) payHelper.style.display = show ? 'flex' : 'none';
+        const upiSection = document.getElementById('upiSection');
+        const paymentRefLabel = document.getElementById('paymentRefLabel');
+        const upiHelp = document.getElementById('upiHelp');
+        const codHelp = document.getElementById('codHelp');
+        
+        function toggleUPISection(){
+            if (!pmSelect || !upiSection) return;
+            const isUPI = (pmSelect.value === 'UPI');
+            
+            // Show/hide UPI section
+            upiSection.style.display = isUPI ? 'block' : 'none';
+            
+            // Update payment reference label and help text
+            if (isUPI) {
+                paymentRefLabel.textContent = 'UPI Transaction Reference (Last 6 digits)';
+                upiHelp.style.display = 'block';
+                codHelp.style.display = 'none';
+            } else {
+                paymentRefLabel.textContent = 'Payment Reference (COD note)';
+                upiHelp.style.display = 'none';
+                codHelp.style.display = 'block';
+            }
+            
+            // Calculate and update total amount
+            updateTotalAmount();
         }
-        pmSelect && pmSelect.addEventListener('change', toggleQR);
-        toggleQR();
+        
+        pmSelect && pmSelect.addEventListener('change', toggleUPISection);
+        toggleUPISection();
+        
+        // Calculate total amount based on cart quantities
+        function updateTotalAmount() {
+            let total = 0;
+            document.querySelectorAll('.cart-qty input').forEach(function(input) {
+                const qty = parseInt(input.value) || 0;
+                const size = parseInt(input.getAttribute('data-size'));
+                let price = 0;
+                
+                // Get price based on size
+                if (size === 250) price = 349;
+                else if (size === 500) price = 649;
+                else if (size === 1000) price = 1299;
+                
+                total += qty * price;
+            });
+            
+            document.getElementById('totalAmount').textContent = total;
+        }
+        
+        // Update total when quantities change
+        document.querySelectorAll('.cart-qty input').forEach(function(input) {
+            input.addEventListener('input', updateTotalAmount);
+        });
 
         // Ask location only when user interacts (e.g., when focusing address)
         const addressField = document.querySelector('[name="address_line1"]');

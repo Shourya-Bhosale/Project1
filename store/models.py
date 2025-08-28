@@ -10,7 +10,7 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
-        return f"{self.name} ({self.size_ml}ml)"
+        return f"{name} ({size_ml}ml)"
 
 
 class Order(models.Model):
@@ -32,7 +32,7 @@ class Order(models.Model):
     ]
     payment_method = models.CharField(max_length=8, choices=PAYMENT_CHOICES, default='COD')
     payment_reference = models.CharField(max_length=120, blank=True, help_text='Last 6 of UPI txn or note for COD')
-    notes = models.TextField(blank=True)
+    notes = models.CharField(max_length=200, blank=True, help_text='Special instructions for your order')
     total_amount = models.PositiveIntegerField(default=0)
 
     def save(self, *args, **kwargs):
