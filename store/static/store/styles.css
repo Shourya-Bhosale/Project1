@@ -49,7 +49,7 @@ blockquote cite{font-style:normal;font-weight:600;color:var(--primary)}
 .cart-row{display:flex;align-items:center;justify-content:space-between;padding:12px;border-bottom:1px solid #eee}
 .cart-row:last-child{border-bottom:0}
 .cart-info{display:flex;gap:12px;align-items:center}
-.cart-info img{width:60px;height:60px;object-fit:cover;border-radius:8px}
+.cart-info img{width:40px;height:40px;object-fit:cover;border-radius:6px}
 .cart-qty input{width:80px}
 
 /* UPI QR Scanner Section */
