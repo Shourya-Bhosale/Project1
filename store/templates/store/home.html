@@ -29,6 +29,72 @@
     
     <!-- Google Search Console Verification -->
     <meta name="google-site-verification" content="gkciQ0vpMH4qed38DK9_IQ8dNwQuOlh7rqOmRfwhTNU" />
+    
+    <!-- Structured Data Schema for Local Business -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "SHIV Organic Dairy Farm",
+        "description": "Pure A2 Gir Cow Ghee in Pune - Traditional Bilona Method Ghee",
+        "url": "https://shiv-dairy-website.onrender.com",
+        "telephone": "+91-9158019119",
+        "email": "shivagrofoodsltd@gmail.com",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Bhosari",
+            "addressLocality": "Pune",
+            "addressRegion": "Maharashtra",
+            "postalCode": "411039",
+            "addressCountry": "IN"
+        },
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "18.623854599999998",
+            "longitude": "73.8579989"
+        },
+        "openingHours": "Mo-Su 09:00-18:00",
+        "priceRange": "₹₹",
+        "servesCuisine": "Indian Traditional",
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "A2 Gir Cow Ghee Products",
+            "itemListElement": [
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Product",
+                        "name": "250ml A2 Gir Cow Ghee",
+                        "description": "Pure organic A2 ghee in 250ml size"
+                    },
+                    "price": "499",
+                    "priceCurrency": "INR"
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Product",
+                        "name": "500ml A2 Gir Cow Ghee",
+                        "description": "Pure organic A2 ghee in 500ml size"
+                    },
+                    "price": "999",
+                    "priceCurrency": "INR"
+                },
+                {
+                    "@type": "Offer",
+                    "itemOffered": {
+                        "@type": "Product",
+                        "name": "1L A2 Gir Cow Ghee",
+                        "description": "Pure organic A2 ghee in 1L size"
+                    },
+                    "price": "1899",
+                    "priceCurrency": "INR"
+                }
+            ]
+        }
+    }
+    </script>
+    
     {% load static %}
     <link rel="stylesheet" href="{% static 'store/styles.css' %}" />
 </head>
@@ -47,15 +113,17 @@
         <a href="#about">About</a>
         <a href="#benefits">Benefits</a>
         <a href="#buy">Buy Now</a>
+        <a href="#faq">FAQ</a>
         <a href="#reviews">Reviews</a>
         <a href="#contact">Contact</a>
     </nav>
 
     <section id="home">
-        <h2>Home</h2>
-        <p>Welcome to SHIV Organic Farm!</p>
-        <p>We are dedicated to providing you with the purest and most authentic A2 Gir Cow Ghee, made using traditional methods.</p>
-        <img src="{% static 'store/images/st.jpg' %}" alt="St" class="header" width="100%" height="100%"/>
+        <h2>Pure A2 Gir Cow Ghee in Pune - SHIV Organic Dairy Farm</h2>
+        <p>Welcome to SHIV Organic Dairy Farm - Your trusted source for <strong>100% pure A2 Gir Cow Ghee in Pune, Maharashtra</strong>!</p>
+        <p>We are dedicated to providing you with the <strong>purest and most authentic A2 Gir Cow Ghee</strong>, made using traditional <strong>Bilona method</strong> passed down through generations. Our ghee is sourced from <strong>free-grazing Gir cows</strong> raised in the lush pastures of Bhosari, Pune.</p>
+        <p><strong>Why choose SHIV A2 Ghee?</strong> We offer <strong>organic, preservative-free ghee</strong> that's rich in nutrients, perfect for daily cooking, and ideal for traditional Indian recipes. Available in <strong>250ml, 500ml, and 1L sizes</strong> with <strong>free delivery across Pune and Maharashtra</strong>.</p>
+        <img src="{% static 'store/images/st.jpg' %}" alt="SHIV Organic Dairy Farm in Bhosari Pune - Traditional A2 Gir Cow Ghee" class="header" width="100%" height="100%"/>
     </section>
 
     <section id="about">
@@ -81,8 +149,8 @@
     </section>
 
     <section id="benefits" aria-labelledby="benefits-title" style="padding:40px 20px; background:linear-gradient(180deg,#fff8f0,#fff);">
-        <h2 id="benefits-title" style="text-align:center; font-size:1.6rem; margin-bottom:18px;">Why Choose SHIV A2 Gir Cow Ghee</h2>
-        <p style="max-width:900px; margin:0 auto 28px; text-align:center; color:#444;">Pure, traditional A2 Gir cow ghee — made with care. Here are the main benefits that set us apart.</p>
+        <h2 id="benefits-title" style="text-align:center; font-size:1.6rem; margin-bottom:18px;">Why Choose SHIV A2 Gir Cow Ghee in Pune?</h2>
+        <p style="max-width:900px; margin:0 auto 28px; text-align:center; color:#444;">Discover the <strong>best A2 Gir cow ghee in Pune</strong> - Pure, traditional, and made with care. Here are the main benefits that make SHIV Organic Dairy Farm the <strong>preferred choice for organic ghee in Maharashtra</strong>.</p>
         <div class="benefits">
             <div class="grid-4">
                 <div class="benefit">
@@ -257,15 +325,38 @@
         </div>
     </section>
 
+    <!-- FAQ Section for SEO -->
+    <section id="faq" style="padding:40px 20px; background:#f9f9f9;">
+        <h2 style="text-align:center; margin-bottom:30px;">Frequently Asked Questions - A2 Ghee in Pune</h2>
+        <div style="max-width:800px; margin:0 auto;">
+            <div style="margin-bottom:20px; padding:20px; background:white; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                <h3 style="color:#2c5aa0; margin-bottom:10px;">What is A2 Gir Cow Ghee?</h3>
+                <p>A2 Gir Cow Ghee is pure, traditional ghee made from the milk of indigenous Gir cows. It contains A2 beta-casein protein, which is easier to digest and more nutritious than regular ghee. Our ghee is made using the ancient Bilona method in Bhosari, Pune.</p>
+            </div>
+            <div style="margin-bottom:20px; padding:20px; background:white; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                <h3 style="color:#2c5aa0; margin-bottom:10px;">Where can I buy A2 Ghee in Pune?</h3>
+                <p>SHIV Organic Dairy Farm is located in Bhosari, Pune, Maharashtra. We offer <strong>free delivery across Pune and Maharashtra</strong>. You can order online through our website or contact us directly at +91-9158019119.</p>
+            </div>
+            <div style="margin-bottom:20px; padding:20px; background:white; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                <h3 style="color:#2c5aa0; margin-bottom:10px;">Is your ghee organic and pure?</h3>
+                <p>Yes! Our A2 Gir Cow Ghee is <strong>100% organic and pure</strong>. We use no preservatives, additives, or vegetable oils. Our ghee is made from free-grazing Gir cows raised on natural pastures, ensuring the highest quality and authenticity.</p>
+            </div>
+            <div style="margin-bottom:20px; padding:20px; background:white; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                <h3 style="color:#2c5aa0; margin-bottom:10px;">What sizes of A2 Ghee do you offer?</h3>
+                <p>We offer A2 Gir Cow Ghee in three convenient sizes: <strong>250ml (₹499), 500ml (₹999), and 1L (₹1899)</strong>. Perfect for small families, regular use, or bulk purchases. All sizes come with free delivery across Pune and Maharashtra.</p>
+            </div>
+        </div>
+    </section>
+
     <section id="contact">
         <div class="location-container">
             <h2>📍 Our Location</h2>
             <div class="location-content">
                 <div class="location-text">
-                    <div class="location-header">
-                        <h3>🏡 SHIV Organic Dairy Farm</h3>
-                        <p class="location-description">Nestled in the serene surroundings of Bhosari, Pune, Maharashtra, our farm is where tradition meets purity. We craft authentic A2 Gir Cow Ghee using age-old methods passed down through generations.</p>
-                    </div>
+                                         <div class="location-header">
+                         <h3>🏡 SHIV Organic Dairy Farm - Best A2 Ghee in Pune</h3>
+                         <p class="location-description">Nestled in the serene surroundings of <strong>Bhosari, Pune, Maharashtra</strong>, our farm is where tradition meets purity. We craft authentic <strong>A2 Gir Cow Ghee</strong> using age-old methods passed down through generations. As the <strong>leading organic dairy farm in Pune</strong>, we serve customers across Maharashtra with <strong>pure, traditional ghee</strong>.</p>
+                     </div>
                     
                     <div class="address-section">
                         <h4>📍 Address</h4>
