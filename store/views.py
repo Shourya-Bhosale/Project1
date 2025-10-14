@@ -223,3 +223,23 @@ def submit_order(request: HttpRequest) -> HttpResponse:
         _send_order_emails(order)
     transaction.on_commit(on_commit_send)
     return redirect(reverse('order_success') + f'?order_id={order.order_number}')
+
+
+def return_policy(request: HttpRequest) -> HttpResponse:
+    """Return policy page for legal compliance"""
+    return render(request, 'store/return_policy.html')
+
+
+def refund_policy(request: HttpRequest) -> HttpResponse:
+    """Refund policy page for legal compliance"""
+    return render(request, 'store/refund_policy.html')
+
+
+def privacy_policy(request: HttpRequest) -> HttpResponse:
+    """Privacy policy page for legal compliance"""
+    return render(request, 'store/privacy_policy.html')
+
+
+def disclaimer(request: HttpRequest) -> HttpResponse:
+    """Disclaimer page for legal compliance"""
+    return render(request, 'store/disclaimer.html')

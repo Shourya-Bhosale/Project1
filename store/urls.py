@@ -10,6 +10,11 @@ urlpatterns = [
     path('submit-order/', views.submit_order, name='submit_order'),
     path('check-status/<str:order_number>/', views.check_status, name='check_status'),
     path('order/success/', views.order_success, name='order_success'),
+    # Legal pages for Razorpay compliance
+    path('return-policy/', views.return_policy, name='return_policy'),
+    path('refund-policy/', views.refund_policy, name='refund_policy'),
+    path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
+    path('disclaimer/', views.disclaimer, name='disclaimer'),
 ]
 
 
