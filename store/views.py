@@ -227,19 +227,31 @@ def submit_order(request: HttpRequest) -> HttpResponse:
 
 def return_policy(request: HttpRequest) -> HttpResponse:
     """Return policy page for legal compliance"""
-    return render(request, 'store/return_policy.html')
+    try:
+        return render(request, 'store/return_policy.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
 
 
 def refund_policy(request: HttpRequest) -> HttpResponse:
     """Refund policy page for legal compliance"""
-    return render(request, 'store/refund_policy.html')
+    try:
+        return render(request, 'store/refund_policy.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
 
 
 def privacy_policy(request: HttpRequest) -> HttpResponse:
     """Privacy policy page for legal compliance"""
-    return render(request, 'store/privacy_policy.html')
+    try:
+        return render(request, 'store/privacy_policy.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
 
 
 def disclaimer(request: HttpRequest) -> HttpResponse:
     """Disclaimer page for legal compliance"""
-    return render(request, 'store/disclaimer.html')
+    try:
+        return render(request, 'store/disclaimer.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
