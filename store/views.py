@@ -12,6 +12,20 @@ from .forms import OrderForm
 from .models import Product, Order, OrderItem
 
 
+def welcome(request: HttpRequest) -> HttpResponse:
+    """Welcome page with animations - first page visitors see"""
+    return render(request, 'store/welcome.html')
+
+
+def healthz(request: HttpRequest) -> HttpResponse:
+    """Ultra-fast health check endpoint for Render/uptime probes.
+
+    Returns 204 (No Content) with minimal overhead to avoid spending time on
+    database or template rendering. Safe to be called frequently.
+    """
+    return HttpResponse(status=204)
+
+
 def home(request: HttpRequest) -> HttpResponse:
     products = Product.objects.filter(is_active=True).order_by('size_ml')
     return render(request, 'store/home.html', { 'products': products })
