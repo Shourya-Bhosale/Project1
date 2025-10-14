@@ -39,6 +39,60 @@ blockquote cite{font-style:normal;font-weight:600;color:var(--primary)}
 .contact-actions{margin-top:20px}
 .map-container{border-radius:12px;overflow:hidden;border:1px solid #e6e6e6}
 .map{margin-top:16px;border-radius:12px;overflow:hidden;border:1px solid #e6e6e6}
+
+/* Contact Icons Styling */
+.contact-icons {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.contact-icon-link {
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+}
+
+.contact-icon-link:hover {
+    transform: translateY(-5px);
+    text-decoration: none;
+}
+
+.icon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px;
+    background: linear-gradient(135deg, #ffffff, #f8f9ff);
+    border: 2px solid #dcfce7;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    min-width: 80px;
+}
+
+.contact-icon-link:hover .icon-container {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border-color: #22c55e;
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.2);
+}
+
+.icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.icon-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #15803d;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
 .footer{background:linear-gradient(180deg,var(--primary-2),#0f2d12);color:#d6e8d8;padding:16px 0}
 .muted{color:var(--muted)}
 .order-form label{display:block;margin:0 0 6px;font-weight:600}
@@ -193,19 +247,19 @@ blockquote cite{font-style:normal;font-weight:600;color:var(--primary)}
 .main-nav a{color:#eaf6ec;text-decoration:none;font-weight:600;padding:6px 10px;border-radius:8px}
 .main-nav a:hover{background:rgba(255,255,255,.12)}
 
-section{padding:50px 0}
+section{padding:50px 20px}
 section h2{margin:0 0 16px;font-size:28px;color:#1f1f1f;text-align:center}
 section p{text-align:center}
 
-.method-grid{display:flex;justify-content:center;gap:20px;margin:25px auto;flex-wrap:wrap;max-width:1400px;align-items:stretch;min-height:400px}
-.method-box{background:linear-gradient(135deg,#ffffff,#f8f9ff);border:2px solid #dcfce7;border-radius:20px;overflow:hidden;text-align:center;padding:12px;box-shadow:0 8px 32px rgba(31,41,55,.1);transition:all .4s ease;position:relative;max-width:220px;backdrop-filter:blur(10px);flex:0 0 auto}
+.method-grid{display:flex;justify-content:center;gap:20px;margin:25px auto;flex-wrap:wrap;max-width:100%;width:100%;align-items:stretch;min-height:400px}
+.method-box{background:linear-gradient(135deg,#ffffff,#f8f9ff);border:2px solid #dcfce7;border-radius:20px;overflow:hidden;text-align:center;padding:20px;box-shadow:0 8px 32px rgba(31,41,55,.1);transition:all .4s ease;position:relative;max-width:300px;min-width:280px;backdrop-filter:blur(10px);flex:1 1 280px}
 .method-box:hover{transform:translateY(-12px) scale(1.02);box-shadow:0 20px 40px rgba(34,197,94,.15);border-color:#22c55e}
 .method-box::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#22c55e,#16a34a,#15803d);opacity:0;transition:opacity .4s ease}
 .method-box:hover::before{opacity:1}
-.method-box img{width:100%;height:180px;object-fit:cover;border-radius:16px;transition:all .4s ease;box-shadow:0 8px 25px rgba(0,0,0,.15);border:3px solid #f1f5f9}
+.method-box img{width:100%;height:220px;object-fit:cover;border-radius:16px;transition:all .4s ease;box-shadow:0 8px 25px rgba(0,0,0,.15);border:3px solid #f1f5f9}
 .method-box:hover img{transform:scale(1.08) rotate(2deg);border-color:#22c55e;box-shadow:0 15px 35px rgba(34,197,94,.25)}
-.method-box p{font-size:10px;line-height:1.3;margin:8px 0 0;color:#374151;font-weight:500;text-align:left}
-.method-box strong{color:#15803d;font-weight:800;display:block;margin-bottom:4px;font-size:12px;text-align:center;text-transform:uppercase;letter-spacing:.3px}
+.method-box p{font-size:12px;line-height:1.4;margin:10px 0 0;color:#374151;font-weight:500;text-align:left}
+.method-box strong{color:#15803d;font-weight:800;display:block;margin-bottom:6px;font-size:14px;text-align:center;text-transform:uppercase;letter-spacing:.3px}
 
 .benefits .about-item{display:flex;gap:20px;align-items:flex-start;justify-content:center}
 .about-item img{width:200px;height:200px;object-fit:cover;border-radius:12px;border:3px solid var(--secondary)}
@@ -680,10 +734,30 @@ footer{background:linear-gradient(180deg,var(--primary-2),#0f2d12);color:#d6e8d8
          margin: 5px 0 0;
      }
     
-         .method-box strong {
-         font-size: 10px;
-         margin-bottom: 3px;
-     }
+             .method-box strong {
+        font-size: 10px;
+        margin-bottom: 3px;
+    }
+    
+    /* Contact Icons Mobile */
+    .contact-icons {
+        gap: 15px;
+        margin: 15px 0;
+    }
+    
+    .icon-container {
+        padding: 10px;
+        min-width: 60px;
+    }
+    
+    .icon {
+        font-size: 1.5rem;
+        margin-bottom: 5px;
+    }
+    
+    .icon-label {
+        font-size: 10px;
+    }
     
     .product-box {
         padding: 15px;

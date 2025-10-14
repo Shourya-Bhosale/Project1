@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return Policy - Shiv Organic Dairy Farm</title>
+    <link rel="stylesheet" href="{% static 'store/styles.css' %}">
+    <meta name="description" content="Return policy for Shiv Organic Dairy Farm - Pure A2 Gir Cow Ghee. Learn about our return and exchange policies for quality assurance.">
+    <meta name="keywords" content="return policy, ghee return, organic ghee exchange, Shiv Dairy return policy">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="{% url 'home' %}">
+                    <img src="{% static 'store/images/Shiv Logo (1).png' %}" alt="SHIV Organic Dairy Farm">
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'home' %}#benefits">Benefits</a></li>
+                <li><a href="{% url 'home' %}#contact">Contact</a></li>
+                <li><a href="{% url 'place_order' %}">Order Now</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="legal-page">
+        <div class="container">
+            <h1>Return Policy</h1>
+            <p class="last-updated">Last Updated: September 2024</p>
+
+            <section class="policy-section">
+                <h2>🔄 Return & Exchange Policy</h2>
+                <p>At Shiv Organic Dairy Farm, we are committed to providing you with the highest quality A2 Gir Cow Ghee. We understand that sometimes you may need to return or exchange a product.</p>
+            </section>
+
+            <section class="policy-section">
+                <h3>📦 What Can Be Returned</h3>
+                <ul>
+                    <li><strong>Unopened Products:</strong> Products in original, unopened packaging within 7 days of delivery</li>
+                    <li><strong>Quality Issues:</strong> Products with visible quality defects or contamination</li>
+                    <li><strong>Wrong Product:</strong> If you received a different product than what you ordered</li>
+                    <li><strong>Damaged Packaging:</strong> Products with damaged or compromised packaging</li>
+                </ul>
+            </section>
+
+            <section class="policy-section">
+                <h3>❌ What Cannot Be Returned</h3>
+                <ul>
+                    <li><strong>Opened Products:</strong> Ghee containers that have been opened or used</li>
+                    <li><strong>Perishable Nature:</strong> Due to the perishable nature of dairy products, opened containers cannot be returned for hygiene reasons</li>
+                    <li><strong>Personal Preference:</strong> Returns based on taste preference or change of mind</li>
+                    <li><strong>After 7 Days:</strong> Products returned after 7 days from delivery date</li>
+                </ul>
+            </section>
+
+            <section class="policy-section">
+                <h3>🔧 Return Process</h3>
+                <ol>
+                    <li><strong>Contact Us:</strong> Call us at +91 9158019119 or email shivagrofoodsltd@gmail.com within 7 days</li>
+                    <li><strong>Provide Details:</strong> Share your order number and reason for return</li>
+                    <li><strong>Get Approval:</strong> We'll verify your return request and provide approval</li>
+                    <li><strong>Arrange Pickup:</strong> We'll arrange for product pickup from your location</li>
+                    <li><strong>Quality Check:</strong> Our team will inspect the returned product</li>
+                    <li><strong>Refund/Exchange:</strong> Once approved, we'll process your refund or exchange within 3-5 business days</li>
+                </ol>
+            </section>
+
+            <section class="policy-section">
+                <h3>💰 Refund Options</h3>
+                <ul>
+                    <li><strong>Original Payment Method:</strong> Refunds will be processed to the same payment method used for purchase</li>
+                    <li><strong>Bank Transfer:</strong> For UPI payments, refunds will be processed via bank transfer</li>
+                    <li><strong>Store Credit:</strong> Option to receive store credit for future purchases</li>
+                </ul>
+            </section>
+
+            <section class="policy-section">
+                <h3>📞 Contact Information</h3>
+                <div class="contact-info">
+                    <p><strong>Phone:</strong> +91 9158019119</p>
+                    <p><strong>Email:</strong> shivagrofoodsltd@gmail.com</p>
+                    <p><strong>Business Hours:</strong> Monday to Saturday, 9:00 AM to 6:00 PM</p>
+                </div>
+            </section>
+
+            <section class="policy-section">
+                <h3>📋 Important Notes</h3>
+                <ul>
+                    <li>Return shipping costs will be borne by Shiv Organic Dairy Farm</li>
+                    <li>Refunds will be processed within 3-5 business days after receiving the returned product</li>
+                    <li>We reserve the right to refuse returns that don't meet our policy criteria</li>
+                    <li>For bulk orders (10+ units), special return terms may apply</li>
+                </ul>
+            </section>
+
+            <div class="back-to-home">
+                <a href="{% url 'home' %}" class="btn btn-primary">Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>SHIV Organic Dairy Farm</h3>
+                    <p>Pure A2 Gir Cow Ghee - Handcrafted with love and tradition</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                        <li><a href="{% url 'place_order' %}">Order Now</a></li>
+                        <li><a href="{% url 'return_policy' %}">Return Policy</a></li>
+                        <li><a href="{% url 'refund_policy' %}">Refund Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>📞 +91 9158019119</p>
+                    <p>📧 shivagrofoodsltd@gmail.com</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Shiv Organic Dairy Farm. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

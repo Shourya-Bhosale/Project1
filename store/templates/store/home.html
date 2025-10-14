@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
@@ -121,8 +121,6 @@
     <section id="home">
         <h2>Pure A2 Gir Cow Ghee in Pune - SHIV Organic Dairy Farm</h2>
         <p>Welcome to SHIV Organic Dairy Farm - Your trusted source for <strong>100% pure A2 Gir Cow Ghee in Pune, Maharashtra</strong>!</p>
-        <p>We are dedicated to providing you with the <strong>purest and most authentic A2 Gir Cow Ghee</strong>, made using traditional <strong>Bilona method</strong> passed down through generations. Our ghee is sourced from <strong>free-grazing Gir cows</strong> raised in the lush pastures of Bhosari, Pune.</p>
-        <p><strong>Why choose SHIV A2 Ghee?</strong> We offer <strong>organic, preservative-free ghee</strong> that's rich in nutrients, perfect for daily cooking, and ideal for traditional Indian recipes. Available in <strong>250ml, 500ml, and 1L sizes</strong> with <strong>free delivery across Pune and Maharashtra</strong>.</p>
         <img src="{% static 'store/images/st.jpg' %}" alt="SHIV Organic Dairy Farm in Bhosari Pune - Traditional A2 Gir Cow Ghee" class="header" width="100%" height="100%"/>
     </section>
 
@@ -222,12 +220,12 @@
             <span class="delivery">🚚 Fast Delivery</span>
         </div>
     </section>
-
+    
     <section id="check-status">
         <h2>🔍 Check Your Order Status</h2>
         <div class="status-wrap">
-            <input type="number" id="orderIdInput" placeholder="Enter your Order ID" />
-            <button onclick="checkOrderStatus()">Check Status</button>
+        <input type="number" id="orderIdInput" placeholder="Enter your Order ID" />
+        <button onclick="checkOrderStatus()">Check Status</button>
         </div>
         <div id="orderStatusResult"></div>
     </section>
@@ -367,35 +365,31 @@
 
                     <div class="contact-section">
                         <h4>📞 Contact Information</h4>
-                        <div class="contact-grid">
-                            <div class="contact-item">
-                                <span class="contact-icon">📞</span>
-                                <div>
-                                    <strong>Phone:</strong><br>
-                                    <a href="tel:+919158019119">+91-9158019119</a>
+                        <div class="contact-icons">
+                            <a href="tel:+919158019119" class="contact-icon-link" title="Call Us">
+                                <div class="icon-container">
+                                    <span class="icon">📞</span>
+                                    <span class="icon-label">Call</span>
                                 </div>
-                            </div>
-                            <div class="contact-item">
-                                <span class="contact-icon">📧</span>
-                                <div>
-                                    <strong>Email:</strong><br>
-                                    <a href="mailto:shivagrofoodsltd@gmail.com">shivagrofoodsltd@gmail.com</a>
+                            </a>
+                            <a href="mailto:shivagrofoodsltd@gmail.com" class="contact-icon-link" title="Email Us">
+                                <div class="icon-container">
+                                    <span class="icon">📧</span>
+                                    <span class="icon-label">Email</span>
                                 </div>
-                            </div>
-                            <div class="contact-item">
-                                <span class="contact-icon">🌐</span>
-                                <div>
-                                    <strong>Instagram:</strong><br>
-                                    <a href="https://instagram.com/shivA2gircowghee" target="_blank">@shivA2gircowghee</a>
+                            </a>
+                            <a href="https://instagram.com/shivA2gircowghee" target="_blank" class="contact-icon-link" title="Follow on Instagram">
+                                <div class="icon-container">
+                                    <span class="icon">📷</span>
+                                    <span class="icon-label">Instagram</span>
                                 </div>
-                            </div>
-                            <div class="contact-item">
-                                <span class="contact-icon">📘</span>
-                                <div>
-                                    <strong>Facebook:</strong><br>
-                                    <a href="https://facebook.com/shivagrofoodsltd" target="_blank">shivagrofoodsltd</a>
+                            </a>
+                            <a href="https://facebook.com/shivagrofoodsltd" target="_blank" class="contact-icon-link" title="Follow on Facebook">
+                                <div class="icon-container">
+                                    <span class="icon">📘</span>
+                                    <span class="icon-label">Facebook</span>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -408,7 +402,7 @@
                         <a href="https://maps.google.com/directions?daddr=Bhosari,Pune,Maharashtra" target="_blank" class="map-btn">🚗 Get Directions</a>
                     </div>
                 </div>
-            </div> 
+            </div>
         </div>
     </section>
 
