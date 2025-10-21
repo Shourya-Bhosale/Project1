@@ -549,66 +549,36 @@
                     return;
                 }
                 
-                // First, create the order in the database
-                const form = document.querySelector('form.order-form');
-                const formData = new FormData(form);
-                formData.append('payment_method', 'RAZORPAY');
-                
-                // Create order first
-                fetch('/order/', {
+                // Create payment order directly
+                fetch('/create-payment/', {
                     method: 'POST',
-                    body: formData,
                     headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        return response.text();
-                    } else {
-                        throw new Error('Order creation failed');
-                    }
-                })
-                .then(html => {
-                    // Extract order ID from the response or use a temporary one
-                    const tempOrderId = 'temp_' + Date.now();
-                    
-                    // Create payment order
-                    return fetch('/create-payment/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
+                        'Content-Type': 'application/json',
                         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                     },
                     body: JSON.stringify({
                         amount: totalAmount,
                         currency: 'INR',
                         customer_name: document.querySelector('[name="customer_name"]').value,
-                            customer_email: document.querySelector('[name="email"]').value,
-                            order_id: tempOrderId
+                        customer_email: document.querySelector('[name="email"]').value,
+                        order_id: 'temp_' + Date.now()
                     })
-                    });
                 })
                 .then(response => {
+                    console.log('Payment response status:', response.status);
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        return response.text().then(text => {
+                            console.error('Payment error response:', text);
+                            throw new Error(`HTTP error! status: ${response.status} - ${text}`);
+                        });
                     }
                     return response.json();
                 })
                 .then(data => {
+                    console.log('Payment data received:', data);
                     if (data.error) {
                         console.error('Payment error:', data.error);
                         alert('Payment error: ' + data.error);
-                        return;
-                    }
-                    
-                    // Check if we're in development mode (mock order)
-                    if (data.order_id.startsWith('order_mock_')) {
-                        // Development mode - simulate successful payment
-                        alert('Development Mode: Payment simulation successful!');
-                        window.location.href = '/payment/success/?razorpay_order_id=' + data.order_id +
-                                              '&razorpay_payment_id=mock_payment_' + Date.now() +
-                                              '&razorpay_signature=mock_signature';
                         return;
                     }
                     
@@ -643,8 +613,8 @@
                     rzp.open();
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('Payment initialization failed. Please try again.');
+                    console.error('Payment initialization error:', error);
+                    alert('Payment initialization failed: ' + error.message + '. Please check console for details.');
                 });
             });
         }

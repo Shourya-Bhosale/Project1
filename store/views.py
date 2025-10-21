@@ -278,41 +278,30 @@ def create_payment(request: HttpRequest) -> JsonResponse:
         if amount <= 0:
             return JsonResponse({'error': 'Invalid amount'}, status=400)
         
-        # For development/testing - create mock payment order
-        if settings.DEBUG:
-            # Mock payment order for development
-            order = {
-                'id': f'order_mock_{int(time.time())}',
-                'amount': amount,
-                'currency': currency,
-                'receipt': f'order_{request.session.get("order_id", "temp")}',
-                'status': 'created'
+        # Initialize Razorpay client
+        try:
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        except Exception as e:
+            return JsonResponse({'error': f'Razorpay client initialization failed: {str(e)}'}, status=500)
+        
+        # Create order
+        order_data = {
+            'amount': amount,
+            'currency': currency,
+            'receipt': f'order_{request.session.get("order_id", "temp")}',
+            'notes': {
+                'order_id': request.session.get('order_id', 'temp'),
+                'customer_name': data.get('customer_name', ''),
+                'customer_email': data.get('customer_email', ''),
+                'company': 'Shiv Organic Dairy Farm',
+                'product': 'Premium A2 Gir Cow Ghee'
             }
-        else:
-            # Initialize Razorpay client for production
-            try:
-                client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-            except Exception as e:
-                return JsonResponse({'error': f'Razorpay client initialization failed: {str(e)}'}, status=500)
-            
-            # Create order
-            order_data = {
-                'amount': amount,
-                'currency': currency,
-                'receipt': f'order_{request.session.get("order_id", "temp")}',
-                'notes': {
-                    'order_id': request.session.get('order_id', 'temp'),
-                    'customer_name': data.get('customer_name', ''),
-                    'customer_email': data.get('customer_email', ''),
-                    'company': 'Shiv Organic Dairy Farm',
-                    'product': 'Premium A2 Gir Cow Ghee'
-                }
-            }
-            
-            try:
-                order = client.order.create(data=order_data)
-            except Exception as e:
-                return JsonResponse({'error': f'Razorpay order creation failed: {str(e)}'}, status=500)
+        }
+        
+        try:
+            order = client.order.create(data=order_data)
+        except Exception as e:
+            return JsonResponse({'error': f'Razorpay order creation failed: {str(e)}'}, status=500)
         
         return JsonResponse({
             'order_id': order['id'],
@@ -357,12 +346,19 @@ def payment_success(request: HttpRequest) -> HttpResponse:
                     'error': 'Missing payment parameters'
                 })
             
-            # Check if this is a mock payment (development mode)
-            if razorpay_order_id.startswith('order_mock_'):
-                return render(request, 'store/payment_success.html', {
+            # Verify payment signature for real payments
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+            
+            # Verify the payment signature
+            try:
+                client.utility.verify_payment_signature({
                     'razorpay_order_id': razorpay_order_id,
                     'razorpay_payment_id': razorpay_payment_id,
-                    'message': 'Payment successful! (Development Mode) We will contact you shortly about delivery details.'
+                    'razorpay_signature': razorpay_signature
+                })
+            except Exception as e:
+                return render(request, 'store/payment_error.html', {
+                    'error': f'Payment verification failed: {str(e)}'
                 })
             
             # Find the most recent order for this session or create a new one

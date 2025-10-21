@@ -180,9 +180,9 @@ if not DEBUG:
         print("SMTP failed, using console backend for testing")
 
 # Razorpay Configuration
-# For development/testing - these are test keys
-RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_live_your_actual_key_id')  # Replace with your actual key
-RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'your_actual_secret_key')  # Replace with your actual secret
+# For production - using real keys from environment variables
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_live_your_actual_key_id')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'your_actual_secret_key')
 
 # For production, set these environment variables:
 # RAZORPAY_KEY_ID=rzp_live_your_actual_key_id
