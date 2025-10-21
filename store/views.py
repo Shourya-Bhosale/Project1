@@ -278,13 +278,13 @@ def create_payment(request: HttpRequest) -> JsonResponse:
         if amount <= 0:
             return JsonResponse({'error': 'Invalid amount'}, status=400)
         
-        # Initialize Razorpay client
+        # Initialize Razorpay client for real payments
         try:
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
         except Exception as e:
             return JsonResponse({'error': f'Razorpay client initialization failed: {str(e)}'}, status=500)
         
-        # Create order
+        # Create real Razorpay order
         order_data = {
             'amount': amount,
             'currency': currency,
