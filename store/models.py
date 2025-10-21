@@ -28,12 +28,24 @@ class Order(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     PAYMENT_CHOICES = [
         ('COD', 'Cash on Delivery'),
-        ('UPI', 'UPI (QR)')
+        ('UPI', 'UPI (QR)'),
+        ('RAZORPAY', 'Online Payment (Razorpay)')
     ]
-    payment_method = models.CharField(max_length=8, choices=PAYMENT_CHOICES, default='COD')
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default='COD')
     payment_reference = models.CharField(max_length=120, blank=True, help_text='Last 6 of UPI txn or note for COD')
     notes = models.CharField(max_length=200, blank=True, help_text='Special instructions for your order')
     total_amount = models.PositiveIntegerField(default=0)
+    
+    # Razorpay fields
+    payment_status = models.CharField(max_length=20, default='pending', choices=[
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded')
+    ])
+    razorpay_order_id = models.CharField(max_length=100, blank=True)
+    razorpay_payment_id = models.CharField(max_length=100, blank=True)
+    razorpay_signature = models.CharField(max_length=200, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.order_number:

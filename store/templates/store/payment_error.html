@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Error - Shiv Organic Dairy Farm</title>
+    <link rel="stylesheet" href="{% static 'store/styles.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-flex">
+            <div class="brand">
+                <img class="logo" src="{% static 'store/images/Shiv Logo (1).png' %}" alt="Shiv Organic Dairy Farm" /> 
+                Shiv Organic Dairy Farm
+            </div>
+            <div class="links">
+                <a href="/home/">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div class="error-container">
+                <div class="error-icon">❌</div>
+                <h2>Payment Failed</h2>
+                <p class="error-message">{{ error|default:"Something went wrong with your payment. Please try again." }}</p>
+                
+                {% if order_id %}
+                <div class="order-info">
+                    <p><strong>Order ID:</strong> {{ order_id }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="action-buttons">
+                    <a href="/order/" class="btn-primary">Try Again</a>
+                    <a href="/home/" class="btn-secondary">Back to Home</a>
+                </div>
+                
+                <div class="help-section">
+                    <h3>Need Help?</h3>
+                    <p>If you continue to experience issues, please contact us:</p>
+                    <div class="contact-info">
+                        <p>📞 Phone: +91 9876543210</p>
+                        <p>📧 Email: info@shivdairy.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <style>
+        .error-container {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .error-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .order-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2d5016;
+        }
+        
+        .action-buttons {
+            margin: 30px 0;
+        }
+        
+        .btn-primary, .btn-secondary {
+            display: inline-block;
+            padding: 12px 30px;
+            margin: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2d5016 0%, #3a6b1f 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3a6b1f 0%, #4a7c2f 100%);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #2d5016;
+            border: 2px solid #2d5016;
+        }
+        
+        .btn-secondary:hover {
+            background: #2d5016;
+            color: white;
+        }
+        
+        .help-section {
+            margin-top: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .help-section h3 {
+            color: #2d5016;
+            margin-bottom: 15px;
+        }
+        
+        .contact-info p {
+            margin: 10px 0;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .error-container {
+                padding: 20px 10px;
+            }
+            
+            .action-buttons {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                max-width: 300px;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</body>
+</html>

@@ -179,6 +179,10 @@ if not DEBUG:
         EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
         print("SMTP failed, using console backend for testing")
 
+# Razorpay Configuration
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_live_RVik0FVKDm160O')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'YOUR_SECRET_KEY_HERE')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

@@ -85,6 +85,22 @@
                         </div>
                     </div>
                     
+                    <!-- Razorpay Payment Section -->
+                    <div class="razorpay-section" id="razorpaySection" style="display:none;">
+                        <div class="payment-gateway">
+                            <h4>💳 Secure Online Payment</h4>
+                            <div class="payment-info">
+                                <p>Pay securely with Razorpay - Accepts all major cards, UPI, net banking, and wallets</p>
+                                <div class="payment-amount">
+                                    <strong>Amount to Pay: ₹<span id="razorpayAmount">0</span></strong>
+                                </div>
+                                <button type="button" id="razorpayBtn" class="razorpay-button">
+                                    Pay Now with Razorpay
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div>
                         <label id="paymentRefLabel">Payment Reference</label>
                         {{ form.payment_reference }}
@@ -247,7 +263,149 @@
                 }
             });
         }
+        
+        // Razorpay Payment Integration
+        const razorpaySection = document.getElementById('razorpaySection');
+        const razorpayAmount = document.getElementById('razorpayAmount');
+        const razorpayBtn = document.getElementById('razorpayBtn');
+        
+        // Update payment method visibility
+        function updatePaymentSections() {
+            const paymentMethod = document.querySelector('[name="payment_method"]').value;
+            
+            // Hide all sections
+            document.getElementById('upiSection').style.display = 'none';
+            razorpaySection.style.display = 'none';
+            
+            // Show relevant section
+            if (paymentMethod === 'UPI') {
+                document.getElementById('upiSection').style.display = 'block';
+            } else if (paymentMethod === 'RAZORPAY') {
+                razorpaySection.style.display = 'block';
+            }
+            
+            // Update payment reference label
+            const paymentRefLabel = document.getElementById('paymentRefLabel');
+            const upiHelp = document.getElementById('upiHelp');
+            const codHelp = document.getElementById('codHelp');
+            
+            if (paymentMethod === 'UPI') {
+                paymentRefLabel.textContent = 'UPI Transaction Reference';
+                upiHelp.style.display = 'inline';
+                codHelp.style.display = 'none';
+            } else if (paymentMethod === 'RAZORPAY') {
+                paymentRefLabel.textContent = 'Payment Reference (Optional)';
+                upiHelp.style.display = 'none';
+                codHelp.style.display = 'none';
+            } else {
+                paymentRefLabel.textContent = 'Payment Reference';
+                upiHelp.style.display = 'none';
+                codHelp.style.display = 'inline';
+            }
+        }
+        
+        // Update amounts when cart changes
+        function updateAmounts() {
+            let total = 0;
+            document.querySelectorAll('.cart-row').forEach(row => {
+                const quantity = parseInt(row.querySelector('.quantity input').value) || 0;
+                const price = parseFloat(row.querySelector('.price').textContent.replace('₹', '')) || 0;
+                total += quantity * price;
+            });
+            
+            document.getElementById('totalAmount').textContent = total.toFixed(0);
+            document.getElementById('razorpayAmount').textContent = total.toFixed(0);
+        }
+        
+        // Initialize payment sections
+        document.querySelector('[name="payment_method"]').addEventListener('change', updatePaymentSections);
+        updatePaymentSections();
+        updateAmounts();
+        
+        // Razorpay payment handler
+        if (razorpayBtn) {
+            razorpayBtn.addEventListener('click', function() {
+                const totalAmount = parseFloat(document.getElementById('razorpayAmount').textContent) * 100; // Convert to paise
+                
+                // Create payment order
+                fetch('/create-payment/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({
+                        amount: totalAmount,
+                        currency: 'INR',
+                        customer_name: document.querySelector('[name="customer_name"]').value,
+                        customer_email: document.querySelector('[name="email"]').value
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert('Payment error: ' + data.error);
+                        return;
+                    }
+                    
+                    // Open Razorpay checkout
+                    const options = {
+                        key: data.key,
+                        amount: data.amount,
+                        currency: data.currency,
+                        name: 'Shiv Organic Dairy Farm',
+                        description: 'Premium A2 Gir Cow Ghee - Shiv Organic Dairy Farm',
+                        order_id: data.order_id,
+                        handler: function(response) {
+                            // Payment successful
+                            const form = document.querySelector('form.order-form');
+                            const formData = new FormData(form);
+                            formData.append('razorpay_order_id', response.razorpay_order_id);
+                            formData.append('razorpay_payment_id', response.razorpay_payment_id);
+                            formData.append('razorpay_signature', response.razorpay_signature);
+                            
+                            // Submit to payment success handler
+                            fetch('/payment/success/', {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                                }
+                            })
+                            .then(response => {
+                                if (response.ok) {
+                                    window.location.href = response.url;
+                                } else {
+                                    window.location.href = '/payment/failure/';
+                                }
+                            })
+                            .catch(() => {
+                                window.location.href = '/payment/failure/';
+                            });
+                        },
+                        prefill: {
+                            name: document.querySelector('[name="customer_name"]').value,
+                            email: document.querySelector('[name="email"]').value,
+                            contact: document.querySelector('[name="phone"]').value
+                        },
+                        theme: {
+                            color: '#2d5016'
+                        }
+                    };
+                    
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Payment initialization failed. Please try again.');
+                });
+            });
+        }
     </script>
+    
+    <!-- Razorpay Checkout Script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </body>
 </html>
 
