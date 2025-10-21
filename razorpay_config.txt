@@ -1,0 +1,36 @@
+# Razorpay Configuration Instructions
+# ===================================
+
+# Method 1: Environment Variables (Recommended)
+# =============================================
+
+# For Windows PowerShell:
+$env:RAZORPAY_KEY_ID="rzp_live_your_actual_key_id"
+$env:RAZORPAY_KEY_SECRET="your_actual_secret_key"
+
+# For Windows Command Prompt:
+set RAZORPAY_KEY_ID=rzp_live_your_actual_key_id
+set RAZORPAY_KEY_SECRET=your_actual_secret_key
+
+# For Linux/Mac:
+export RAZORPAY_KEY_ID="rzp_live_your_actual_key_id"
+export RAZORPAY_KEY_SECRET="your_actual_secret_key"
+
+# Method 2: Direct in Settings (Not Recommended for Production)
+# ============================================================
+# Edit shivdairy/settings.py and replace the default values:
+# RAZORPAY_KEY_ID = 'rzp_live_your_actual_key_id'
+# RAZORPAY_KEY_SECRET = 'your_actual_secret_key'
+
+# Steps to Get Your Keys:
+# ======================
+# 1. Go to: https://dashboard.razorpay.com/app/keys
+# 2. Copy your Key ID (starts with rzp_live_)
+# 3. Copy your Secret Key
+# 4. Use the environment variable method above
+# 5. Restart your server: python manage.py runserver
+
+# Test Your Configuration:
+# =======================
+# Visit: http://127.0.0.1:8000/test-razorpay/
+# Should show: "secret_configured": true

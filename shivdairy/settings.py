@@ -180,8 +180,18 @@ if not DEBUG:
         print("SMTP failed, using console backend for testing")
 
 # Razorpay Configuration
-RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_live_RVik0FVKDm160O')
-RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'YOUR_SECRET_KEY_HERE')
+# For development/testing - these are test keys
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_live_your_actual_key_id')  # Replace with your actual key
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'your_actual_secret_key')  # Replace with your actual secret
+
+# For production, set these environment variables:
+# RAZORPAY_KEY_ID=rzp_live_your_actual_key_id
+# RAZORPAY_KEY_SECRET=your_actual_secret_key
+
+# Note: For production, get your actual keys from: https://dashboard.razorpay.com/app/keys
+# Set these environment variables:
+# RAZORPAY_KEY_ID=your_actual_key_id
+# RAZORPAY_KEY_SECRET=your_actual_secret_key
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

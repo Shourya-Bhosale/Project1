@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - Shiv Organic Dairy Farm</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap">
+    <link rel="stylesheet" href="{% static 'store/styles.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-flex">
+            <div class="brand"><img class="logo" src="{% static 'store/images/Shiv Logo (1).png' %}" alt="Shiv Organic Dairy Farm" /> Shiv Organic Dairy Farm</div>
+            <div class="links">
+                <a href="/home/">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div style="text-align: center; padding: 40px 20px;">
+                <div style="font-size: 4rem; color: #28a745; margin-bottom: 20px;">✅</div>
+                <h2 style="color: #28a745; margin-bottom: 20px;">Payment Successful!</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px;">{{ message }}</p>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h3>Payment Details</h3>
+                    <p><strong>Payment ID:</strong> {{ razorpay_payment_id }}</p>
+                    <p><strong>Order ID:</strong> {{ razorpay_order_id }}</p>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <a href="/home/" class="btn btn-primary" style="margin-right: 10px;">Continue Shopping</a>
+                    <a href="/check-status/" class="btn btn-secondary">Check Order Status</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>

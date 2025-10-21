@@ -1,3 +1,5 @@
+import json
+import time
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
@@ -262,6 +264,7 @@ def disclaimer(request: HttpRequest) -> HttpResponse:
 
 
 # Razorpay Payment Views
+@csrf_exempt
 def create_payment(request: HttpRequest) -> JsonResponse:
     """Create Razorpay payment order"""
     try:
@@ -275,24 +278,41 @@ def create_payment(request: HttpRequest) -> JsonResponse:
         if amount <= 0:
             return JsonResponse({'error': 'Invalid amount'}, status=400)
         
-        # Initialize Razorpay client
-        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-        
-        # Create order
-        order_data = {
-            'amount': amount,
-            'currency': currency,
-            'receipt': f'order_{request.session.get("order_id", "temp")}',
-            'notes': {
-                'order_id': request.session.get('order_id', 'temp'),
-                'customer_name': data.get('customer_name', ''),
-                'customer_email': data.get('customer_email', ''),
-                'company': 'Shiv Organic Dairy Farm',
-                'product': 'Premium A2 Gir Cow Ghee'
+        # For development/testing - create mock payment order
+        if settings.DEBUG:
+            # Mock payment order for development
+            order = {
+                'id': f'order_mock_{int(time.time())}',
+                'amount': amount,
+                'currency': currency,
+                'receipt': f'order_{request.session.get("order_id", "temp")}',
+                'status': 'created'
             }
-        }
-        
-        order = client.order.create(data=order_data)
+        else:
+            # Initialize Razorpay client for production
+            try:
+                client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+            except Exception as e:
+                return JsonResponse({'error': f'Razorpay client initialization failed: {str(e)}'}, status=500)
+            
+            # Create order
+            order_data = {
+                'amount': amount,
+                'currency': currency,
+                'receipt': f'order_{request.session.get("order_id", "temp")}',
+                'notes': {
+                    'order_id': request.session.get('order_id', 'temp'),
+                    'customer_name': data.get('customer_name', ''),
+                    'customer_email': data.get('customer_email', ''),
+                    'company': 'Shiv Organic Dairy Farm',
+                    'product': 'Premium A2 Gir Cow Ghee'
+                }
+            }
+            
+            try:
+                order = client.order.create(data=order_data)
+            except Exception as e:
+                return JsonResponse({'error': f'Razorpay order creation failed: {str(e)}'}, status=500)
         
         return JsonResponse({
             'order_id': order['id'],
@@ -305,11 +325,55 @@ def create_payment(request: HttpRequest) -> JsonResponse:
         return JsonResponse({'error': str(e)}, status=500)
 
 
+def test_razorpay(request: HttpRequest) -> JsonResponse:
+    """Test Razorpay configuration"""
+    try:
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+        return JsonResponse({
+            'status': 'success',
+            'key_id': settings.RAZORPAY_KEY_ID,
+            'secret_configured': bool(settings.RAZORPAY_KEY_SECRET and settings.RAZORPAY_KEY_SECRET != 'YOUR_ACTUAL_SECRET_KEY_HERE')
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'error': str(e),
+            'key_id': settings.RAZORPAY_KEY_ID,
+            'secret_configured': bool(settings.RAZORPAY_KEY_SECRET and settings.RAZORPAY_KEY_SECRET != 'YOUR_ACTUAL_SECRET_KEY_HERE')
+        })
+
 @csrf_exempt
 def payment_success(request: HttpRequest) -> HttpResponse:
     """Handle successful payment"""
     try:
-        if request.method == 'POST':
+        if request.method == 'GET':
+            # Handle GET request with Razorpay parameters
+            razorpay_order_id = request.GET.get('razorpay_order_id')
+            razorpay_payment_id = request.GET.get('razorpay_payment_id')
+            razorpay_signature = request.GET.get('razorpay_signature')
+            
+            if not all([razorpay_order_id, razorpay_payment_id, razorpay_signature]):
+                return render(request, 'store/payment_error.html', {
+                    'error': 'Missing payment parameters'
+                })
+            
+            # Check if this is a mock payment (development mode)
+            if razorpay_order_id.startswith('order_mock_'):
+                return render(request, 'store/payment_success.html', {
+                    'razorpay_order_id': razorpay_order_id,
+                    'razorpay_payment_id': razorpay_payment_id,
+                    'message': 'Payment successful! (Development Mode) We will contact you shortly about delivery details.'
+                })
+            
+            # Find the most recent order for this session or create a new one
+            # For now, we'll create a simple success response
+            return render(request, 'store/payment_success.html', {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'message': 'Payment successful! We will contact you shortly about delivery details.'
+            })
+            
+        elif request.method == 'POST':
             data = request.POST
             
             # Verify payment signature

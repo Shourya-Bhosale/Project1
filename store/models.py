@@ -28,8 +28,7 @@ class Order(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True)
     PAYMENT_CHOICES = [
         ('COD', 'Cash on Delivery'),
-        ('UPI', 'UPI (QR)'),
-        ('RAZORPAY', 'Online Payment (Razorpay)')
+        ('RAZORPAY', 'Online Payment')
     ]
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default='COD')
     payment_reference = models.CharField(max_length=120, blank=True, help_text='Last 6 of UPI txn or note for COD')

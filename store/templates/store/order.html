@@ -7,6 +7,211 @@
     <title>Place Order - Shiv Organic Dairy Farm</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap">
     <link rel="stylesheet" href="{% static 'store/styles.css' %}">
+    <style>
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+        
+        .qty-btn:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
+        .qty-btn:active {
+            background: #dee2e6;
+        }
+        
+        .qty-input {
+            width: 60px;
+            height: 32px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .qty-input:focus {
+            outline: none;
+            border-color: #2d5016;
+            box-shadow: 0 0 0 2px rgba(45, 80, 22, 0.1);
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .product-item {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .product-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .product-image {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .product-image img {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+        }
+        
+        .product-details {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .product-details h4 {
+            margin: 0 0 8px 0;
+            color: #2d5016;
+            font-size: 1.1em;
+        }
+        
+        .product-details .price {
+            margin: 0;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #28a745;
+        }
+        
+        .product-quantity {
+            text-align: center;
+        }
+        
+        .product-quantity label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        /* Order Bill Styles */
+        .order-bill {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .bill-header {
+            border-bottom: 2px solid #2d5016;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .bill-header h4 {
+            color: #2d5016;
+            margin: 0 0 5px 0;
+            font-size: 1.3em;
+        }
+        
+        .order-date {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .bill-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .bill-item:last-child {
+            border-bottom: none;
+        }
+        
+        .bill-item-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .bill-item-info img {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        
+        .bill-item-details h5 {
+            margin: 0 0 4px 0;
+            color: #2d5016;
+            font-size: 1em;
+        }
+        
+        .bill-item-details p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .bill-item-quantity {
+            text-align: center;
+            min-width: 60px;
+        }
+        
+        .bill-item-price {
+            text-align: right;
+            min-width: 80px;
+            font-weight: bold;
+            color: #2d5016;
+        }
+        
+        .bill-total {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #2d5016;
+        }
+        
+        .total-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 1.1em;
+        }
+        
+        .total-line:last-child {
+            font-weight: bold;
+            font-size: 1.3em;
+            color: #2d5016;
+            border-top: 1px solid #dee2e6;
+            padding-top: 12px;
+            margin-top: 8px;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -68,44 +273,24 @@
                         {{ form.payment_method }}
                     </div>
                     
-                    <!-- UPI QR Scanner Section -->
-                    <div class="upi-section" id="upiSection" style="display:none;">
-                        <div class="qr-scanner">
-                            <h4>📱 Scan UPI QR Code</h4>
-                            <div class="qr-container">
-                                <img src="{% static 'store/images/upi_qr.jpg' %}" alt="UPI QR Code" class="qr-image" />
+                    <!-- Online Payment Section -->
+                    <div class="online-payment-section" id="onlinePaymentSection" style="display:none; padding: 20px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; margin: 10px 0;">
+                        <div class="payment-info">
+                            <h4 style="margin-bottom: 15px; color: #2d5016;">💳 Secure Online Payment</h4>
+                            <p style="margin-bottom: 15px;">Pay securely online - Accepts all major cards, UPI, net banking, and wallets</p>
+                            <div class="payment-amount" style="margin-bottom: 15px;">
+                                <strong>Amount to Pay: ₹<span id="onlinePaymentAmount">0</span></strong>
                             </div>
-                            <div class="qr-instructions">
-                                <p>1. Open your UPI app (PhonePe, Google Pay, Paytm, etc.)</p>
-                                <p>2. Scan this QR code</p>
-                                <p>3. Enter the amount: <strong>₹<span id="totalAmount">0</span></strong></p>
-                                <p>4. Complete the payment</p>
-                                <p>5. Enter the last 6 digits of transaction reference below</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Razorpay Payment Section -->
-                    <div class="razorpay-section" id="razorpaySection" style="display:none;">
-                        <div class="payment-gateway">
-                            <h4>💳 Secure Online Payment</h4>
-                            <div class="payment-info">
-                                <p>Pay securely with Razorpay - Accepts all major cards, UPI, net banking, and wallets</p>
-                                <div class="payment-amount">
-                                    <strong>Amount to Pay: ₹<span id="razorpayAmount">0</span></strong>
-                                </div>
-                                <button type="button" id="razorpayBtn" class="razorpay-button">
-                                    Pay Now with Razorpay
+                            <button type="button" id="onlinePaymentBtn" class="btn btn-primary" style="padding: 12px 24px; font-size: 16px; background: #2d5016; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                Pay Now
                                 </button>
-                            </div>
                         </div>
                     </div>
                     
-                    <div>
+                    <div id="paymentRefDiv">
                         <label id="paymentRefLabel">Payment Reference</label>
                         {{ form.payment_reference }}
                         <div class="muted" id="paymentRefHelp">
-                            <span id="upiHelp" style="display:none;">Enter last 6 digits of UPI transaction reference</span>
                             <span id="codHelp" style="display:none;">Enter any note for Cash on Delivery</span>
                         </div>
                     </div>
@@ -114,31 +299,33 @@
                     <div class="muted" id="locStatus" style="display:none;align-self:center">✅ Location captured</div>
                 </div>
 
-                <h3>Your Cart</h3>
-                <div class="cart">
-                    {% for product in products %}
-                    <div class="cart-row">
-                        <div class="cart-info">
-                            {% if product.size_ml == 250 %}
-                                <img src="{% static 'store/images/250ml.png' %}" alt="{{ product.name }}">
-                            {% elif product.size_ml == 500 %}
-                                <img src="{% static 'store/images/500 Ml.png' %}" alt="{{ product.name }}">
-                            {% elif product.size_ml == 1000 %}
-                                <img src="{% static 'store/images/1000 Ml.png' %}" alt="{{ product.name }}">
-                            {% else %}
-                                <img src="{% static 'store/images/COW.png' %}" alt="{{ product.name }}">
-                            {% endif %}
-                            <div>
-                                <strong>{{ product.name }}</strong>
-                                <div class="muted">₹{{ product.price }}</div>
-                            </div>
+                <h3>Your Order Bill</h3>
+                <div class="order-bill">
+                    <div class="bill-header">
+                        <h4>Order Summary</h4>
+                        <p class="order-date">Order Date: <span id="order-date"></span></p>
+                    </div>
+                    
+                    <div class="bill-items" id="bill-items">
+                        <!-- Bill items will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="bill-total">
+                        <div class="total-line">
+                            <span>Subtotal:</span>
+                            <span>₹<span id="bill-subtotal">0</span></span>
                         </div>
-                        <div class="cart-qty">
-                            <input type="number" name="qty_{{ product.id }}" value="0" min="0" data-size="{{ product.size_ml }}">
+                        <div class="total-line">
+                            <span>Total Amount:</span>
+                            <span>₹<span id="bill-total-amount">0</span></span>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
+                
+                <!-- Hidden inputs for quantities -->
+                <input type="hidden" name="qty_3" id="qty_3" value="0" data-size="250">
+                <input type="hidden" name="qty_2" id="qty_2" value="0" data-size="500">
+                <input type="hidden" name="qty_1" id="qty_1" value="0" data-size="1000">
 
 
 
@@ -150,38 +337,141 @@
         </div>
     </section>
     <script>
-        // Preselect product quantity from query param
+        // Preselect product quantity from query param or cart data
         const params = new URLSearchParams(window.location.search);
         const prod = params.get('product'); // '250' | '500' | '1000'
-        if (prod) {
-            document.querySelectorAll('.cart-qty input[data-size]').forEach(function(inp){
+        const cartItems = params.getAll('cart'); // ['250:2', '500:1', etc.]
+        
+        if (cartItems.length > 0) {
+            // Handle cart data from homepage
+            console.log('Cart items from homepage:', cartItems);
+            cartItems.forEach(cartItem => {
+                const [size, quantity] = cartItem.split(':');
+                console.log('Processing cart item:', size, quantity);
+                document.querySelectorAll('input[data-size]').forEach(function(inp){
+                    if (String(inp.getAttribute('data-size')) === String(size)) {
+                        inp.value = parseInt(quantity) || 0;
+                        console.log('Set quantity for size', size, 'to', inp.value);
+                    }
+                });
+            });
+        } else if (prod) {
+            // Handle single product selection
+            document.querySelectorAll('.product-quantity input[data-size]').forEach(function(inp){
                 if (String(inp.getAttribute('data-size')) === String(prod)) {
                     inp.value = 1;
                 }
             });
         }
-        // Toggle UPI section and update payment reference label
+        
+        // Calculate total amount and update bill
+        function updateTotalAmount() {
+            let total = 0;
+            const billItems = [];
+            
+            // Product data with correct mapping
+            const products = [
+                { id: 'qty_3', size: 250, price: 349, name: 'Gir Cow Ghee 250ml', image: '/static/store/images/250ml.png' },
+                { id: 'qty_2', size: 500, price: 649, name: 'Gir Cow Ghee 500ml', image: '/static/store/images/500 Ml.png' },
+                { id: 'qty_1', size: 1000, price: 1299, name: 'Gir Cow Ghee 1L', image: '/static/store/images/1000 Ml.png' }
+            ];
+            
+            console.log('Updating total amount...');
+            products.forEach(product => {
+                const qty = parseInt(document.getElementById(product.id).value) || 0;
+                console.log('Product:', product.name, 'Quantity:', qty);
+                if (qty > 0) {
+                    const subtotal = qty * product.price;
+                    total += subtotal;
+                    billItems.push({
+                        ...product,
+                        quantity: qty,
+                        subtotal: subtotal
+                    });
+                    console.log('Added to bill:', product.name, 'Qty:', qty, 'Subtotal:', subtotal);
+                }
+            });
+            
+            console.log('Total bill items:', billItems.length, 'Total amount:', total);
+            
+            // Update bill display
+            updateBillDisplay(billItems, total);
+            
+            // Update payment amounts
+            document.getElementById('onlinePaymentAmount').textContent = total;
+        }
+        
+        // Update bill display
+        function updateBillDisplay(billItems, total) {
+            const billItemsDiv = document.getElementById('bill-items');
+            const billSubtotal = document.getElementById('bill-subtotal');
+            const billTotalAmount = document.getElementById('bill-total-amount');
+            
+            if (billItems.length > 0) {
+                billItemsDiv.innerHTML = billItems.map(item => `
+                    <div class="bill-item">
+                        <div class="bill-item-info">
+                            <img src="${item.image}" alt="${item.name}">
+                            <div class="bill-item-details">
+                                <h5>${item.name}</h5>
+                                <p>₹${item.price} each</p>
+                            </div>
+                        </div>
+                        <div class="bill-item-quantity">
+                            <span>Qty: ${item.quantity}</span>
+                        </div>
+                        <div class="bill-item-price">
+                            ₹${item.subtotal}
+                        </div>
+                    </div>
+                `).join('');
+                
+                billSubtotal.textContent = total;
+                billTotalAmount.textContent = total;
+            } else {
+                billItemsDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No items selected</p>';
+                billSubtotal.textContent = '0';
+                billTotalAmount.textContent = '0';
+            }
+        }
+        
+        // Set order date
+        function setOrderDate() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-IN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('order-date').textContent = dateStr;
+        }
+        
+        // Update total amount after setting quantities
+        updateTotalAmount();
+        setOrderDate();
+        
+        // Toggle payment sections and update payment reference label
         const pmSelect = document.querySelector('[name="payment_method"]');
-        const upiSection = document.getElementById('upiSection');
+        const onlinePaymentSection = document.getElementById('onlinePaymentSection');
+        const paymentRefDiv = document.getElementById('paymentRefDiv');
         const paymentRefLabel = document.getElementById('paymentRefLabel');
-        const upiHelp = document.getElementById('upiHelp');
         const codHelp = document.getElementById('codHelp');
         
-        function toggleUPISection(){
-            if (!pmSelect || !upiSection) return;
-            const isUPI = (pmSelect.value === 'UPI');
+        function togglePaymentSections(){
+            if (!pmSelect || !onlinePaymentSection) return;
+            const isOnlinePayment = (pmSelect.value === 'RAZORPAY');
+            console.log('Payment method changed to:', pmSelect.value, 'isOnlinePayment:', isOnlinePayment);
             
-            // Show/hide UPI section
-            upiSection.style.display = isUPI ? 'block' : 'none';
+            // Show/hide online payment section
+            onlinePaymentSection.style.display = isOnlinePayment ? 'block' : 'none';
+            console.log('Online payment section display:', onlinePaymentSection.style.display);
             
-            // Update payment reference label and help text
-            if (isUPI) {
-                paymentRefLabel.textContent = 'UPI Transaction Reference (Last 6 digits)';
-                upiHelp.style.display = 'block';
-                codHelp.style.display = 'none';
+            // Show/hide payment reference field
+            if (isOnlinePayment) {
+                paymentRefDiv.style.display = 'none';
             } else {
+                paymentRefDiv.style.display = 'block';
                 paymentRefLabel.textContent = 'Payment Reference (COD note)';
-                upiHelp.style.display = 'none';
                 codHelp.style.display = 'block';
             }
             
@@ -189,32 +479,10 @@
             updateTotalAmount();
         }
         
-        pmSelect && pmSelect.addEventListener('change', toggleUPISection);
-        toggleUPISection();
+        pmSelect && pmSelect.addEventListener('change', togglePaymentSections);
+        togglePaymentSections();
         
-        // Calculate total amount based on cart quantities
-        function updateTotalAmount() {
-            let total = 0;
-            document.querySelectorAll('.cart-qty input').forEach(function(input) {
-                const qty = parseInt(input.value) || 0;
-                const size = parseInt(input.getAttribute('data-size'));
-                let price = 0;
-                
-                // Get price based on size
-                if (size === 250) price = 349;
-                else if (size === 500) price = 649;
-                else if (size === 1000) price = 1299;
-                
-                total += qty * price;
-            });
-            
-            document.getElementById('totalAmount').textContent = total;
-        }
-        
-        // Update total when quantities change
-        document.querySelectorAll('.cart-qty input').forEach(function(input) {
-            input.addEventListener('input', updateTotalAmount);
-        });
+        // Note: Quantity controls removed - quantities are set from homepage cart data
 
         // Ask location only when user interacts (e.g., when focusing address)
         const addressField = document.querySelector('[name="address_line1"]');
@@ -264,91 +532,90 @@
             });
         }
         
-        // Razorpay Payment Integration
-        const razorpaySection = document.getElementById('razorpaySection');
-        const razorpayAmount = document.getElementById('razorpayAmount');
-        const razorpayBtn = document.getElementById('razorpayBtn');
+        // Online Payment Integration
+        const onlinePaymentBtn = document.getElementById('onlinePaymentBtn');
         
-        // Update payment method visibility
-        function updatePaymentSections() {
-            const paymentMethod = document.querySelector('[name="payment_method"]').value;
-            
-            // Hide all sections
-            document.getElementById('upiSection').style.display = 'none';
-            razorpaySection.style.display = 'none';
-            
-            // Show relevant section
-            if (paymentMethod === 'UPI') {
-                document.getElementById('upiSection').style.display = 'block';
-            } else if (paymentMethod === 'RAZORPAY') {
-                razorpaySection.style.display = 'block';
-            }
-            
-            // Update payment reference label
-            const paymentRefLabel = document.getElementById('paymentRefLabel');
-            const upiHelp = document.getElementById('upiHelp');
-            const codHelp = document.getElementById('codHelp');
-            
-            if (paymentMethod === 'UPI') {
-                paymentRefLabel.textContent = 'UPI Transaction Reference';
-                upiHelp.style.display = 'inline';
-                codHelp.style.display = 'none';
-            } else if (paymentMethod === 'RAZORPAY') {
-                paymentRefLabel.textContent = 'Payment Reference (Optional)';
-                upiHelp.style.display = 'none';
-                codHelp.style.display = 'none';
-            } else {
-                paymentRefLabel.textContent = 'Payment Reference';
-                upiHelp.style.display = 'none';
-                codHelp.style.display = 'inline';
-            }
-        }
-        
-        // Update amounts when cart changes
-        function updateAmounts() {
-            let total = 0;
-            document.querySelectorAll('.cart-row').forEach(row => {
-                const quantity = parseInt(row.querySelector('.quantity input').value) || 0;
-                const price = parseFloat(row.querySelector('.price').textContent.replace('₹', '')) || 0;
-                total += quantity * price;
-            });
-            
-            document.getElementById('totalAmount').textContent = total.toFixed(0);
-            document.getElementById('razorpayAmount').textContent = total.toFixed(0);
-        }
-        
-        // Initialize payment sections
-        document.querySelector('[name="payment_method"]').addEventListener('change', updatePaymentSections);
-        updatePaymentSections();
-        updateAmounts();
-        
-        // Razorpay payment handler
-        if (razorpayBtn) {
-            razorpayBtn.addEventListener('click', function() {
-                const totalAmount = parseFloat(document.getElementById('razorpayAmount').textContent) * 100; // Convert to paise
+        // Online payment handler
+        if (onlinePaymentBtn) {
+            console.log('Online payment button found:', onlinePaymentBtn);
+            onlinePaymentBtn.addEventListener('click', function() {
+                console.log('Online payment button clicked');
                 
-                // Create payment order
-                fetch('/create-payment/', {
+                const totalAmount = parseFloat(document.getElementById('onlinePaymentAmount').textContent) * 100; // Convert to paise
+                console.log('Total amount:', totalAmount);
+                
+                if (totalAmount <= 0) {
+                    alert('Please add products to your cart before proceeding with payment.');
+                    return;
+                }
+                
+                // First, create the order in the database
+                const form = document.querySelector('form.order-form');
+                const formData = new FormData(form);
+                formData.append('payment_method', 'RAZORPAY');
+                
+                // Create order first
+                fetch('/order/', {
                     method: 'POST',
+                    body: formData,
                     headers: {
-                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        throw new Error('Order creation failed');
+                    }
+                })
+                .then(html => {
+                    // Extract order ID from the response or use a temporary one
+                    const tempOrderId = 'temp_' + Date.now();
+                    
+                    // Create payment order
+                    return fetch('/create-payment/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
                         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                     },
                     body: JSON.stringify({
                         amount: totalAmount,
                         currency: 'INR',
                         customer_name: document.querySelector('[name="customer_name"]').value,
-                        customer_email: document.querySelector('[name="email"]').value
+                            customer_email: document.querySelector('[name="email"]').value,
+                            order_id: tempOrderId
                     })
+                    });
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.error) {
+                        console.error('Payment error:', data.error);
                         alert('Payment error: ' + data.error);
                         return;
                     }
                     
-                    // Open Razorpay checkout
+                    // Check if we're in development mode (mock order)
+                    if (data.order_id.startsWith('order_mock_')) {
+                        // Development mode - simulate successful payment
+                        alert('Development Mode: Payment simulation successful!');
+                        window.location.href = '/payment/success/?razorpay_order_id=' + data.order_id +
+                                              '&razorpay_payment_id=mock_payment_' + Date.now() +
+                                              '&razorpay_signature=mock_signature';
+                        return;
+                    }
+                    
+                    // Real payment mode - use Razorpay
+                    console.log('Opening Razorpay checkout for real payment...');
+                    
+                    // Production mode - use real Razorpay
                     const options = {
                         key: data.key,
                         amount: data.amount,
@@ -357,31 +624,10 @@
                         description: 'Premium A2 Gir Cow Ghee - Shiv Organic Dairy Farm',
                         order_id: data.order_id,
                         handler: function(response) {
-                            // Payment successful
-                            const form = document.querySelector('form.order-form');
-                            const formData = new FormData(form);
-                            formData.append('razorpay_order_id', response.razorpay_order_id);
-                            formData.append('razorpay_payment_id', response.razorpay_payment_id);
-                            formData.append('razorpay_signature', response.razorpay_signature);
-                            
-                            // Submit to payment success handler
-                            fetch('/payment/success/', {
-                                method: 'POST',
-                                body: formData,
-                                headers: {
-                                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                                }
-                            })
-                            .then(response => {
-                                if (response.ok) {
-                                    window.location.href = response.url;
-                                } else {
-                                    window.location.href = '/payment/failure/';
-                                }
-                            })
-                            .catch(() => {
-                                window.location.href = '/payment/failure/';
-                            });
+                            // Payment successful - redirect to success page
+                            window.location.href = '/payment/success/?razorpay_order_id=' + response.razorpay_order_id +
+                                                  '&razorpay_payment_id=' + response.razorpay_payment_id +
+                                                  '&razorpay_signature=' + response.razorpay_signature;
                         },
                         prefill: {
                             name: document.querySelector('[name="customer_name"]').value,
@@ -392,7 +638,7 @@
                             color: '#2d5016'
                         }
                     };
-                    
+
                     const rzp = new Razorpay(options);
                     rzp.open();
                 })
