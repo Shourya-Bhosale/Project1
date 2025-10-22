@@ -33,7 +33,23 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-here'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,*.onrender.com,shivorganicdairyfarms.com,www.shivorganicdairyfarms.com').split(',')
+# Temporary debug for domain issues
+if DEBUG:
+    print(f"DEBUG: ALLOWED_HOSTS = {ALLOWED_HOSTS}")
+
+# ALLOWED_HOSTS configuration
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '*.onrender.com',
+    'shivorganicdairyfarms.com',
+    'www.shivorganicdairyfarms.com',
+    '.shivorganicdairyfarms.com',  # Wildcard for subdomains
+]
+
+# Override with environment variable if set
+if os.environ.get('ALLOWED_HOSTS'):
+    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
 
 # Production Security Settings
 if not DEBUG:
