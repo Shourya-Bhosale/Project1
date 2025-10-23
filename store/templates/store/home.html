@@ -282,6 +282,7 @@
         <a href="#about">About</a>
         <a href="#benefits">Benefits</a>
         <a href="#buy">Buy Now</a>
+        <a href="#my-orders">My Orders</a>
         <a href="#reviews">Reviews</a>
         <a href="#contact">Contact</a>
     </nav>
@@ -362,17 +363,6 @@
         <div style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
             <h2 style="margin: 0; font-size: 2.5em; font-weight: bold;">🎆 DIWALI SPECIAL OFFER 🎆</h2>
             <p style="margin: 10px 0; font-size: 1.3em; font-weight: 600;">✨ Celebrate Diwali with Pure A2 Ghee - Special Packaging Available ✨</p>
-            <div style="display: flex; justify-content: center; gap: 30px; margin: 15px 0; flex-wrap: wrap;">
-                <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 25px; backdrop-filter: blur(10px);">
-                    <span style="font-size: 1.1em; font-weight: bold;">🏠 250ml: ₹549</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 25px; backdrop-filter: blur(10px);">
-                    <span style="font-size: 1.1em; font-weight: bold;">👨‍👩‍👧‍👦 500ml: ₹1035</span>
-                </div>
-                <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 25px; backdrop-filter: blur(10px);">
-                    <span style="font-size: 1.1em; font-weight: bold;">🎁 1L: ₹1999</span>
-                </div>
-            </div>
             <p style="margin: 10px 0; font-size: 1.1em; font-weight: 500;">🎊 Special Diwali Packaging Available 🎊</p>
         </div>
     </section>
@@ -384,11 +374,7 @@
                 <div style="position: absolute; top: -10px; right: -10px; background: #ff6b35; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">🎆 DIWALI OFFER</div>
                 <img src="{% static 'store/images/250ml.png' %}" alt="250ml Ghee">
                 <h3>250ml Ghee</h3>
-                <div style="text-align: center; margin: 10px 0;">
-                    <span style="text-decoration: line-through; color: #999; font-size: 1.1em;">₹549</span>
-                    <span style="color: #ff6b35; font-size: 1.5em; font-weight: bold; margin-left: 10px;">₹549</span>
-                    <div style="color: #28a745; font-weight: bold; font-size: 0.9em;">✨ No Change - Already Best Price!</div>
-                </div>
+                <p class="price">₹549</p>
                 <p class="description">Perfect for small families and first-time buyers. Experience the authentic taste of pure A2 Gir cow ghee.</p>
                 <div class="quantity-controls">
                     <button type="button" class="qty-btn qty-minus" data-target="home_qty_250">-</button>
@@ -400,11 +386,7 @@
                 <div style="position: absolute; top: -10px; right: -10px; background: #ff6b35; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">🎆 DIWALI OFFER</div>
                 <img src="{% static 'store/images/500 Ml.png' %}" alt="500ml Ghee">
                 <h3>500ml Ghee</h3>
-                <div style="text-align: center; margin: 10px 0;">
-                    <span style="text-decoration: line-through; color: #999; font-size: 1.1em;">₹1089</span>
-                    <span style="color: #ff6b35; font-size: 1.5em; font-weight: bold; margin-left: 10px;">₹1035</span>
-                    <div style="color: #28a745; font-weight: bold; font-size: 0.9em;">💰 Save ₹54!</div>
-                </div>
+                <p class="price">₹1035</p>
                 <p class="description">Most popular choice! Ideal for regular cooking and daily use. Premium quality at great value.</p>
                 <div class="quantity-controls">
                     <button type="button" class="qty-btn qty-minus" data-target="home_qty_500">-</button>
@@ -416,11 +398,7 @@
                 <div style="position: absolute; top: -10px; right: -10px; background: #ff6b35; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">🎆 DIWALI OFFER</div>
                 <img src="{% static 'store/images/1000 Ml.png' %}" alt="1000ml Ghee">
                 <h3>1000ml Ghee</h3>
-                <div style="text-align: center; margin: 10px 0;">
-                    <span style="text-decoration: line-through; color: #999; font-size: 1.1em;">₹2169</span>
-                    <span style="color: #ff6b35; font-size: 1.5em; font-weight: bold; margin-left: 10px;">₹1999</span>
-                    <div style="color: #28a745; font-weight: bold; font-size: 0.9em;">💰 Save ₹170!</div>
-                </div>
+                <p class="price">₹1999</p>
                 <p class="description">Best value for large families! Stock up on premium A2 Gir cow ghee with maximum savings.</p>
                 <div class="quantity-controls">
                     <button type="button" class="qty-btn qty-minus" data-target="home_qty_1000">-</button>
@@ -444,6 +422,60 @@
             <span class="pure">✅ 100% Pure</span>
             <span class="secure">🔒 Secure Payment</span>
             <span class="delivery">🚚 Fast Delivery</span>
+        </div>
+    </section>
+
+    <!-- My Orders Section -->
+    <section id="my-orders" style="padding: 40px 20px; background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
+        <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+            <h2 style="color: #2c5aa0; margin-bottom: 30px; font-size: 2.2em;">📦 My Orders</h2>
+            <p style="font-size: 1.2em; margin-bottom: 30px; color: #666;">Track your orders and check order status</p>
+            
+            <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 20px;">
+                <h3 style="color: #2c5aa0; margin-bottom: 20px;">🔍 Check Order Status</h3>
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center;">
+                    <input type="text" id="orderNumber" placeholder="Enter Order Number" style="padding: 12px 20px; border: 2px solid #ddd; border-radius: 25px; font-size: 1.1em; min-width: 250px; outline: none; transition: border-color 0.3s ease;" onfocus="this.style.borderColor='#2c5aa0'" onblur="this.style.borderColor='#ddd'">
+                    <button onclick="checkOrderStatus()" style="background: linear-gradient(135deg, #2c5aa0, #1e3a8a); color: white; padding: 12px 25px; border: none; border-radius: 25px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        🔍 Check Status
+                    </button>
+                </div>
+                <div id="orderStatus" style="margin-top: 20px; padding: 15px; border-radius: 10px; display: none;"></div>
+            </div>
+            
+            <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);">
+                <h3 style="color: #2c5aa0; margin-bottom: 20px;">📋 Recent Orders</h3>
+                <div id="recentOrders" style="text-align: left;">
+                    <div style="padding: 20px; background: #f8f9fa; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #28a745;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                            <div>
+                                <h4 style="margin: 0; color: #2c5aa0;">Order #SHIV-001</h4>
+                                <p style="margin: 5px 0; color: #666;">500ml Ghee x 2, 250ml Ghee x 1</p>
+                                <p style="margin: 5px 0; color: #666;">Total: ₹2,619 | Date: Oct 20, 2025</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="background: #28a745; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold;">✅ Delivered</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="padding: 20px; background: #f8f9fa; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+                            <div>
+                                <h4 style="margin: 0; color: #2c5aa0;">Order #SHIV-002</h4>
+                                <p style="margin: 5px 0; color: #666;">1L Ghee x 1</p>
+                                <p style="margin: 5px 0; color: #666;">Total: ₹1,999 | Date: Oct 22, 2025</p>
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="background: #ffc107; color: #333; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold;">🚚 Processing</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 20px; color: #666; font-style: italic;">
+                        📱 For more order details, contact us at wecare@shivorganicdairyfarms.com
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
     
