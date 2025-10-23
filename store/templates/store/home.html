@@ -98,6 +98,63 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'store/styles.css' %}" />
     
+    <!-- Diwali Festive Styles -->
+    <style>
+        @keyframes sparkle {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 107, 53, 0.6); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .diwali-banner {
+            animation: glow 3s ease-in-out infinite;
+        }
+        
+        .product-box {
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        .product-box:nth-child(2) {
+            animation-delay: 1s;
+        }
+        
+        .product-box:nth-child(3) {
+            animation-delay: 2s;
+        }
+        
+        .diwali-banner h2 {
+            animation: sparkle 2s ease-in-out infinite;
+        }
+        
+        /* Add festive sparkles */
+        .product-box::before {
+            content: '✨';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 1.5em;
+            animation: sparkle 1.5s ease-in-out infinite;
+        }
+        
+        .product-box::after {
+            content: '🎆';
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 1.5em;
+            animation: sparkle 1.5s ease-in-out infinite reverse;
+        }
+    </style>
+    
     <style>
         /* Quantity Controls */
         .quantity-controls {
@@ -310,13 +367,38 @@
         </div>
     </section>
 
+    <!-- Diwali Special Offer Banner -->
+    <section class="diwali-banner" style="background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd700); padding: 20px; margin: 20px 0; border-radius: 15px; text-align: center; box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);">
+        <div style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+            <h2 style="margin: 0; font-size: 2.5em; font-weight: bold;">🎆 DIWALI SPECIAL OFFER 🎆</h2>
+            <p style="margin: 10px 0; font-size: 1.3em; font-weight: 600;">✨ Limited Time Discount - Celebrate with Pure A2 Ghee ✨</p>
+            <div style="display: flex; justify-content: center; gap: 30px; margin: 15px 0; flex-wrap: wrap;">
+                <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 25px; backdrop-filter: blur(10px);">
+                    <span style="font-size: 1.1em; font-weight: bold;">🏠 250ml: ₹549 (Was ₹549)</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 25px; backdrop-filter: blur(10px);">
+                    <span style="font-size: 1.1em; font-weight: bold;">👨‍👩‍👧‍👦 500ml: ₹1035 (Was ₹1089)</span>
+                </div>
+                <div style="background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 25px; backdrop-filter: blur(10px);">
+                    <span style="font-size: 1.1em; font-weight: bold;">🎁 1L: ₹1999 (Was ₹2169)</span>
+                </div>
+            </div>
+            <p style="margin: 10px 0; font-size: 1.1em; font-weight: 500;">🎊 Free Delivery + Special Diwali Packaging 🎊</p>
+        </div>
+    </section>
+
     <section id="buy">
         <h2>🛒 Buy SHIV A2 Ghee</h2>
         <div class="buy-grid">
-            <div class="product-box">
+            <div class="product-box" style="position: relative; border: 2px solid #ffd700; box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);">
+                <div style="position: absolute; top: -10px; right: -10px; background: #ff6b35; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">🎆 DIWALI OFFER</div>
                 <img src="{% static 'store/images/250ml.png' %}" alt="250ml Ghee">
                 <h3>250ml Ghee</h3>
-                <p class="price">₹549</p>
+                <div style="text-align: center; margin: 10px 0;">
+                    <span style="text-decoration: line-through; color: #999; font-size: 1.1em;">₹549</span>
+                    <span style="color: #ff6b35; font-size: 1.5em; font-weight: bold; margin-left: 10px;">₹549</span>
+                    <div style="color: #28a745; font-weight: bold; font-size: 0.9em;">✨ No Change - Already Best Price!</div>
+                </div>
                 <p class="description">Perfect for small families and first-time buyers. Experience the authentic taste of pure A2 Gir cow ghee.</p>
                 <div class="quantity-controls">
                     <button type="button" class="qty-btn qty-minus" data-target="home_qty_250">-</button>
@@ -324,10 +406,15 @@
                     <button type="button" class="qty-btn qty-plus" data-target="home_qty_250">+</button>
                 </div>
             </div>
-            <div class="product-box">
+            <div class="product-box" style="position: relative; border: 2px solid #ffd700; box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);">
+                <div style="position: absolute; top: -10px; right: -10px; background: #ff6b35; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">🎆 DIWALI OFFER</div>
                 <img src="{% static 'store/images/500 Ml.png' %}" alt="500ml Ghee">
                 <h3>500ml Ghee</h3>
-                <p class="price">₹1035</p>
+                <div style="text-align: center; margin: 10px 0;">
+                    <span style="text-decoration: line-through; color: #999; font-size: 1.1em;">₹1089</span>
+                    <span style="color: #ff6b35; font-size: 1.5em; font-weight: bold; margin-left: 10px;">₹1035</span>
+                    <div style="color: #28a745; font-weight: bold; font-size: 0.9em;">💰 Save ₹54!</div>
+                </div>
                 <p class="description">Most popular choice! Ideal for regular cooking and daily use. Premium quality at great value.</p>
                 <div class="quantity-controls">
                     <button type="button" class="qty-btn qty-minus" data-target="home_qty_500">-</button>
@@ -335,10 +422,15 @@
                     <button type="button" class="qty-btn qty-plus" data-target="home_qty_500">+</button>
                 </div>
             </div>
-            <div class="product-box">
+            <div class="product-box" style="position: relative; border: 2px solid #ffd700; box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);">
+                <div style="position: absolute; top: -10px; right: -10px; background: #ff6b35; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">🎆 DIWALI OFFER</div>
                 <img src="{% static 'store/images/1000 Ml.png' %}" alt="1000ml Ghee">
                 <h3>1000ml Ghee</h3>
-                <p class="price">₹1999</p>
+                <div style="text-align: center; margin: 10px 0;">
+                    <span style="text-decoration: line-through; color: #999; font-size: 1.1em;">₹2169</span>
+                    <span style="color: #ff6b35; font-size: 1.5em; font-weight: bold; margin-left: 10px;">₹1999</span>
+                    <div style="color: #28a745; font-weight: bold; font-size: 0.9em;">💰 Save ₹170!</div>
+                </div>
                 <p class="description">Best value for large families! Stock up on premium A2 Gir cow ghee with maximum savings.</p>
                 <div class="quantity-controls">
                     <button type="button" class="qty-btn qty-minus" data-target="home_qty_1000">-</button>
@@ -639,9 +731,9 @@
             
             // Check each product quantity
             const products = [
-                { id: 'home_qty_250', size: 250, price: 549, name: '250ml Ghee', image: '{% static "store/images/250ml.png" %}' },
-                { id: 'home_qty_500', size: 500, price: 1035, name: '500ml Ghee', image: '{% static "store/images/500 Ml.png" %}' },
-                { id: 'home_qty_1000', size: 1000, price: 1999, name: '1000ml Ghee', image: '{% static "store/images/1000 Ml.png" %}' }
+                { id: 'home_qty_250', size: 250, price: 549, originalPrice: 549, name: '250ml Ghee', image: '{% static "store/images/250ml.png" %}' },
+                { id: 'home_qty_500', size: 500, price: 1035, originalPrice: 1089, name: '500ml Ghee', image: '{% static "store/images/500 Ml.png" %}' },
+                { id: 'home_qty_1000', size: 1000, price: 1999, originalPrice: 2169, name: '1000ml Ghee', image: '{% static "store/images/1000 Ml.png" %}' }
             ];
             
             products.forEach(product => {
