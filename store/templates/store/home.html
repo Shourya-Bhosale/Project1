@@ -288,7 +288,7 @@
     </nav>
 
     <section id="home">
-        <h2>Pure A2 Gir Cow Ghee in Pune - SHIV Organic Dairy Farm</h2>
+        <h2 style="font-size: 1.8em;">Pure A2 Gir Cow Ghee in Pune - SHIV Organic Dairy Farm</h2>
         <p>Welcome to SHIV Organic Dairy Farm - Your trusted source for <strong>100% pure A2 Gir Cow Ghee in Pune, Maharashtra</strong>!</p>
         <img src="{% static 'store/images/st.jpg' %}" alt="SHIV Organic Dairy Farm in Bhosari Pune - Traditional A2 Gir Cow Ghee" class="header" width="100%" height="100%"/>
     </section>
@@ -374,7 +374,10 @@
                 <div style="position: absolute; top: -10px; right: -10px; background: #ff6b35; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">🎆 DIWALI OFFER</div>
                 <img src="{% static 'store/images/250ml.png' %}" alt="250ml Ghee">
                 <h3>250ml Ghee</h3>
-                <p class="price">₹549</p>
+                <div style="text-align: center; margin: 10px 0;">
+                    <span style="text-decoration: line-through; color: #999; font-size: 1.1em;">₹549</span>
+                    <span style="color: #ff6b35; font-size: 1.5em; font-weight: bold; margin-left: 10px;">₹549</span>
+                </div>
                 <p class="description">Perfect for small families and first-time buyers. Experience the authentic taste of pure A2 Gir cow ghee.</p>
                 <div class="quantity-controls">
                     <button type="button" class="qty-btn qty-minus" data-target="home_qty_250">-</button>
@@ -386,7 +389,10 @@
                 <div style="position: absolute; top: -10px; right: -10px; background: #ff6b35; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">🎆 DIWALI OFFER</div>
                 <img src="{% static 'store/images/500 Ml.png' %}" alt="500ml Ghee">
                 <h3>500ml Ghee</h3>
-                <p class="price">₹1035</p>
+                <div style="text-align: center; margin: 10px 0;">
+                    <span style="text-decoration: line-through; color: #999; font-size: 1.1em;">₹1089</span>
+                    <span style="color: #ff6b35; font-size: 1.5em; font-weight: bold; margin-left: 10px;">₹1035</span>
+                </div>
                 <p class="description">Most popular choice! Ideal for regular cooking and daily use. Premium quality at great value.</p>
                 <div class="quantity-controls">
                     <button type="button" class="qty-btn qty-minus" data-target="home_qty_500">-</button>
@@ -398,7 +404,10 @@
                 <div style="position: absolute; top: -10px; right: -10px; background: #ff6b35; color: white; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 0.9em; box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);">🎆 DIWALI OFFER</div>
                 <img src="{% static 'store/images/1000 Ml.png' %}" alt="1000ml Ghee">
                 <h3>1000ml Ghee</h3>
-                <p class="price">₹1999</p>
+                <div style="text-align: center; margin: 10px 0;">
+                    <span style="text-decoration: line-through; color: #999; font-size: 1.1em;">₹2169</span>
+                    <span style="color: #ff6b35; font-size: 1.5em; font-weight: bold; margin-left: 10px;">₹1999</span>
+                </div>
                 <p class="description">Best value for large families! Stock up on premium A2 Gir cow ghee with maximum savings.</p>
                 <div class="quantity-controls">
                     <button type="button" class="qty-btn qty-minus" data-target="home_qty_1000">-</button>
@@ -472,21 +481,13 @@
                     </div>
                     
                     <div style="text-align: center; padding: 20px; color: #666; font-style: italic;">
-                        📱 For more order details, contact us at wecare@shivorganicdairyfarms.com
+                        📱 For more order details, contact us at <a href="mailto:wecare@shivorganicdairyfarms.com" style="color: #2c5aa0; text-decoration: none; font-weight: bold;">wecare@shivorganicdairyfarms.com</a>
                     </div>
                 </div>
             </div>
         </div>
     </section>
     
-    <section id="check-status">
-        <h2>🔍 Check Your Order Status</h2>
-        <div class="status-wrap">
-        <input type="number" id="orderIdInput" placeholder="Enter your Order ID" />
-        <button onclick="checkOrderStatus()">Check Status</button>
-        </div>
-        <div id="orderStatusResult"></div>
-    </section>
 
     <section id="Reviews">
         <h2>Reviews</h2>
