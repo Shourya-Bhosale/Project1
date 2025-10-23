@@ -282,7 +282,6 @@
         <a href="#about">About</a>
         <a href="#benefits">Benefits</a>
         <a href="#buy">Buy Now</a>
-        <a href="#my-orders">My Orders</a>
         <a href="#reviews">Reviews</a>
         <a href="#contact">Contact</a>
     </nav>
@@ -434,47 +433,6 @@
         </div>
     </section>
 
-    <!-- My Orders Section -->
-    <section id="my-orders" style="padding: 40px 20px; background: linear-gradient(135deg, #f8f9fa, #e9ecef);">
-        <div style="max-width: 800px; margin: 0 auto; text-align: center;">
-            <h2 style="color: #2c5aa0; margin-bottom: 30px; font-size: 2.2em;">📦 My Orders</h2>
-            <p style="font-size: 1.2em; margin-bottom: 30px; color: #666;">Track your orders and check order status</p>
-            
-            <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1); margin-bottom: 20px;">
-                <h3 style="color: #2c5aa0; margin-bottom: 20px;">🔍 Check Order Status</h3>
-                <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center;">
-                    <input type="text" id="orderNumber" placeholder="Enter Order Number" style="padding: 12px 20px; border: 2px solid #ddd; border-radius: 25px; font-size: 1.1em; min-width: 250px; outline: none; transition: border-color 0.3s ease;" onfocus="this.style.borderColor='#2c5aa0'" onblur="this.style.borderColor='#ddd'">
-                    <button onclick="checkOrderStatus()" style="background: linear-gradient(135deg, #2c5aa0, #1e3a8a); color: white; padding: 12px 25px; border: none; border-radius: 25px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                        🔍 Check Status
-                    </button>
-                </div>
-                <div id="orderStatus" style="margin-top: 20px; padding: 15px; border-radius: 10px; display: none;"></div>
-            </div>
-            
-            <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);">
-                <h3 style="color: #2c5aa0; margin-bottom: 20px;">📋 Your Order History</h3>
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center;">
-                        <input type="email" id="customerEmail" placeholder="Enter your email" style="padding: 10px 15px; border: 2px solid #ddd; border-radius: 25px; font-size: 1em; min-width: 200px; outline: none; transition: border-color 0.3s ease;" onfocus="this.style.borderColor='#2c5aa0'" onblur="this.style.borderColor='#ddd'">
-                        <input type="tel" id="customerPhone" placeholder="Enter your phone" style="padding: 10px 15px; border: 2px solid #ddd; border-radius: 25px; font-size: 1em; min-width: 200px; outline: none; transition: border-color 0.3s ease;" onfocus="this.style.borderColor='#2c5aa0'" onblur="this.style.borderColor='#ddd'">
-                        <button onclick="loadOrderHistory()" style="background: linear-gradient(135deg, #2c5aa0, #1e3a8a); color: white; padding: 10px 20px; border: none; border-radius: 25px; font-size: 1em; font-weight: bold; cursor: pointer; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                            🔍 Load Orders
-                        </button>
-                    </div>
-                </div>
-                <div id="recentOrders" style="text-align: left;">
-                    <div style="text-align: center; padding: 40px; color: #666; font-style: italic; background: #f8f9fa; border-radius: 10px;">
-                        <h4 style="color: #2c5aa0; margin-bottom: 15px;">👋 Welcome!</h4>
-                        <p>Enter your email or phone number above to view your order history.</p>
-                        <p style="margin-top: 10px; font-size: 0.9em;">New customers will see this message until they place their first order.</p>
-                    </div>
-                </div>
-                <div style="text-align: center; padding: 20px; color: #666; font-style: italic; margin-top: 20px;">
-                    📱 For more order details, contact us at <a href="mailto:wecare@shivorganicdairyfarms.com" style="color: #2c5aa0; text-decoration: none; font-weight: bold;">wecare@shivorganicdairyfarms.com</a>
-                </div>
-            </div>
-        </div>
-    </section>
     
 
     <section id="Reviews">
@@ -692,95 +650,6 @@
                 });
         }
 
-        function loadOrderHistory() {
-            const email = document.getElementById('customerEmail').value.trim();
-            const phone = document.getElementById('customerPhone').value.trim();
-            
-            if (!email && !phone) {
-                alert('Please enter either email or phone number');
-                return;
-            }
-            
-            // Show loading state
-            const ordersDiv = document.getElementById('recentOrders');
-            ordersDiv.innerHTML = `
-                <div style="text-align: center; padding: 40px; color: #666;">
-                    <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #2c5aa0; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                    <p style="margin-top: 15px;">Loading your orders...</p>
-                </div>
-            `;
-            
-            // Add CSS for loading animation
-            if (!document.getElementById('loadingCSS')) {
-                const style = document.createElement('style');
-                style.id = 'loadingCSS';
-                style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
-                document.head.appendChild(style);
-            }
-            
-            // Fetch order history
-            const params = new URLSearchParams();
-            if (email) params.append('email', email);
-            if (phone) params.append('phone', phone);
-            
-            fetch(`/get-order-history/?${params.toString()}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        ordersDiv.innerHTML = `
-                            <div style="text-align: center; padding: 40px; color: #dc3545; background: #f8d7da; border-radius: 10px;">
-                                <h4 style="color: #dc3545;">❌ Error</h4>
-                                <p>${data.error}</p>
-                            </div>
-                        `;
-                        return;
-                    }
-                    
-                    if (data.count === 0) {
-                        ordersDiv.innerHTML = `
-                            <div style="text-align: center; padding: 40px; color: #666; background: #f8f9fa; border-radius: 10px;">
-                                <h4 style="color: #2c5aa0; margin-bottom: 15px;">🛒 No Orders Found</h4>
-                                <p>No orders found for the provided email/phone.</p>
-                                <p style="margin-top: 10px; font-size: 0.9em;">If you're a new customer, place your first order to see it here!</p>
-                            </div>
-                        `;
-                        return;
-                    }
-                    
-                    // Display orders
-                    let ordersHTML = '';
-                    data.orders.forEach(order => {
-                        const itemsText = order.items.map(item => 
-                            `${item.product} ${item.size}ml x ${item.quantity}`
-                        ).join(', ');
-                        
-                        ordersHTML += `
-                            <div style="padding: 20px; background: #f8f9fa; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid ${order.status_color};">
-                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
-                                    <div>
-                                        <h4 style="margin: 0; color: #2c5aa0;">Order #${order.order_number}</h4>
-                                        <p style="margin: 5px 0; color: #666;">${itemsText}</p>
-                                        <p style="margin: 5px 0; color: #666;">Total: ₹${order.total_amount} | Date: ${order.created_at}</p>
-                                    </div>
-                                    <div style="text-align: right;">
-                                        <span style="background: ${order.status_color}; color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.9em; font-weight: bold;">${order.status_display}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    ordersDiv.innerHTML = ordersHTML;
-                })
-                .catch(error => {
-                    ordersDiv.innerHTML = `
-                        <div style="text-align: center; padding: 40px; color: #dc3545; background: #f8d7da; border-radius: 10px;">
-                            <h4 style="color: #dc3545;">❌ Connection Error</h4>
-                            <p>Unable to load order history. Please try again later.</p>
-                        </div>
-                    `;
-                });
-        }
 
         // Carousel Navigation
         let currentSlide = 2; // Start at the first real slide (after cloned slides)
