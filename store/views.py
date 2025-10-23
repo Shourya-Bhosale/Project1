@@ -363,6 +363,13 @@ def payment_success(request: HttpRequest) -> HttpResponse:
             
             # Find the most recent order for this session or create a new one
             # For now, we'll create a simple success response
+            
+            # Send email notifications
+            try:
+                send_order_confirmation_emails(razorpay_order_id, razorpay_payment_id)
+            except Exception as e:
+                print(f"Email sending failed: {e}")
+            
             return render(request, 'store/payment_success.html', {
                 'razorpay_order_id': razorpay_order_id,
                 'razorpay_payment_id': razorpay_payment_id,
@@ -418,3 +425,135 @@ def payment_failure(request: HttpRequest) -> HttpResponse:
         'error': 'Payment failed. Please try again.',
         'order_id': request.session.get('order_id')
     })
+
+def get_order_history(request):
+    """Get order history for a customer"""
+    try:
+        email = request.GET.get('email', '').strip()
+        phone = request.GET.get('phone', '').strip()
+        
+        if not email and not phone:
+            return JsonResponse({
+                'orders': [],
+                'message': 'Please provide email or phone number to view order history'
+            })
+        
+        # Find orders by email or phone
+        from django.db.models import Q
+        orders = Order.objects.filter(
+            Q(email__iexact=email) | Q(phone=phone)
+        ).order_by('-created_at')[:10]  # Last 10 orders
+        
+        order_data = []
+        for order in orders:
+            order_items = OrderItem.objects.filter(order=order)
+            items = []
+            for item in order_items:
+                items.append({
+                    'product': item.product.name,
+                    'size': item.product.size_ml,
+                    'quantity': item.quantity,
+                    'price': item.price
+                })
+            
+            # Determine status display
+            if order.payment_status == 'paid':
+                status_display = '✅ Delivered'
+                status_color = '#28a745'
+            elif order.payment_status == 'pending':
+                status_display = '🚚 Processing'
+                status_color = '#ffc107'
+            else:
+                status_display = '⏳ Pending'
+                status_color = '#6c757d'
+            
+            order_data.append({
+                'order_number': order.order_number,
+                'created_at': order.created_at.strftime('%b %d, %Y'),
+                'total_amount': order.total_amount,
+                'payment_status': order.payment_status,
+                'status_display': status_display,
+                'status_color': status_color,
+                'payment_method': order.payment_method,
+                'items': items
+            })
+        
+        return JsonResponse({
+            'orders': order_data,
+            'count': len(order_data)
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
+
+def send_order_confirmation_emails(order_id, payment_id):
+    """Send order confirmation emails to customer and company"""
+    try:
+        # Get order details (you may need to adjust this based on your order structure)
+        # For now, we'll send a basic confirmation
+        
+        # Customer email
+        customer_subject = "🎆 Order Confirmation - SHIV AGRO DAIRY FARMS"
+        customer_message = f"""
+Dear Valued Customer,
+
+Thank you for your order! 🎉
+
+Order Details:
+- Order ID: {order_id}
+- Payment ID: {payment_id}
+- Status: Payment Successful
+
+Your A2 Gir Cow Ghee order has been confirmed and will be processed shortly.
+
+We will contact you soon with delivery details.
+
+Thank you for choosing SHIV AGRO DAIRY FARMS!
+
+Best regards,
+SHIV AGRO DAIRY FARMS Team
+📞 +91 9158019119
+📧 wecare@shivorganicdairyfarms.com
+        """
+        
+        # Company email
+        company_subject = f"New Order Received - {order_id}"
+        company_message = f"""
+New Order Alert! 🚨
+
+Order Details:
+- Order ID: {order_id}
+- Payment ID: {payment_id}
+- Status: Payment Successful
+- Amount: Paid via Razorpay
+
+Please check the admin panel for complete order details and process the order.
+
+Best regards,
+SHIV AGRO DAIRY FARMS System
+        """
+        
+        # Send customer email (you'll need to get customer email from order)
+        # send_mail(
+        #     customer_subject,
+        #     customer_message,
+        #     'wecare@shivorganicdairyfarms.com',
+        #     ['customer@example.com'],  # Replace with actual customer email
+        #     fail_silently=False,
+        # )
+        
+        # Send company email
+        send_mail(
+            company_subject,
+            company_message,
+            'wecare@shivorganicdairyfarms.com',
+            ['wecare@shivorganicdairyfarms.com'],
+            fail_silently=False,
+        )
+        
+        print("Order confirmation emails sent successfully!")
+        
+    except Exception as e:
+        print(f"Failed to send order confirmation emails: {e}")

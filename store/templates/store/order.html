@@ -342,7 +342,7 @@
 
 
                 <div class="actions">
-                    <button class="btn btn-primary" type="submit">Place Order</button>
+                    <button class="btn btn-primary" type="submit" id="submitOrderBtn" onclick="handleOrderSubmission(event)">Place Order</button>
                     <a class="btn btn-secondary" href="/home/">Cancel</a>
                 </div>
             </form>
@@ -437,6 +437,72 @@
                 messageDiv.innerHTML = '<span style="color: #dc3545; font-weight: bold;">❌ Invalid coupon code. Try DW@SHIV for 5% off!</span>';
                 messageDiv.style.color = '#dc3545';
             }
+        }
+
+        function handleOrderSubmission(event) {
+            event.preventDefault();
+            
+            const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+            
+            if (paymentMethod === 'RAZORPAY') {
+                // Handle online payment
+                handleOnlinePayment();
+            } else {
+                // Handle COD - submit form normally
+                document.getElementById('orderForm').submit();
+            }
+        }
+
+        function handleOnlinePayment() {
+            const form = document.getElementById('orderForm');
+            const formData = new FormData(form);
+            
+            // Get total amount
+            const totalAmount = document.getElementById('onlinePaymentAmount').textContent;
+            
+            // Create payment order
+            fetch('/create-payment/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.order_id) {
+                    // Open Razorpay checkout
+                    const options = {
+                        key: 'rzp_test_1DP5mmOlF5G5ag',
+                        amount: data.amount,
+                        currency: 'INR',
+                        name: 'SHIV AGRO DAIRY FARMS',
+                        description: 'A2 Gir Cow Ghee Order',
+                        order_id: data.order_id,
+                        handler: function(response) {
+                            // Payment successful
+                            window.location.href = `/payment/success/?razorpay_payment_id=${response.razorpay_payment_id}&razorpay_order_id=${response.razorpay_order_id}&razorpay_signature=${response.razorpay_signature}`;
+                        },
+                        prefill: {
+                            name: formData.get('customer_name'),
+                            email: formData.get('email'),
+                            contact: formData.get('phone')
+                        },
+                        theme: {
+                            color: '#2c5aa0'
+                        }
+                    };
+                    
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                } else {
+                    alert('Payment initialization failed. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Payment initialization failed. Please try again.');
+            });
         }
         
         // Update bill display
