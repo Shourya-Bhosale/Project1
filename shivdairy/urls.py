@@ -18,10 +18,25 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponse
+from django.views.decorators.http import require_GET
+import os
+
+@require_GET
+def sitemap_xml(request):
+    """Serve sitemap.xml"""
+    sitemap_path = os.path.join(os.path.dirname(__file__), '..', 'sitemap.xml')
+    try:
+        with open(sitemap_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return HttpResponse(content, content_type='application/xml')
+    except FileNotFoundError:
+        return HttpResponse('Sitemap not found', status=404)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('store.urls')),
+    path('sitemap.xml', sitemap_xml, name='sitemap'),
 ]
 
 # Serve static files during development
