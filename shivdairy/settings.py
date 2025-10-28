@@ -177,6 +177,8 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'egmm qsaz prnv eqf')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ORDER_NOTIFICATION_EMAIL = os.environ.get('ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
+# Email timeout settings to prevent blocking
+EMAIL_TIMEOUT = 5  # 5 seconds timeout for email operations
 
 # Fallback to console for testing if SMTP fails
 if not DEBUG:
