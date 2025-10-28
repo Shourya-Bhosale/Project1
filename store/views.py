@@ -214,6 +214,7 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
         
         account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '')
         auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', '')
+        messaging_service_sid = getattr(settings, 'TWILIO_MESSAGING_SERVICE_SID', '')
         from_number = getattr(settings, 'TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
         
         if not account_sid or not auth_token:
@@ -229,11 +230,19 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
         
         client = Client(account_sid, auth_token)
         
-        message_obj = client.messages.create(
-            body=message,
-            from_=from_number,
-            to=phone
-        )
+        # Use Messaging Service if available, otherwise use direct number
+        if messaging_service_sid:
+            message_obj = client.messages.create(
+                body=message,
+                messaging_service_sid=messaging_service_sid,
+                to=phone
+            )
+        else:
+            message_obj = client.messages.create(
+                body=message,
+                from_=from_number,
+                to=phone
+            )
         
         print(f"✅ WhatsApp sent to {phone} (SID: {message_obj.sid})")
         return True
