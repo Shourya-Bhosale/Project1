@@ -172,6 +172,48 @@ def order_success(request: HttpRequest) -> HttpResponse:
     return render(request, 'store/order_success.html', { 'order': order })
 
 
+def _send_email_brevo(to_email: str, subject: str, message: str) -> bool:
+    """Send email using Brevo (formerly Sendinblue) API - Simple and reliable"""
+    try:
+        import requests
+        
+        brevo_api_key = getattr(settings, 'BREVO_API_KEY', '')
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'shivorganicdairyfarms@gmail.com')
+        from_name = getattr(settings, 'EMAIL_FROM_NAME', 'Shiv Organic Dairy Farms')
+        
+        if not brevo_api_key:
+            print("⚠️ Brevo API key not configured")
+            return False
+        
+        url = "https://api.brevo.com/v3/smtp/email"
+        headers = {
+            "accept": "application/json",
+            "api-key": brevo_api_key,
+            "content-type": "application/json"
+        }
+        payload = {
+            "sender": {
+                "name": from_name,
+                "email": from_email
+            },
+            "to": [{"email": to_email}],
+            "subject": subject,
+            "textContent": message
+        }
+        
+        print(f"📧 Sending email via Brevo to {to_email}...")
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        
+        if response.status_code in [200, 201]:
+            print(f"✅ Brevo email sent to {to_email}")
+            return True
+        else:
+            print(f"⚠️ Brevo returned status {response.status_code}: {response.text}")
+            return False
+    except Exception as e:
+        print(f"❌ Brevo error: {str(e)}")
+        return False
+
 def _send_email_sendgrid(to_email: str, subject: str, message: str) -> bool:
     """Send email using SendGrid API"""
     try:
@@ -404,13 +446,18 @@ def _send_order_emails(order: Order) -> None:
         else:
             print(f"ℹ️ Company WhatsApp not configured (set COMPANY_WHATSAPP_PHONE)")
         
-        # Try SendGrid email, fallback to SMTP
+        # Try email providers: Brevo (simplest) → SendGrid → SMTP
+        brevo_key = getattr(settings, 'BREVO_API_KEY', '')
         sendgrid_key = getattr(settings, 'SENDGRID_API_KEY', '')
         
         # Send customer email
         if order.email:
             email_sent = False
-            if sendgrid_key and len(sendgrid_key) > 30:  # Valid SendGrid key should be long
+            # Try Brevo first (simplest and most reliable)
+            if brevo_key and len(brevo_key) > 20:
+                email_sent = _send_email_brevo(order.email, subject_customer, message)
+            # Fallback to SendGrid if Brevo not configured
+            if not email_sent and sendgrid_key and len(sendgrid_key) > 30:
                 email_sent = _send_email_sendgrid(order.email, subject_customer, message)
             
             if not email_sent:
@@ -432,7 +479,11 @@ def _send_order_emails(order: Order) -> None:
             company_message = message + "\n\n--\nReference: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
             company_email_sent = False
             
-            if sendgrid_key and len(sendgrid_key) > 30:
+            # Try Brevo first (simplest and most reliable)
+            if brevo_key and len(brevo_key) > 20:
+                company_email_sent = _send_email_brevo(company_email, subject_company, company_message)
+            # Fallback to SendGrid if Brevo not configured
+            if not company_email_sent and sendgrid_key and len(sendgrid_key) > 30:
                 company_email_sent = _send_email_sendgrid(company_email, subject_company, company_message)
             
             if not company_email_sent:

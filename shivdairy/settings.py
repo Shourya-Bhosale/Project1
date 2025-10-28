@@ -168,9 +168,11 @@ STATICFILES_DIRS = []
 # Static file serving with WhiteNoise
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Email (SendGrid API - works with Render's network restrictions)
-SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
+# Email providers - Brevo (simplest) or SendGrid
+BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')  # Recommended: Simple API, 300 emails/day free
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')  # Alternative: SendGrid API
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com')
+EMAIL_FROM_NAME = os.environ.get('EMAIL_FROM_NAME', 'Shiv Organic Dairy Farms')
 ORDER_NOTIFICATION_EMAIL = os.environ.get('ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
 COMPANY_WHATSAPP_PHONE = os.environ.get('COMPANY_WHATSAPP_PHONE', '')  # Company WhatsApp number for order notifications
 
