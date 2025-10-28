@@ -710,6 +710,33 @@ def create_payment(request: HttpRequest) -> JsonResponse:
         return JsonResponse({'error': str(e)}, status=500)
 
 
+def check_email_config(request: HttpRequest) -> JsonResponse:
+    """Diagnostic endpoint to check email configuration"""
+    from django.conf import settings
+    import os
+    
+    config = {
+        'brevo_api_key': {
+            'configured': bool(getattr(settings, 'BREVO_API_KEY', '')),
+            'length': len(getattr(settings, 'BREVO_API_KEY', '')),
+            'starts_with': getattr(settings, 'BREVO_API_KEY', '')[:10] if len(getattr(settings, 'BREVO_API_KEY', '')) >= 10 else 'N/A',
+            'env_value': 'EXISTS' if os.environ.get('BREVO_API_KEY') else 'NOT SET'
+        },
+        'sendgrid_api_key': {
+            'configured': bool(getattr(settings, 'SENDGRID_API_KEY', '')),
+            'length': len(getattr(settings, 'SENDGRID_API_KEY', '')),
+        },
+        'company_whatsapp': {
+            'configured': bool(getattr(settings, 'COMPANY_WHATSAPP_PHONE', '')),
+            'value': getattr(settings, 'COMPANY_WHATSAPP_PHONE', ''),
+        },
+        'company_email': {
+            'value': getattr(settings, 'ORDER_NOTIFICATION_EMAIL', ''),
+        }
+    }
+    
+    return JsonResponse(config, indent=2)
+
 def test_razorpay(request: HttpRequest) -> JsonResponse:
     """Test Razorpay configuration"""
     try:
