@@ -226,7 +226,7 @@
     <section class="section">
         <div class="container">
             <h2>Place Your Order</h2>
-            <form method="post" class="order-form">
+            <form method="post" class="order-form" id="orderForm">
                 {% csrf_token %}
                 <input type="hidden" name="__from_home" value="1" />
                 <div class="grid-2">
@@ -442,15 +442,121 @@
         function handleOrderSubmission(event) {
             event.preventDefault();
             
-            const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+            // Get payment method from select dropdown
+            const paymentMethodSelect = document.querySelector('select[name="payment_method"]');
+            const paymentMethod = paymentMethodSelect ? paymentMethodSelect.value : 'COD';
+            
+            console.log('Payment method selected:', paymentMethod);
             
             if (paymentMethod === 'RAZORPAY') {
-                // Handle online payment
-                handleOnlinePayment();
+                // For online payment, submit form first to create order, then initiate payment
+                submitOrderAndInitiatePayment();
             } else {
                 // Handle COD - submit form normally
-                document.getElementById('orderForm').submit();
+                console.log('Submitting COD order...');
+                const form = document.getElementById('orderForm');
+                // Set flag to bypass location handler
+                form.dataset.programmaticSubmit = 'true';
+                form.submit();
             }
+        }
+        
+        function submitOrderAndInitiatePayment() {
+            const form = document.getElementById('orderForm');
+            const formData = new FormData(form);
+            
+            // Submit form to create order
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.order_id) {
+                    console.log('Order created:', data.order_number);
+                    // Now initiate Razorpay payment
+                    initiateRazorpayPayment(data.total_amount, data.order_id);
+                } else {
+                    alert('Failed to create order. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error creating order:', error);
+                alert('Failed to create order. Please try again.');
+            });
+        }
+        
+        function initiateRazorpayPayment(amount, orderId) {
+            const totalAmount = parseInt(amount) * 100; // Convert to paise
+            
+            if (totalAmount <= 0) {
+                alert('Please add products to your cart before proceeding with payment.');
+                return;
+            }
+            
+            // Create Razorpay payment order
+            fetch('/create-payment/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    amount: totalAmount,
+                    currency: 'INR',
+                    customer_name: document.querySelector('[name="customer_name"]').value,
+                    customer_email: document.querySelector('[name="email"]').value,
+                    order_id: orderId
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`HTTP error! status: ${response.status} - ${text}`);
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    alert('Payment error: ' + data.error);
+                    return;
+                }
+                
+                // Open Razorpay checkout
+                const options = {
+                    key: data.key,
+                    amount: data.amount,
+                    currency: data.currency,
+                    name: 'Shiv Organic Dairy Farm',
+                    description: 'Premium A2 Gir Cow Ghee - Shiv Organic Dairy Farm',
+                    order_id: data.order_id,
+                    handler: function(response) {
+                        // Payment successful - redirect to success page
+                        window.location.href = '/payment/success/?razorpay_order_id=' + response.razorpay_order_id +
+                                              '&razorpay_payment_id=' + response.razorpay_payment_id +
+                                              '&razorpay_signature=' + response.razorpay_signature;
+                    },
+                    prefill: {
+                        name: document.querySelector('[name="customer_name"]').value,
+                        email: document.querySelector('[name="email"]').value,
+                        contact: document.querySelector('[name="phone"]').value
+                    },
+                    theme: {
+                        color: '#2d5016'
+                    }
+                };
+                
+                const rzp = new Razorpay(options);
+                rzp.open();
+            })
+            .catch(error => {
+                console.error('Payment initialization error:', error);
+                alert('Payment initialization failed: ' + error.message);
+            });
         }
 
         function handleOnlinePayment() {
@@ -641,24 +747,44 @@
             useMyLocation.addEventListener('click', function(e){ e.preventDefault(); askGeo(); });
         }
 
-        // Ensure location is captured before submit if possible
+        // Ensure location is captured before submit if possible (non-blocking)
         const formEl = document.querySelector('form.order-form');
         if (formEl){
             formEl.addEventListener('submit', function(e){
+                // Only try to get location if not already set and if this is a regular form submit (not programmatic)
                 const latInput = document.querySelector('[name="latitude"]');
                 const lngInput = document.querySelector('[name="longitude"]');
                 const missing = !latInput.value || !lngInput.value;
-                if (missing && navigator.geolocation){
+                
+                // Check if this is a programmatic submit by checking for a flag
+                const isProgrammaticSubmit = formEl.dataset.programmaticSubmit === 'true';
+                
+                if (missing && navigator.geolocation && !isProgrammaticSubmit){
+                    // Try to get location, but don't block if it fails
                     e.preventDefault();
+                    const submitTimeout = setTimeout(function(){
+                        // Submit after 2 seconds even if location fails
+                        formEl.dataset.programmaticSubmit = 'true';
+                        formEl.submit();
+                    }, 2000);
+                    
                     navigator.geolocation.getCurrentPosition(function(pos){
+                        clearTimeout(submitTimeout);
                         latInput.value = pos.coords.latitude.toFixed(6);
                         lngInput.value = pos.coords.longitude.toFixed(6);
                         if (locStatus) locStatus.style.display = 'inline-block';
                         if (locTick) locTick.style.display = 'inline-block';
+                        formEl.dataset.programmaticSubmit = 'true';
                         formEl.submit();
                     }, function(){
+                        clearTimeout(submitTimeout);
+                        // Submit even if location fails
+                        formEl.dataset.programmaticSubmit = 'true';
                         formEl.submit();
                     });
+                } else {
+                    // Reset the flag for next submission
+                    formEl.dataset.programmaticSubmit = 'false';
                 }
             });
         }

@@ -21,10 +21,7 @@ class OrderForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        method = cleaned.get('payment_method')
-        reference = cleaned.get('payment_reference', '').strip()
-        if method == 'UPI' and not reference:
-            self.add_error('payment_reference', 'Please enter UPI transaction reference (last 6).')
+        # Payment reference is optional for COD orders
         return cleaned
 
     def __init__(self, *args, **kwargs):

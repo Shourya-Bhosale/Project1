@@ -47,6 +47,11 @@ def place_order(request: HttpRequest) -> HttpResponse:
             # Save core details from form
             order.payment_method = form.cleaned_data.get('payment_method')
             order.payment_reference = form.cleaned_data.get('payment_reference', '')
+            
+            # For RAZORPAY, set payment_status to pending
+            if order.payment_method == 'RAZORPAY':
+                order.payment_status = 'pending'
+            
             order.save()
             total = 0
             for product in products:
@@ -70,11 +75,23 @@ def place_order(request: HttpRequest) -> HttpResponse:
                 order.delete()
                 form.add_error(None, 'Please add at least one product to your order.')
             else:
-                # Defer email until after commit to avoid DB locks
-                def on_commit_send():
-                    _send_order_emails(order)
-                transaction.on_commit(on_commit_send)
-                return redirect(reverse('order_success') + f'?order_id={order.order_number}')
+                # Store order ID in session for payment processing
+                request.session['pending_order_id'] = order.id
+                
+                if order.payment_method == 'COD':
+                    # Defer email until after commit to avoid DB locks
+                    def on_commit_send():
+                        _send_order_emails(order)
+                    transaction.on_commit(on_commit_send)
+                    return redirect(reverse('order_success') + f'?order_id={order.order_number}')
+                else:
+                    # For RAZORPAY, return JSON with order info for payment initiation
+                    # The frontend will handle payment, then redirect to payment_success
+                    return JsonResponse({
+                        'order_id': order.id,
+                        'order_number': order.order_number,
+                        'total_amount': order.total_amount
+                    })
     else:
         form = OrderForm()
 
@@ -125,20 +142,35 @@ def _send_order_emails(order: Order) -> None:
         lines.append(f'Maps search: https://www.google.com/maps/search/?api=1&query={q}')
     lines.append('')
     lines.append(f'Payment method: {order.get_payment_method_display()}')
-    if order.payment_reference:
+    if order.payment_method == 'RAZORPAY' and order.payment_status == 'paid':
+        lines.append(f'Payment status: ✅ Paid')
+        if order.razorpay_payment_id:
+            lines.append(f'Razorpay Payment ID: {order.razorpay_payment_id}')
+    elif order.payment_reference:
         lines.append(f'Payment reference (customer provided): {order.payment_reference}')
     lines.append('')
     lines.append('We will contact you shortly about delivery details.')
     message = '\n'.join(lines)
 
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'no-reply@shivorganics.local'
-    company_email = getattr(settings, 'ORDER_NOTIFICATION_EMAIL', None) or getattr(settings, 'DEFAULT_FROM_EMAIL', None)
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
+    company_email = getattr(settings, 'ORDER_NOTIFICATION_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
 
+    # Send confirmation email to customer
     if order.email:
-        send_mail(subject_customer, message, from_email, [order.email], fail_silently=False)
+        try:
+            send_mail(subject_customer, message, from_email, [order.email], fail_silently=False)
+            print(f"✅ Order confirmation email sent to customer: {order.email}")
+        except Exception as e:
+            print(f"❌ Failed to send email to customer {order.email}: {str(e)}")
+    
+    # Send notification email to company
     if company_email:
-        company_message = message + "\n\n--\nReference Confirmation: If UPI, verify the above reference in bank statement."
-        send_mail(subject_company, company_message, from_email, [company_email], fail_silently=False)
+        try:
+            company_message = message + "\n\n--\nReference Confirmation: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
+            send_mail(subject_company, company_message, from_email, [company_email], fail_silently=False)
+            print(f"✅ Order notification email sent to company: {company_email}")
+        except Exception as e:
+            print(f"❌ Failed to send email to company {company_email}: {str(e)}")
 
 def check_status(request: HttpRequest, order_number: str) -> JsonResponse:
     try:
@@ -361,20 +393,39 @@ def payment_success(request: HttpRequest) -> HttpResponse:
                     'error': f'Payment verification failed: {str(e)}'
                 })
             
-            # Find the most recent order for this session or create a new one
-            # For now, we'll create a simple success response
+            # Find order from session
+            order_id = request.session.get('pending_order_id')
+            if not order_id:
+                return render(request, 'store/payment_error.html', {
+                    'error': 'Order not found in session'
+                })
             
-            # Send email notifications
             try:
-                send_order_confirmation_emails(razorpay_order_id, razorpay_payment_id)
-            except Exception as e:
-                print(f"Email sending failed: {e}")
-            
-            return render(request, 'store/payment_success.html', {
-                'razorpay_order_id': razorpay_order_id,
-                'razorpay_payment_id': razorpay_payment_id,
-                'message': 'Payment successful! We will contact you shortly about delivery details.'
-            })
+                order = Order.objects.get(id=order_id)
+                
+                # Update order with payment details
+                order.payment_status = 'paid'
+                order.razorpay_order_id = razorpay_order_id
+                order.razorpay_payment_id = razorpay_payment_id
+                order.razorpay_signature = razorpay_signature
+                order.save()
+                
+                # Clear session
+                if 'pending_order_id' in request.session:
+                    del request.session['pending_order_id']
+                
+                # Defer email until after commit
+                def on_commit_send():
+                    _send_order_emails(order)
+                transaction.on_commit(on_commit_send)
+                
+                # Redirect to unified success page
+                return redirect(reverse('order_success') + f'?order_id={order.order_number}')
+                
+            except Order.DoesNotExist:
+                return render(request, 'store/payment_error.html', {
+                    'error': 'Order not found'
+                })
             
         elif request.method == 'POST':
             data = request.POST
@@ -383,7 +434,7 @@ def payment_success(request: HttpRequest) -> HttpResponse:
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
             
             # Get order from session
-            order_id = request.session.get('order_id')
+            order_id = request.session.get('pending_order_id')
             if not order_id:
                 return render(request, 'store/payment_error.html', {
                     'error': 'Order not found'
@@ -398,6 +449,10 @@ def payment_success(request: HttpRequest) -> HttpResponse:
                 order.razorpay_payment_id = data.get('razorpay_payment_id')
                 order.razorpay_signature = data.get('razorpay_signature')
                 order.save()
+                
+                # Clear session
+                if 'pending_order_id' in request.session:
+                    del request.session['pending_order_id']
                 
                 # Send confirmation email
                 _send_order_emails(order)

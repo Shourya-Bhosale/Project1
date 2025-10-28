@@ -15,6 +15,7 @@ urlpatterns = [
     path('payment/success/', views.payment_success, name='payment_success'),
     path('payment/failure/', views.payment_failure, name='payment_failure'),
     path('test-razorpay/', views.test_razorpay, name='test_razorpay'),
+    path('get-order-history/', views.get_order_history, name='get_order_history'),
     # Legal pages for Razorpay compliance
     path('return-policy/', views.return_policy, name='return_policy'),
     path('refund-policy/', views.refund_policy, name='refund_policy'),

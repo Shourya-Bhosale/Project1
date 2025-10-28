@@ -153,10 +153,18 @@
                 <h3>💳 Payment Details</h3>
                 {% if order.payment_method == 'COD' %}
                 <p><strong>Cash on Delivery:</strong> Please keep exact change ready. Our delivery partner will collect ₹{{ order.total_amount }} upon delivery.</p>
+                {% elif order.payment_method == 'RAZORPAY' %}
+                <p><strong>Online Payment:</strong> ✅ Payment received successfully!</p>
+                {% if order.payment_status == 'paid' %}
+                <p style="color: #28a745; font-weight: bold;">Payment Status: Confirmed</p>
+                {% endif %}
+                {% if order.razorpay_payment_id %}
+                <p><strong>Payment ID:</strong> {{ order.razorpay_payment_id }}</p>
+                {% endif %}
                 {% else %}
-                <p><strong>UPI Payment:</strong> Thank you. We'll verify your transaction reference with our bank shortly.</p>
+                <p><strong>Payment Method:</strong> {{ order.get_payment_method_display }}</p>
                 {% if order.payment_reference %}
-                <p><strong>Your UPI reference:</strong> {{ order.payment_reference }}</p>
+                <p><strong>Payment Reference:</strong> {{ order.payment_reference }}</p>
                 {% endif %}
                 {% endif %}
             </div>
