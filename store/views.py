@@ -216,22 +216,32 @@ def _send_order_emails(order: Order) -> None:
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
     company_email = getattr(settings, 'ORDER_NOTIFICATION_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
 
-    # Send confirmation email to customer (non-blocking, fail silently to prevent timeout)
+    # Send confirmation email to customer
     if order.email:
         try:
-            send_mail(subject_customer, message, from_email, [order.email], fail_silently=True)
-            print(f"✅ Order confirmation email sent to customer: {order.email}")
+            result = send_mail(subject_customer, message, from_email, [order.email], fail_silently=False)
+            if result:
+                print(f"✅ Order confirmation email sent to customer: {order.email}")
+            else:
+                print(f"⚠️ Email sending returned False for customer: {order.email}")
         except Exception as e:
             print(f"❌ Failed to send email to customer {order.email}: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
     
-    # Send notification email to company (non-blocking, fail silently to prevent timeout)
+    # Send notification email to company
     if company_email:
         try:
             company_message = message + "\n\n--\nReference Confirmation: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
-            send_mail(subject_company, company_message, from_email, [company_email], fail_silently=True)
-            print(f"✅ Order notification email sent to company: {company_email}")
+            result = send_mail(subject_company, company_message, from_email, [company_email], fail_silently=False)
+            if result:
+                print(f"✅ Order notification email sent to company: {company_email}")
+            else:
+                print(f"⚠️ Email sending returned False for company: {company_email}")
         except Exception as e:
             print(f"❌ Failed to send email to company {company_email}: {str(e)}")
+            import traceback
+            print(traceback.format_exc())
 
 def check_status(request: HttpRequest, order_number: str) -> JsonResponse:
     try:
