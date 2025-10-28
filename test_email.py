@@ -46,20 +46,22 @@ try:
     )
     
     email.send()
-    print("✅ Email sent successfully via SMTP!")
+    print("[SUCCESS] Email sent successfully via SMTP!")
     
     # Close the connection
     smtp_backend.close()
-    print("✅ SMTP connection closed properly")
+    print("[OK] SMTP connection closed properly")
     
 except Exception as e:
-    print(f"❌ Error sending email: {str(e)}")
+    print(f"[ERROR] Error sending email: {str(e)}")
     print()
     print("Common issues:")
-    print("1. EMAIL_HOST_PASSWORD not set - get a Gmail App Password")
+    print("1. EMAIL_HOST_PASSWORD not set or incorrect - get a Gmail App Password (16 chars)")
     print("2. Two-factor authentication not enabled on Gmail")
     print("3. Firewall blocking SMTP port 587")
     print("4. Incorrect email credentials")
+    print()
+    print(f"Current password length: {len(settings.EMAIL_HOST_PASSWORD)} chars (should be 16)")
     import traceback
     traceback.print_exc()
 

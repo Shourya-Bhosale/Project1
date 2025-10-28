@@ -176,11 +176,11 @@ EMAIL_FROM_NAME = os.environ.get('EMAIL_FROM_NAME', 'Shiv Organic Dairy Farms')
 
 # Debug email configuration at startup
 if BREVO_API_KEY:
-    print(f"📧 Brevo API key configured (length: {len(BREVO_API_KEY)})")
+    print(f"[EMAIL] Brevo API key configured (length: {len(BREVO_API_KEY)})")
 else:
-    print(f"⚠️ Brevo API key NOT configured")
+    print(f"[EMAIL] Brevo API key NOT configured")
 if SENDGRID_API_KEY:
-    print(f"📧 SendGrid API key configured")
+    print(f"[EMAIL] SendGrid API key configured")
 ORDER_NOTIFICATION_EMAIL = os.environ.get('ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
 COMPANY_WHATSAPP_PHONE = os.environ.get('COMPANY_WHATSAPP_PHONE', '')  # Company WhatsApp number for order notifications
 
@@ -200,7 +200,7 @@ EMAIL_USE_SSL = False  # Use TLS, not SSL
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # Debug email configuration
-print(f"📧 SMTP Configuration:")
+print(f"[SMTP] Configuration:")
 print(f"   Host: {EMAIL_HOST}")
 print(f"   Port: {EMAIL_PORT}")
 print(f"   User: {EMAIL_HOST_USER}")
@@ -210,11 +210,11 @@ print(f"   Use TLS: {EMAIL_USE_TLS}")
 print(f"   Timeout: {EMAIL_TIMEOUT}s")
 
 if not EMAIL_HOST_PASSWORD:
-    print(f"⚠️ WARNING: EMAIL_HOST_PASSWORD not set! SMTP will fail.")
+    print(f"[WARNING] EMAIL_HOST_PASSWORD not set! SMTP will fail.")
     print(f"   Set EMAIL_HOST_PASSWORD environment variable with your Gmail App Password")
     print(f"   Or configure Brevo/SendGrid API keys for alternative email methods")
 else:
-    print(f"✅ SMTP email backend ready")
+    print(f"[OK] SMTP email backend ready")
 
 # WhatsApp (Twilio)
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
