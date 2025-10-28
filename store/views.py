@@ -452,14 +452,20 @@ def _send_order_emails(order: Order) -> None:
             print(f"ℹ️ Company WhatsApp not configured (set COMPANY_WHATSAPP_PHONE)")
         
         # Try email providers: Brevo (simplest) → SendGrid → SMTP
-        brevo_key = getattr(settings, 'BREVO_API_KEY', '')
-        sendgrid_key = getattr(settings, 'SENDGRID_API_KEY', '')
+        brevo_key = getattr(settings, 'BREVO_API_KEY', '').strip()
+        sendgrid_key = getattr(settings, 'SENDGRID_API_KEY', '').strip()
+        
+        # Debug email provider selection
+        print(f"📧 Email providers check:")
+        print(f"   Brevo key: {'Set' if brevo_key and len(brevo_key) > 20 else 'Not set or too short'}")
+        print(f"   SendGrid key: {'Set' if sendgrid_key and len(sendgrid_key) > 30 else 'Not set'}")
         
         # Send customer email
         if order.email:
             email_sent = False
             # Try Brevo first (simplest and most reliable)
             if brevo_key and len(brevo_key) > 20:
+                print(f"📧 Trying Brevo first for customer email...")
                 email_sent = _send_email_brevo(order.email, subject_customer, message)
             # Fallback to SendGrid if Brevo not configured
             if not email_sent and sendgrid_key and len(sendgrid_key) > 30:
@@ -486,6 +492,7 @@ def _send_order_emails(order: Order) -> None:
             
             # Try Brevo first (simplest and most reliable)
             if brevo_key and len(brevo_key) > 20:
+                print(f"📧 Trying Brevo first for company email...")
                 company_email_sent = _send_email_brevo(company_email, subject_company, company_message)
             # Fallback to SendGrid if Brevo not configured
             if not company_email_sent and sendgrid_key and len(sendgrid_key) > 30:
