@@ -184,25 +184,37 @@ if SENDGRID_API_KEY:
 ORDER_NOTIFICATION_EMAIL = os.environ.get('ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
 COMPANY_WHATSAPP_PHONE = os.environ.get('COMPANY_WHATSAPP_PHONE', '')  # Company WhatsApp number for order notifications
 
-# Email configuration - SMTP settings (Brevo SMTP preferred for fallback)
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp-relay.brevo.com')  # Brevo SMTP
+# Email configuration - SMTP settings (Gmail or Brevo SMTP)
+# Default to Gmail SMTP for reliable general SMTP
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')  # Default to Gmail
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '9a3ca1001@smtp-brevo.com')  # Brevo SMTP login
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com')
 EMAIL_HOST_PASSWORD_RAW = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_RAW.replace(' ', '') if EMAIL_HOST_PASSWORD_RAW else ''
-EMAIL_TIMEOUT = 5
+EMAIL_TIMEOUT = 30  # Increased from 5 to 30 seconds for better reliability
+EMAIL_USE_SSL = False  # Use TLS, not SSL
 
-# Fallback to SMTP if SendGrid not configured
-if not SENDGRID_API_KEY:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    print(f"📧 Using SMTP backend (SendGrid not configured)")
-    if not EMAIL_HOST_PASSWORD:
-        print(f"⚠️ WARNING: EMAIL_HOST_PASSWORD not set! SMTP will fail.")
+# Always set SMTP as the backend to ensure it works
+# The views.py will try API methods first, then fall back to SMTP
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# Debug email configuration
+print(f"📧 SMTP Configuration:")
+print(f"   Host: {EMAIL_HOST}")
+print(f"   Port: {EMAIL_PORT}")
+print(f"   User: {EMAIL_HOST_USER}")
+print(f"   Password configured: {'Yes' if EMAIL_HOST_PASSWORD else 'No'}")
+print(f"   Password length: {len(EMAIL_HOST_PASSWORD)} chars")
+print(f"   Use TLS: {EMAIL_USE_TLS}")
+print(f"   Timeout: {EMAIL_TIMEOUT}s")
+
+if not EMAIL_HOST_PASSWORD:
+    print(f"⚠️ WARNING: EMAIL_HOST_PASSWORD not set! SMTP will fail.")
+    print(f"   Set EMAIL_HOST_PASSWORD environment variable with your Gmail App Password")
+    print(f"   Or configure Brevo/SendGrid API keys for alternative email methods")
 else:
-    print(f"📧 Using SendGrid API for emails (SMTP configured as fallback)")
-    if not EMAIL_HOST_PASSWORD:
-        print(f"⚠️ WARNING: EMAIL_HOST_PASSWORD not set! SMTP fallback will fail if SendGrid fails.")
+    print(f"✅ SMTP email backend ready")
 
 # WhatsApp (Twilio)
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')

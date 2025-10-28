@@ -472,14 +472,36 @@ def _send_order_emails(order: Order) -> None:
                 email_sent = _send_email_sendgrid(order.email, subject_customer, message)
             
             if not email_sent:
-                # Try SMTP as fallback
+                # Try SMTP as fallback - force use SMTP backend
                 try:
-                    result = send_mail(subject_customer, message, from_email, [order.email], fail_silently=True)
-                    if result:
-                        print(f"✅ SMTP email sent to customer: {order.email}")
-                        email_sent = True
+                    from django.core.mail import EmailMessage
+                    from django.core.mail.backends.smtp import EmailBackend
+                    
+                    # Create SMTP backend with proper settings
+                    smtp_backend = EmailBackend(
+                        host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                        port=getattr(settings, 'EMAIL_PORT', 587),
+                        username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                        password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                        use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                        timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
+                    )
+                    
+                    email = EmailMessage(
+                        subject=subject_customer,
+                        body=message,
+                        from_email=from_email,
+                        to=[order.email],
+                        connection=smtp_backend
+                    )
+                    email.send()
+                    print(f"✅ SMTP email sent to customer: {order.email}")
+                    email_sent = True
+                    smtp_backend.close()
                 except Exception as e:
                     print(f"⚠️ SMTP email failed: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
             
             if not email_sent and not whatsapp_sent:
                 print(f"⚠️ Both email and WhatsApp failed. Order #{order.order_number} placed successfully.")
@@ -499,19 +521,19 @@ def _send_order_emails(order: Order) -> None:
                 company_email_sent = _send_email_sendgrid(company_email, subject_company, company_message)
             
             if not company_email_sent:
-                # Try SMTP as fallback (force SMTP backend if SendGrid failed)
+                # Try SMTP as fallback - force use SMTP backend
                 try:
                     from django.core.mail import EmailMessage
                     from django.core.mail.backends.smtp import EmailBackend
                     
-                    # Create SMTP backend manually to bypass SendGrid
+                    # Create SMTP backend with proper settings
                     smtp_backend = EmailBackend(
                         host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
                         port=getattr(settings, 'EMAIL_PORT', 587),
                         username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
                         password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
                         use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
-                        timeout=getattr(settings, 'EMAIL_TIMEOUT', 5),
+                        timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
                     )
                     
                     email = EmailMessage(
@@ -735,7 +757,7 @@ def check_email_config(request: HttpRequest) -> JsonResponse:
         }
     }
     
-    return JsonResponse(config, indent=2)
+    return JsonResponse(config, json_dumps_params={'indent': 2})
 
 def test_razorpay(request: HttpRequest) -> JsonResponse:
     """Test Razorpay configuration"""
@@ -995,14 +1017,34 @@ SHIV AGRO DAIRY FARMS System
         #     fail_silently=False,
         # )
         
-        # Send company email
-        send_mail(
-            company_subject,
-            company_message,
-            'wecare@shivorganicdairyfarms.com',
-            ['wecare@shivorganicdairyfarms.com'],
-            fail_silently=False,
-        )
+        # Send company email using SMTP backend
+        try:
+            from django.core.mail import EmailMessage
+            from django.core.mail.backends.smtp import EmailBackend
+            
+            smtp_backend = EmailBackend(
+                host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                port=getattr(settings, 'EMAIL_PORT', 587),
+                username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
+            )
+            
+            email = EmailMessage(
+                subject=company_subject,
+                body=company_message,
+                from_email='wecare@shivorganicdairyfarms.com',
+                to=['wecare@shivorganicdairyfarms.com'],
+                connection=smtp_backend
+            )
+            email.send()
+            smtp_backend.close()
+            print("✅ Order confirmation email sent via SMTP")
+        except Exception as e:
+            print(f"⚠️ Failed to send order confirmation email: {str(e)}")
+            import traceback
+            traceback.print_exc()
         
         print("Order confirmation emails sent successfully!")
         
