@@ -168,38 +168,29 @@ STATICFILES_DIRS = []
 # Static file serving with WhiteNoise
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Email (SMTP)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com')
-# Gmail app password (spaces are automatically removed if present)
-EMAIL_HOST_PASSWORD_RAW = os.environ.get('EMAIL_HOST_PASSWORD', 'ifos qbmm euwz jqes')
-EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_RAW.replace(' ', '')  # Remove any spaces from app password
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# Email (SendGrid API - works with Render's network restrictions)
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
+DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com')
 ORDER_NOTIFICATION_EMAIL = os.environ.get('ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
-# Email timeout settings to prevent blocking
-EMAIL_TIMEOUT = 5  # 5 seconds timeout for email operations
 
-# Debug: Print email config (without showing full password)
-print(f"📧 Email Config - User: {EMAIL_HOST_USER}, Password length: {len(EMAIL_HOST_PASSWORD)}, Company: {ORDER_NOTIFICATION_EMAIL}")
-if len(EMAIL_HOST_PASSWORD) != 16:
-    print(f"⚠️ WARNING: Gmail app passwords should be 16 characters, but got {len(EMAIL_HOST_PASSWORD)}")
+# Fallback to SMTP if SendGrid not configured
+if not SENDGRID_API_KEY:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com')
+    EMAIL_HOST_PASSWORD_RAW = os.environ.get('EMAIL_HOST_PASSWORD', 'ifos qbmm euwz jqes')
+    EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_RAW.replace(' ', '')
+    EMAIL_TIMEOUT = 5
+    print(f"📧 Using SMTP backend (SendGrid not configured)")
+else:
+    print(f"📧 Using SendGrid API for emails")
 
-# Test SMTP connection (don't fallback to console - show errors instead)
-if not DEBUG:
-    try:
-        import smtplib
-        print(f"Testing SMTP connection to {EMAIL_HOST}:{EMAIL_PORT}...")
-        smtp = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT, timeout=10)
-        smtp.starttls()
-        smtp.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)
-        smtp.quit()
-        print("✅ SMTP connection test successful")
-    except Exception as e:
-        print(f"⚠️ SMTP connection test failed: {str(e)}")
-        print("Email backend will still try to send emails on each request")
+# WhatsApp (Twilio)
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
+TWILIO_WHATSAPP_FROM = os.environ.get('TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')  # Twilio sandbox
 
 # Razorpay Configuration
 # For production - using real keys from environment variables

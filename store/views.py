@@ -1,18 +1,17 @@
 import json
 import time
+import threading
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.urls import reverse
-from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import razorpay
-import json
 
 from .forms import OrderForm
 from .models import Product, Order, OrderItem
@@ -173,6 +172,77 @@ def order_success(request: HttpRequest) -> HttpResponse:
     return render(request, 'store/order_success.html', { 'order': order })
 
 
+def _send_email_sendgrid(to_email: str, subject: str, message: str) -> bool:
+    """Send email using SendGrid API"""
+    try:
+        from sendgrid import SendGridAPIClient
+        from sendgrid.helpers.mail import Mail
+        
+        sendgrid_api_key = getattr(settings, 'SENDGRID_API_KEY', '')
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'shivorganicdairyfarms@gmail.com')
+        
+        if not sendgrid_api_key:
+            print("⚠️ SendGrid API key not configured")
+            return False
+        
+        message_obj = Mail(
+            from_email=from_email,
+            to_emails=to_email,
+            subject=subject,
+            plain_text_content=message
+        )
+        
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(message_obj)
+        
+        if response.status_code in [200, 201, 202]:
+            print(f"✅ SendGrid email sent to {to_email}")
+            return True
+        else:
+            print(f"⚠️ SendGrid returned status {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"❌ SendGrid error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+def _send_whatsapp_message(phone: str, message: str) -> bool:
+    """Send WhatsApp message using Twilio"""
+    try:
+        from twilio.rest import Client
+        
+        account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '')
+        auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', '')
+        from_number = getattr(settings, 'TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
+        
+        if not account_sid or not auth_token:
+            print("⚠️ Twilio credentials not configured")
+            return False
+        
+        # Format phone number (add country code if needed)
+        if not phone.startswith('+'):
+            phone = f'+91{phone.lstrip("0")}'  # Add India country code
+        
+        if not phone.startswith('whatsapp:'):
+            phone = f'whatsapp:{phone}'
+        
+        client = Client(account_sid, auth_token)
+        
+        message_obj = client.messages.create(
+            body=message,
+            from_=from_number,
+            to=phone
+        )
+        
+        print(f"✅ WhatsApp sent to {phone} (SID: {message_obj.sid})")
+        return True
+    except Exception as e:
+        print(f"❌ WhatsApp error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return False
+
 def _send_order_emails(order: Order) -> None:
     subject_customer = f'Your Shiv Organic Dairy Farm order #{order.order_number} confirmation'
     subject_company = f'New order #{order.order_number} received - Shiv Organic Dairy Farm'
@@ -215,51 +285,55 @@ def _send_order_emails(order: Order) -> None:
 
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
     company_email = getattr(settings, 'ORDER_NOTIFICATION_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
-
-    # Send emails in background thread (non-blocking)
-    # This prevents Render network issues from blocking order completion
-    import threading
-    import time
     
-    def send_email_async(recipient_email: str, subject: str, body: str, is_company: bool = False):
-        """Send email in background with retry logic"""
-        max_retries = 3
-        for attempt in range(1, max_retries + 1):
-            try:
-                print(f"📧 Attempt {attempt}/{max_retries}: Sending email to {'company' if is_company else 'customer'}: {recipient_email}")
-                result = send_mail(subject, body, from_email, [recipient_email], fail_silently=False)
-                if result:
-                    print(f"✅ Email sent successfully to {recipient_email}")
-                    return
-                else:
-                    print(f"⚠️ send_mail returned False for {recipient_email}")
-            except OSError as e:
-                error_msg = str(e)
-                if "Network is unreachable" in error_msg or "101" in error_msg:
-                    print(f"⚠️ Render network block detected (attempt {attempt}/{max_retries})")
-                    if attempt < max_retries:
-                        wait_time = attempt * 2  # Exponential backoff: 2s, 4s
-                        print(f"   Retrying in {wait_time} seconds...")
-                        time.sleep(wait_time)
+    # Create WhatsApp message (shorter format)
+    whatsapp_msg = f"✅ Order #{order.order_number} Confirmed!\n\n"
+    whatsapp_msg += f"Total: ₹{order.total_amount}\n"
+    whatsapp_msg += f"Payment: {order.get_payment_method_display()}\n"
+    if order.address_line1:
+        whatsapp_msg += f"📍 {order.address_line1}, {order.city}\n"
+    whatsapp_msg += "\nWe'll contact you for delivery details soon!"
+    
+    def send_notifications_async():
+        """Send emails and WhatsApp in background"""
+        # Try SendGrid first, fallback to SMTP
+        sendgrid_key = getattr(settings, 'SENDGRID_API_KEY', '')
+        
+        # Send customer email
+        if order.email:
+            if sendgrid_key:
+                _send_email_sendgrid(order.email, subject_customer, message)
+            else:
+                try:
+                    result = send_mail(subject_customer, message, from_email, [order.email], fail_silently=True)
+                    if result:
+                        print(f"✅ SMTP email sent to customer: {order.email}")
                     else:
-                        print(f"❌ SMTP blocked by Render network after {max_retries} attempts")
-                        print(f"   Solution: Use SendGrid/Resend API instead of SMTP")
-                else:
-                    print(f"❌ Network error: {error_msg}")
-                    return
-            except Exception as e:
-                print(f"❌ Email FAILED: {type(e).__name__}: {str(e)}")
-                import traceback
-                traceback.print_exc()
-                return
+                        print(f"⚠️ SMTP email failed for customer")
+                except Exception as e:
+                    print(f"❌ SMTP email error: {str(e)}")
+        
+        # Send company email
+        if company_email:
+            company_message = message + "\n\n--\nReference: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
+            if sendgrid_key:
+                _send_email_sendgrid(company_email, subject_company, company_message)
+            else:
+                try:
+                    result = send_mail(subject_company, company_message, from_email, [company_email], fail_silently=True)
+                    if result:
+                        print(f"✅ SMTP email sent to company: {company_email}")
+                    else:
+                        print(f"⚠️ SMTP email failed for company")
+                except Exception as e:
+                    print(f"❌ SMTP email error: {str(e)}")
+        
+        # Send WhatsApp to customer
+        if order.phone:
+            _send_whatsapp_message(order.phone, whatsapp_msg)
     
-    # Start email sending in background threads
-    if order.email:
-        threading.Thread(target=send_email_async, args=(order.email, subject_customer, message, False), daemon=True).start()
-    
-    if company_email:
-        company_message = message + "\n\n--\nReference Confirmation: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
-        threading.Thread(target=send_email_async, args=(company_email, subject_company, company_message, True), daemon=True).start()
+    # Start notifications in background thread
+    threading.Thread(target=send_notifications_async, daemon=True).start()
 
 def check_status(request: HttpRequest, order_number: str) -> JsonResponse:
     try:
