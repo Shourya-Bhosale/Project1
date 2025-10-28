@@ -169,18 +169,26 @@ STATICFILES_DIRS = []
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Email providers - Brevo (simplest) or SendGrid
-BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '')  # Recommended: Simple API, 300 emails/day free
-SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')  # Alternative: SendGrid API
+BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '').strip()  # Recommended: Simple API, 300 emails/day free
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '').strip()  # Alternative: SendGrid API
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com')
 EMAIL_FROM_NAME = os.environ.get('EMAIL_FROM_NAME', 'Shiv Organic Dairy Farms')
+
+# Debug email configuration at startup
+if BREVO_API_KEY:
+    print(f"📧 Brevo API key configured (length: {len(BREVO_API_KEY)})")
+else:
+    print(f"⚠️ Brevo API key NOT configured")
+if SENDGRID_API_KEY:
+    print(f"📧 SendGrid API key configured")
 ORDER_NOTIFICATION_EMAIL = os.environ.get('ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
 COMPANY_WHATSAPP_PHONE = os.environ.get('COMPANY_WHATSAPP_PHONE', '')  # Company WhatsApp number for order notifications
 
-# Email configuration - Always set SMTP settings for fallback
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+# Email configuration - SMTP settings (Brevo SMTP preferred for fallback)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp-relay.brevo.com')  # Brevo SMTP
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '9a3ca1001@smtp-brevo.com')  # Brevo SMTP login
 EMAIL_HOST_PASSWORD_RAW = os.environ.get('EMAIL_HOST_PASSWORD', '')
 EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_RAW.replace(' ', '') if EMAIL_HOST_PASSWORD_RAW else ''
 EMAIL_TIMEOUT = 5
