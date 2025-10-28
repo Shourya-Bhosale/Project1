@@ -216,29 +216,50 @@ def _send_order_emails(order: Order) -> None:
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
     company_email = getattr(settings, 'ORDER_NOTIFICATION_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
 
-    # Send confirmation email to customer (with detailed error logging)
-    if order.email:
-        try:
-            print(f"📧 Sending email to customer: {order.email}")
-            print(f"   Using: {from_email} / Password length: {len(settings.EMAIL_HOST_PASSWORD) if hasattr(settings, 'EMAIL_HOST_PASSWORD') else 'N/A'}")
-            result = send_mail(subject_customer, message, from_email, [order.email], fail_silently=False)
-            print(f"✅ Customer email sent (result={result})")
-        except Exception as e:
-            print(f"❌ Customer email FAILED: {type(e).__name__}: {str(e)}")
-            import traceback
-            traceback.print_exc()
+    # Send emails in background thread (non-blocking)
+    # This prevents Render network issues from blocking order completion
+    import threading
+    import time
     
-    # Send notification email to company (with detailed error logging)
+    def send_email_async(recipient_email: str, subject: str, body: str, is_company: bool = False):
+        """Send email in background with retry logic"""
+        max_retries = 3
+        for attempt in range(1, max_retries + 1):
+            try:
+                print(f"📧 Attempt {attempt}/{max_retries}: Sending email to {'company' if is_company else 'customer'}: {recipient_email}")
+                result = send_mail(subject, body, from_email, [recipient_email], fail_silently=False)
+                if result:
+                    print(f"✅ Email sent successfully to {recipient_email}")
+                    return
+                else:
+                    print(f"⚠️ send_mail returned False for {recipient_email}")
+            except OSError as e:
+                error_msg = str(e)
+                if "Network is unreachable" in error_msg or "101" in error_msg:
+                    print(f"⚠️ Render network block detected (attempt {attempt}/{max_retries})")
+                    if attempt < max_retries:
+                        wait_time = attempt * 2  # Exponential backoff: 2s, 4s
+                        print(f"   Retrying in {wait_time} seconds...")
+                        time.sleep(wait_time)
+                    else:
+                        print(f"❌ SMTP blocked by Render network after {max_retries} attempts")
+                        print(f"   Solution: Use SendGrid/Resend API instead of SMTP")
+                else:
+                    print(f"❌ Network error: {error_msg}")
+                    return
+            except Exception as e:
+                print(f"❌ Email FAILED: {type(e).__name__}: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                return
+    
+    # Start email sending in background threads
+    if order.email:
+        threading.Thread(target=send_email_async, args=(order.email, subject_customer, message, False), daemon=True).start()
+    
     if company_email:
-        try:
-            print(f"📧 Sending email to company: {company_email}")
-            company_message = message + "\n\n--\nReference Confirmation: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
-            result = send_mail(subject_company, company_message, from_email, [company_email], fail_silently=False)
-            print(f"✅ Company email sent (result={result})")
-        except Exception as e:
-            print(f"❌ Company email FAILED: {type(e).__name__}: {str(e)}")
-            import traceback
-            traceback.print_exc()
+        company_message = message + "\n\n--\nReference Confirmation: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
+        threading.Thread(target=send_email_async, args=(company_email, subject_company, company_message, True), daemon=True).start()
 
 def check_status(request: HttpRequest, order_number: str) -> JsonResponse:
     try:
