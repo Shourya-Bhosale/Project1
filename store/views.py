@@ -430,15 +430,23 @@ def _send_order_emails(order: Order) -> None:
         # Send company email (always try, as backup to WhatsApp)
         if company_email:
             company_message = message + "\n\n--\nReference: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
+            company_email_sent = False
+            
             if sendgrid_key and len(sendgrid_key) > 30:
-                _send_email_sendgrid(company_email, subject_company, company_message)
-            else:
+                company_email_sent = _send_email_sendgrid(company_email, subject_company, company_message)
+            
+            if not company_email_sent:
+                # Try SMTP as fallback
                 try:
-                    send_mail(subject_company, company_message, from_email, [company_email], fail_silently=True)
-                    if company_whatsapp_sent:
-                        print(f"✅ Company email sent (backup to WhatsApp)")
-                except:
-                    pass
+                    result = send_mail(subject_company, company_message, from_email, [company_email], fail_silently=True)
+                    if result:
+                        print(f"✅ Company SMTP email sent (backup to WhatsApp)")
+                        company_email_sent = True
+                except Exception as e:
+                    print(f"⚠️ Company SMTP email failed: {str(e)}")
+            
+            if not company_email_sent and not company_whatsapp_sent:
+                print(f"⚠️ Company notification failed (both WhatsApp and email), but order was saved. Check admin panel.")
     
     # Start notifications in background thread
     threading.Thread(target=send_notifications_async, daemon=True).start()
