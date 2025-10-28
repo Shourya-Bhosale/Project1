@@ -174,13 +174,16 @@ EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com')
-# Remove spaces from app password (Gmail app passwords shouldn't have spaces)
-EMAIL_HOST_PASSWORD_RAW = os.environ.get('EMAIL_HOST_PASSWORD', 'egmmqsazprnveqf')
-EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_RAW.replace(' ', '')  # Remove any spaces
+# Gmail app password (spaces are automatically removed if present)
+EMAIL_HOST_PASSWORD_RAW = os.environ.get('EMAIL_HOST_PASSWORD', 'egmm qsaz prnv eqf')
+EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_RAW.replace(' ', '')  # Remove any spaces from app password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ORDER_NOTIFICATION_EMAIL = os.environ.get('ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
 # Email timeout settings to prevent blocking
 EMAIL_TIMEOUT = 5  # 5 seconds timeout for email operations
+
+# Debug: Print email config (without showing full password)
+print(f"Email Config - User: {EMAIL_HOST_USER}, Password length: {len(EMAIL_HOST_PASSWORD)}, Company: {ORDER_NOTIFICATION_EMAIL}")
 
 # Fallback to console for testing if SMTP fails
 if not DEBUG:
