@@ -33,17 +33,26 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-here'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
-# ALLOWED_HOSTS configuration - Force allow all hosts
-ALLOWED_HOSTS = ['*']
+# ALLOWED_HOSTS configuration
+# Support both development and production domains
+env_hosts = os.environ.get('ALLOWED_HOSTS', '')
+if env_hosts:
+    # Parse comma-separated hosts from environment
+    ALLOWED_HOSTS = [host.strip() for host in env_hosts.split(',') if host.strip()]
+else:
+    # Default hosts: development + production domain
+    ALLOWED_HOSTS = [
+        'localhost',
+        '127.0.0.1',
+        'shivorganicdairyfarms.com',
+        'www.shivorganicdairyfarms.com',
+        '*.onrender.com',  # Keep for Render deployment
+        'shiv-dairy-website.onrender.com',  # Old Render URL (backward compatibility)
+    ]
 
 # Debug logging
-print(f"DEBUG: ALLOWED_HOSTS = {ALLOWED_HOSTS}")
-print(f"DEBUG: DEBUG mode = {DEBUG}")
-print(f"DEBUG: Environment ALLOWED_HOSTS = {os.environ.get('ALLOWED_HOSTS', 'Not set')}")
-
-# Force override any environment variable
-os.environ['ALLOWED_HOSTS'] = '*'
-ALLOWED_HOSTS = ['*']
+print(f"[CONFIG] ALLOWED_HOSTS = {ALLOWED_HOSTS}")
+print(f"[CONFIG] DEBUG mode = {DEBUG}")
 
 # Production Security Settings
 if not DEBUG:

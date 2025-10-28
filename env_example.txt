@@ -7,7 +7,7 @@ RAZORPAY_KEY_SECRET=your_actual_secret_key_here
 # Django Configuration
 SECRET_KEY=your-django-secret-key
 DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1,*.onrender.com
+ALLOWED_HOSTS=localhost,127.0.0.1,*.onrender.com,shivorganicdairyfarms.com,www.shivorganicdairyfarms.com
 
 # Database (for production)
 DATABASE_URL=your-database-url
