@@ -187,17 +187,19 @@ print(f"📧 Email Config - User: {EMAIL_HOST_USER}, Password length: {len(EMAIL
 if len(EMAIL_HOST_PASSWORD) != 16:
     print(f"⚠️ WARNING: Gmail app passwords should be 16 characters, but got {len(EMAIL_HOST_PASSWORD)}")
 
-# Fallback to console for testing if SMTP fails
+# Test SMTP connection (don't fallback to console - show errors instead)
 if not DEBUG:
     try:
         import smtplib
-        smtp = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
+        print(f"Testing SMTP connection to {EMAIL_HOST}:{EMAIL_PORT}...")
+        smtp = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT, timeout=10)
         smtp.starttls()
         smtp.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)
         smtp.quit()
-    except Exception:
-        EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-        print("SMTP failed, using console backend for testing")
+        print("✅ SMTP connection test successful")
+    except Exception as e:
+        print(f"⚠️ SMTP connection test failed: {str(e)}")
+        print("Email backend will still try to send emails on each request")
 
 # Razorpay Configuration
 # For production - using real keys from environment variables
