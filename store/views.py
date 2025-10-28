@@ -216,46 +216,29 @@ def _send_order_emails(order: Order) -> None:
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
     company_email = getattr(settings, 'ORDER_NOTIFICATION_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
 
-    # Test SMTP connection first to diagnose issues
-    import smtplib
-    smtp_ok = False
-    try:
-        smtp = smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT, timeout=5)
-        smtp.starttls()
-        smtp.login(from_email, settings.EMAIL_HOST_PASSWORD)
-        smtp.quit()
-        smtp_ok = True
-        print(f"✅ SMTP connection successful")
-    except Exception as e:
-        print(f"❌ SMTP connection failed: {str(e)}")
-        print(f"   Check Render environment: EMAIL_HOST_PASSWORD={settings.EMAIL_HOST_PASSWORD[:4]}... (length: {len(settings.EMAIL_HOST_PASSWORD)})")
-    
-    # Send confirmation email to customer (non-blocking)
-    if order.email and smtp_ok:
+    # Send confirmation email to customer (with detailed error logging)
+    if order.email:
         try:
-            result = send_mail(subject_customer, message, from_email, [order.email], fail_silently=True)
-            if result == 1:
-                print(f"✅ Order confirmation email sent to customer: {order.email}")
-            else:
-                print(f"⚠️ Email not sent (result={result})")
+            print(f"📧 Sending email to customer: {order.email}")
+            print(f"   Using: {from_email} / Password length: {len(settings.EMAIL_HOST_PASSWORD) if hasattr(settings, 'EMAIL_HOST_PASSWORD') else 'N/A'}")
+            result = send_mail(subject_customer, message, from_email, [order.email], fail_silently=False)
+            print(f"✅ Customer email sent (result={result})")
         except Exception as e:
-            print(f"⚠️ Email exception: {str(e)}")
-    elif not smtp_ok:
-        print(f"⚠️ Skipping customer email - SMTP not connected")
+            print(f"❌ Customer email FAILED: {type(e).__name__}: {str(e)}")
+            import traceback
+            traceback.print_exc()
     
-    # Send notification email to company (non-blocking)
-    if company_email and smtp_ok:
+    # Send notification email to company (with detailed error logging)
+    if company_email:
         try:
+            print(f"📧 Sending email to company: {company_email}")
             company_message = message + "\n\n--\nReference Confirmation: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
-            result = send_mail(subject_company, company_message, from_email, [company_email], fail_silently=True)
-            if result == 1:
-                print(f"✅ Order notification email sent to company: {company_email}")
-            else:
-                print(f"⚠️ Email not sent (result={result})")
+            result = send_mail(subject_company, company_message, from_email, [company_email], fail_silently=False)
+            print(f"✅ Company email sent (result={result})")
         except Exception as e:
-            print(f"⚠️ Email exception: {str(e)}")
-    elif not smtp_ok:
-        print(f"⚠️ Skipping company email - SMTP not connected")
+            print(f"❌ Company email FAILED: {type(e).__name__}: {str(e)}")
+            import traceback
+            traceback.print_exc()
 
 def check_status(request: HttpRequest, order_number: str) -> JsonResponse:
     try:
