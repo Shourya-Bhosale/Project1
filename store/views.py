@@ -343,8 +343,12 @@ def _send_order_emails(order: Order) -> None:
 
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
     company_email = getattr(settings, 'ORDER_NOTIFICATION_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
+    company_whatsapp = getattr(settings, 'COMPANY_WHATSAPP_PHONE', '').strip()
     
-    # Create WhatsApp message (shorter format)
+    # Load order items with products (do this before async to avoid DB issues)
+    order_items = list(order.items.select_related('product'))
+    
+    # Create customer WhatsApp message (shorter format)
     whatsapp_msg = f"✅ Order #{order.order_number} Confirmed!\n\n"
     whatsapp_msg += f"Total: ₹{order.total_amount}\n"
     whatsapp_msg += f"Payment: {order.get_payment_method_display()}\n"
@@ -352,15 +356,53 @@ def _send_order_emails(order: Order) -> None:
         whatsapp_msg += f"📍 {order.address_line1}, {order.city}\n"
     whatsapp_msg += "\nWe'll contact you for delivery details soon!"
     
+    # Create company WhatsApp message (detailed format)
+    company_whatsapp_msg = f"🚨 NEW ORDER #{order.order_number}\n\n"
+    company_whatsapp_msg += f"👤 {order.customer_name}\n"
+    company_whatsapp_msg += f"📞 {order.phone}\n"
+    company_whatsapp_msg += f"💳 Payment: {order.get_payment_method_display()}\n"
+    if order.payment_method == 'RAZORPAY' and order.payment_status == 'paid':
+        company_whatsapp_msg += f"✅ Payment Status: Paid\n"
+    company_whatsapp_msg += f"💰 Total: ₹{order.total_amount}\n\n"
+    
+    # Add order items
+    company_whatsapp_msg += "📦 Items:\n"
+    for item in order_items:
+        company_whatsapp_msg += f"   • {item.product.name} x {item.quantity} = ₹{item.line_total()}\n"
+    
+    company_whatsapp_msg += "\n📍 Delivery:\n"
+    if order.latitude and order.longitude:
+        company_whatsapp_msg += f"   {order.address_line1}\n"
+        company_whatsapp_msg += f"   {order.city}, {order.state} {order.postal_code}\n"
+        company_whatsapp_msg += f"   https://maps.google.com/?q={order.latitude},{order.longitude}\n"
+    else:
+        company_whatsapp_msg += f"   {order.address_line1}\n"
+        company_whatsapp_msg += f"   {order.city}, {order.state} {order.postal_code}\n"
+    
+    if order.notes:
+        company_whatsapp_msg += f"\n📝 Notes: {order.notes}\n"
+    
     def send_notifications_async():
         """Send emails and WhatsApp in background - try both, don't let one failure block the other"""
-        # Send WhatsApp FIRST (most reliable)
+        # Send WhatsApp to customer FIRST (most reliable)
         whatsapp_sent = False
         if order.phone:
-            print(f"📱 Attempting WhatsApp to {order.phone}...")
+            print(f"📱 Attempting WhatsApp to customer {order.phone}...")
             whatsapp_sent = _send_whatsapp_message(order.phone, whatsapp_msg)
             if whatsapp_sent:
-                print(f"✅ WhatsApp notification sent successfully!")
+                print(f"✅ Customer WhatsApp notification sent successfully!")
+        
+        # Send WhatsApp to company (instant notification)
+        company_whatsapp_sent = False
+        if company_whatsapp:
+            print(f"📱 Attempting WhatsApp to company {company_whatsapp}...")
+            company_whatsapp_sent = _send_whatsapp_message(company_whatsapp, company_whatsapp_msg)
+            if company_whatsapp_sent:
+                print(f"✅ Company WhatsApp notification sent successfully!")
+            else:
+                print(f"⚠️ Company WhatsApp failed, will try email...")
+        else:
+            print(f"ℹ️ Company WhatsApp not configured (set COMPANY_WHATSAPP_PHONE)")
         
         # Try SendGrid email, fallback to SMTP
         sendgrid_key = getattr(settings, 'SENDGRID_API_KEY', '')
@@ -385,7 +427,7 @@ def _send_order_emails(order: Order) -> None:
                 print(f"⚠️ Both email and WhatsApp failed. Order #{order.order_number} placed successfully.")
                 print(f"   Customer can view order at: https://shivorganicdairyfarms.com/order/success/?order_id={order.order_number}")
         
-        # Send company email (always try)
+        # Send company email (always try, as backup to WhatsApp)
         if company_email:
             company_message = message + "\n\n--\nReference: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
             if sendgrid_key and len(sendgrid_key) > 30:
@@ -393,6 +435,8 @@ def _send_order_emails(order: Order) -> None:
             else:
                 try:
                     send_mail(subject_company, company_message, from_email, [company_email], fail_silently=True)
+                    if company_whatsapp_sent:
+                        print(f"✅ Company email sent (backup to WhatsApp)")
                 except:
                     pass
     

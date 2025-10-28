@@ -172,6 +172,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
 DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com')
 ORDER_NOTIFICATION_EMAIL = os.environ.get('ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
+COMPANY_WHATSAPP_PHONE = os.environ.get('COMPANY_WHATSAPP_PHONE', '')  # Company WhatsApp number for order notifications
 
 # Fallback to SMTP if SendGrid not configured
 if not SENDGRID_API_KEY:

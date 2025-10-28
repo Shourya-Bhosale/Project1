@@ -15,3 +15,8 @@ DATABASE_URL=your-database-url
 # Email Configuration
 EMAIL_HOST_USER=your-email@gmail.com
 EMAIL_HOST_PASSWORD=your-app-password
+ORDER_NOTIFICATION_EMAIL=your-company-email@gmail.com
+
+# Company WhatsApp Notification (optional but recommended)
+# Format: +91XXXXXXXXXX or whatsapp:+91XXXXXXXXXX
+COMPANY_WHATSAPP_PHONE=+91XXXXXXXXXX
