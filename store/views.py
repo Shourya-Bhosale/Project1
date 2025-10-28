@@ -39,7 +39,14 @@ def home(request: HttpRequest) -> HttpResponse:
 
 @transaction.atomic
 def place_order(request: HttpRequest) -> HttpResponse:
-    products = Product.objects.filter(is_active=True).order_by('size_ml')
+    try:
+        products = Product.objects.filter(is_active=True).order_by('size_ml')
+    except Exception as e:
+        import traceback
+        print(f"Error loading products: {str(e)}")
+        print(traceback.format_exc())
+        products = Product.objects.none()
+    
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
@@ -75,37 +82,76 @@ def place_order(request: HttpRequest) -> HttpResponse:
                 if order.items.count() == 0:
                     order.delete()
                     form.add_error(None, 'Please add at least one product to your order.')
-                else:
-                    # Store order ID in session for payment processing
+                    return render(request, 'store/order.html', { 'form': form, 'products': products })
+                
+                # Store order ID in session for payment processing
+                try:
                     request.session['pending_order_id'] = order.id
-                    
-                    # Check if this is an AJAX request (for RAZORPAY)
-                    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
-                             request.content_type == 'application/json' or \
-                             'application/json' in request.headers.get('Accept', '')
-                    
-                    if order.payment_method == 'COD':
-                        # Defer email until after commit to avoid DB locks
-                        def on_commit_send():
+                    request.session.save()
+                except Exception as e:
+                    print(f"Warning: Could not save session: {str(e)}")
+                
+                # Check if this is an AJAX request (for RAZORPAY)
+                is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+                         request.content_type == 'application/json' or \
+                         'application/json' in request.headers.get('Accept', '')
+                
+                if order.payment_method == 'COD':
+                    # Defer email until after commit to avoid DB locks
+                    def on_commit_send():
+                        try:
                             _send_order_emails(order)
-                        transaction.on_commit(on_commit_send)
-                        return redirect(reverse('order_success') + f'?order_id={order.order_number}')
-                    elif order.payment_method == 'RAZORPAY' and is_ajax:
-                        # For RAZORPAY via AJAX, return JSON with order info for payment initiation
-                        return JsonResponse({
-                            'order_id': order.id,
-                            'order_number': order.order_number,
-                            'total_amount': order.total_amount
-                        })
-                    else:
-                        # If RAZORPAY but not AJAX, redirect to order success (fallback)
-                        return redirect(reverse('order_success') + f'?order_id={order.order_number}')
-                        
+                        except Exception as e:
+                            print(f"Warning: Email sending failed: {str(e)}")
+                    transaction.on_commit(on_commit_send)
+                    return redirect(reverse('order_success') + f'?order_id={order.order_number}')
+                elif order.payment_method == 'RAZORPAY' and is_ajax:
+                    # For RAZORPAY via AJAX, return JSON with order info for payment initiation
+                    return JsonResponse({
+                        'order_id': order.id,
+                        'order_number': order.order_number,
+                        'total_amount': order.total_amount
+                    })
+                else:
+                    # If RAZORPAY but not AJAX, redirect to order success (fallback)
+                    return redirect(reverse('order_success') + f'?order_id={order.order_number}')
+                    
             except Exception as e:
                 import traceback
-                print(f"Error in place_order: {str(e)}")
+                error_msg = str(e)
+                print(f"Error in place_order: {error_msg}")
                 print(traceback.format_exc())
-                form.add_error(None, f'An error occurred while processing your order. Please try again.')
+                
+                # Check if this is an AJAX request
+                is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+                         request.content_type == 'application/json' or \
+                         'application/json' in request.headers.get('Accept', '')
+                
+                if is_ajax:
+                    # Return JSON error for AJAX requests
+                    return JsonResponse({
+                        'error': f'An error occurred while processing your order: {error_msg}',
+                        'success': False
+                    }, status=500)
+                else:
+                    # Add error to form for regular form submission
+                    form.add_error(None, f'An error occurred while processing your order. Please try again.')
+        else:
+            # Form is invalid
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+                     request.content_type == 'application/json' or \
+                     'application/json' in request.headers.get('Accept', '')
+            
+            if is_ajax:
+                # Return validation errors as JSON
+                errors = {}
+                for field, error_list in form.errors.items():
+                    errors[field] = error_list
+                return JsonResponse({
+                    'error': 'Form validation failed',
+                    'errors': errors,
+                    'success': False
+                }, status=400)
         # If form is invalid, render form with errors
     else:
         form = OrderForm()

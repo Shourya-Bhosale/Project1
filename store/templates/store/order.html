@@ -490,7 +490,16 @@
                 }
             })
             .then(data => {
-                if (data.order_id) {
+                if (data.success === false || data.error) {
+                    // Handle error response
+                    let errorMsg = data.error || 'Failed to create order';
+                    if (data.errors) {
+                        const errorList = Object.values(data.errors).flat().join(', ');
+                        errorMsg += ': ' + errorList;
+                    }
+                    alert(errorMsg);
+                    console.error('Order creation failed:', data);
+                } else if (data.order_id) {
                     console.log('Order created:', data.order_number);
                     // Now initiate Razorpay payment
                     initiateRazorpayPayment(data.total_amount, data.order_id);
