@@ -246,22 +246,42 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
         
         client = Client(account_sid, auth_token)
         
-        # Use Messaging Service if available, otherwise use direct number
-        if messaging_service_sid:
-            message_obj = client.messages.create(
-                body=message,
-                messaging_service_sid=messaging_service_sid,
-                to=phone
-            )
-        else:
-            message_obj = client.messages.create(
-                body=message,
-                from_=from_number,
-                to=phone
-            )
-        
-        print(f"✅ WhatsApp sent to {phone} (SID: {message_obj.sid})")
-        return True
+        # Try messaging service first, fallback to direct number if it fails
+        try:
+            if messaging_service_sid:
+                print(f"   Using Messaging Service: {messaging_service_sid}")
+                message_obj = client.messages.create(
+                    body=message,
+                    messaging_service_sid=messaging_service_sid,
+                    to=phone
+                )
+            else:
+                print(f"   Using direct number: {from_number}")
+                message_obj = client.messages.create(
+                    body=message,
+                    from_=from_number,
+                    to=phone
+                )
+            
+            print(f"✅ WhatsApp sent to {phone} (SID: {message_obj.sid})")
+            return True
+        except Exception as msg_error:
+            # If messaging service fails, try direct number as fallback
+            if messaging_service_sid:
+                print(f"⚠️ Messaging Service failed: {str(msg_error)}")
+                print(f"   Trying fallback with direct number...")
+                try:
+                    message_obj = client.messages.create(
+                        body=message,
+                        from_=from_number,
+                        to=phone
+                    )
+                    print(f"✅ WhatsApp sent via fallback to {phone} (SID: {message_obj.sid})")
+                    return True
+                except Exception as fallback_error:
+                    raise fallback_error
+            else:
+                raise msg_error
     except Exception as e:
         error_str = str(e)
         if "401" in error_str or "Authenticate" in error_str:
