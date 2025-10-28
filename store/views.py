@@ -185,6 +185,9 @@ def _send_email_sendgrid(to_email: str, subject: str, message: str) -> bool:
             print("⚠️ SendGrid API key not configured")
             return False
         
+        # Debug: Check first few chars of API key (don't print full key)
+        print(f"📧 SendGrid API key length: {len(sendgrid_api_key)}, starts with: {sendgrid_api_key[:3] if len(sendgrid_api_key) >= 3 else 'N/A'}")
+        
         message_obj = Mail(
             from_email=from_email,
             to_emails=to_email,
@@ -203,6 +206,9 @@ def _send_email_sendgrid(to_email: str, subject: str, message: str) -> bool:
             return False
     except Exception as e:
         print(f"❌ SendGrid error: {str(e)}")
+        # Check if it's an auth error
+        if "401" in str(e) or "Unauthorized" in str(e):
+            print(f"⚠️ SendGrid API key authentication failed. Check if the key is correct in Render environment.")
         import traceback
         traceback.print_exc()
         return False
@@ -219,7 +225,11 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
         
         if not account_sid or not auth_token:
             print("⚠️ Twilio credentials not configured")
+            print(f"   Account SID: {'Set' if account_sid else 'Missing'}, Auth Token: {'Set' if auth_token else 'Missing'}")
             return False
+        
+        # Debug: Check credentials (don't print full values)
+        print(f"📱 Twilio Account SID: {account_sid[:4]}... (length: {len(account_sid)}), Auth Token: {auth_token[:4]}... (length: {len(auth_token)})")
         
         # Format phone number (add country code if needed)
         if not phone.startswith('+'):
