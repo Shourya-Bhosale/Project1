@@ -182,13 +182,13 @@ def _send_email_brevo(to_email: str, subject: str, message: str) -> bool:
         from_name = getattr(settings, 'EMAIL_FROM_NAME', 'Shiv Organic Dairy Farms')
         
         if not brevo_api_key:
-            print("⚠️ Brevo API key not configured")
+            print("[EMAIL] Brevo API key not configured")
             return False
         
         # Add xkeysib- prefix if missing (some systems don't allow it in env vars)
         if not brevo_api_key.startswith('xkeysib-'):
             brevo_api_key = f'xkeysib-{brevo_api_key}'
-            print(f"📧 Added xkeysib- prefix to Brevo API key")
+            print(f"[EMAIL] Added xkeysib- prefix to Brevo API key")
         
         url = "https://api.brevo.com/v3/smtp/email"
         headers = {
@@ -206,17 +206,17 @@ def _send_email_brevo(to_email: str, subject: str, message: str) -> bool:
             "textContent": message
         }
         
-        print(f"📧 Sending email via Brevo to {to_email}...")
+        print(f"[EMAIL] Sending email via Brevo to {to_email}...")
         response = requests.post(url, json=payload, headers=headers, timeout=10)
         
         if response.status_code in [200, 201]:
-            print(f"✅ Brevo email sent to {to_email}")
+            print(f"[SUCCESS] Brevo email sent to {to_email}")
             return True
         else:
-            print(f"⚠️ Brevo returned status {response.status_code}: {response.text}")
+            print(f"[WARNING] Brevo returned status {response.status_code}: {response.text}")
             return False
     except Exception as e:
-        print(f"❌ Brevo error: {str(e)}")
+        print(f"[ERROR] Brevo error: {str(e)}")
         return False
 
 def _send_email_sendgrid(to_email: str, subject: str, message: str) -> bool:
@@ -229,11 +229,11 @@ def _send_email_sendgrid(to_email: str, subject: str, message: str) -> bool:
         from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'shivorganicdairyfarms@gmail.com')
         
         if not sendgrid_api_key:
-            print("⚠️ SendGrid API key not configured")
+            print("[EMAIL] SendGrid API key not configured")
             return False
         
         # Debug: Check first few chars of API key (don't print full key)
-        print(f"📧 SendGrid API key length: {len(sendgrid_api_key)}, starts with: {sendgrid_api_key[:3] if len(sendgrid_api_key) >= 3 else 'N/A'}")
+        print(f"[EMAIL] SendGrid API key length: {len(sendgrid_api_key)}, starts with: {sendgrid_api_key[:3] if len(sendgrid_api_key) >= 3 else 'N/A'}")
         
         message_obj = Mail(
             from_email=from_email,
@@ -246,16 +246,16 @@ def _send_email_sendgrid(to_email: str, subject: str, message: str) -> bool:
         response = sg.send(message_obj)
         
         if response.status_code in [200, 201, 202]:
-            print(f"✅ SendGrid email sent to {to_email}")
+            print(f"[SUCCESS] SendGrid email sent to {to_email}")
             return True
         else:
-            print(f"⚠️ SendGrid returned status {response.status_code}")
+            print(f"[WARNING] SendGrid returned status {response.status_code}")
             return False
     except Exception as e:
-        print(f"❌ SendGrid error: {str(e)}")
+        print(f"[ERROR] SendGrid error: {str(e)}")
         # Check if it's an auth error
         if "401" in str(e) or "Unauthorized" in str(e):
-            print(f"⚠️ SendGrid API key authentication failed. Check if the key is correct in Render environment.")
+            print(f"[WARNING] SendGrid API key authentication failed. Check if the key is correct in Render environment.")
         import traceback
         traceback.print_exc()
         return False
@@ -274,14 +274,14 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
         from_number = from_number.replace(' ', '')
         
         if not account_sid or not auth_token:
-            print("⚠️ Twilio credentials not configured")
+            print("[WHATSAPP] Twilio credentials not configured")
             return False
         
         if len(auth_token) < 30:
-            print(f"⚠️ Twilio Auth Token too short ({len(auth_token)} chars)")
+            print(f"[WARNING] Twilio Auth Token too short ({len(auth_token)} chars)")
             return False
         
-        print(f"📱 Sending WhatsApp to {phone} via Twilio")
+        print(f"[WHATSAPP] Sending WhatsApp to {phone} via Twilio")
         
         # Format phone number
         original_phone = phone
@@ -308,7 +308,7 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
                     messaging_service_sid=messaging_service_sid,
                     to=phone
                 )
-                print(f"✅ WhatsApp sent via Messaging Service! SID: {message_obj.sid}")
+                print(f"[SUCCESS] WhatsApp sent via Messaging Service! SID: {message_obj.sid}")
                 return True
             except Exception as e:
                 methods_tried.append(f"Messaging Service: {str(e)[:100]}")
@@ -322,28 +322,28 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
                     from_=from_number,
                     to=phone
                 )
-                print(f"✅ WhatsApp sent via direct number! SID: {message_obj.sid}")
+                print(f"[SUCCESS] WhatsApp sent via direct number! SID: {message_obj.sid}")
                 return True
             except Exception as e:
                 methods_tried.append(f"Direct number: {str(e)[:100]}")
         
         # All methods failed
-        print(f"❌ All WhatsApp methods failed:")
+        print(f"[ERROR] All WhatsApp methods failed:")
         for method in methods_tried:
             print(f"   - {method}")
         
         # Check for common errors
         last_error = methods_tried[-1] if methods_tried else "Unknown"
         if "21608" in last_error or "not enrolled" in last_error.lower():
-            print(f"   → Customer needs to join Twilio sandbox first")
-            print(f"   → Send 'join [keyword]' to +1 415 523 8886")
+            print(f"   -> Customer needs to join Twilio sandbox first")
+            print(f"   -> Send 'join [keyword]' to +1 415 523 8886")
         elif "401" in last_error or "authenticate" in last_error.lower():
-            print(f"   → Check Twilio Account SID and Auth Token")
+            print(f"   -> Check Twilio Account SID and Auth Token")
         
         return False
         
     except Exception as e:
-        print(f"❌ WhatsApp error: {str(e)}")
+        print(f"[ERROR] WhatsApp error: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
@@ -431,47 +431,48 @@ def _send_order_emails(order: Order) -> None:
     
     def send_notifications_async():
         """Send emails and WhatsApp in background - try both, don't let one failure block the other"""
-        # Send WhatsApp to customer FIRST (most reliable)
-        whatsapp_sent = False
-        if order.phone:
-            print(f"📱 Attempting WhatsApp to customer {order.phone}...")
-            whatsapp_sent = _send_whatsapp_message(order.phone, whatsapp_msg)
-            if whatsapp_sent:
-                print(f"✅ Customer WhatsApp notification sent successfully!")
-        
-        # Send WhatsApp to company (instant notification)
-        company_whatsapp_sent = False
-        if company_whatsapp:
-            print(f"📱 Attempting WhatsApp to company {company_whatsapp}...")
-            company_whatsapp_sent = _send_whatsapp_message(company_whatsapp, company_whatsapp_msg)
-            if company_whatsapp_sent:
-                print(f"✅ Company WhatsApp notification sent successfully!")
-            else:
-                print(f"⚠️ Company WhatsApp failed, will try email...")
-        else:
-            print(f"ℹ️ Company WhatsApp not configured (set COMPANY_WHATSAPP_PHONE)")
-        
-        # Try email providers: Brevo (simplest) → SendGrid → SMTP
-        brevo_key = getattr(settings, 'BREVO_API_KEY', '').strip()
-        sendgrid_key = getattr(settings, 'SENDGRID_API_KEY', '').strip()
-        
-        # Debug email provider selection
-        print(f"📧 Email providers check:")
-        print(f"   Brevo key: {'Set' if brevo_key and len(brevo_key) > 20 else 'Not set or too short'}")
-        print(f"   SendGrid key: {'Set' if sendgrid_key and len(sendgrid_key) > 30 else 'Not set'}")
-        
-        # Send customer email
-        if order.email:
-            email_sent = False
-            # Try Brevo first (simplest and most reliable)
-            if brevo_key and len(brevo_key) > 20:
-                print(f"📧 Trying Brevo first for customer email...")
-                email_sent = _send_email_brevo(order.email, subject_customer, message)
-            # Fallback to SendGrid if Brevo not configured
-            if not email_sent and sendgrid_key and len(sendgrid_key) > 30:
-                email_sent = _send_email_sendgrid(order.email, subject_customer, message)
+        try:
+            # Send WhatsApp to customer FIRST (most reliable)
+            whatsapp_sent = False
+            if order.phone:
+                print(f"[NOTIFICATION] Attempting WhatsApp to customer {order.phone}...")
+                whatsapp_sent = _send_whatsapp_message(order.phone, whatsapp_msg)
+                if whatsapp_sent:
+                    print(f"[SUCCESS] Customer WhatsApp notification sent successfully!")
             
-            if not email_sent:
+            # Send WhatsApp to company (instant notification)
+            company_whatsapp_sent = False
+            if company_whatsapp:
+                print(f"[NOTIFICATION] Attempting WhatsApp to company {company_whatsapp}...")
+                company_whatsapp_sent = _send_whatsapp_message(company_whatsapp, company_whatsapp_msg)
+                if company_whatsapp_sent:
+                    print(f"[SUCCESS] Company WhatsApp notification sent successfully!")
+                else:
+                    print(f"[WARNING] Company WhatsApp failed, will try email...")
+            else:
+                print(f"[INFO] Company WhatsApp not configured (set COMPANY_WHATSAPP_PHONE)")
+            
+            # Try email providers: Brevo (simplest) → SendGrid → SMTP
+            brevo_key = getattr(settings, 'BREVO_API_KEY', '').strip()
+            sendgrid_key = getattr(settings, 'SENDGRID_API_KEY', '').strip()
+            
+            # Debug email provider selection
+            print(f"[EMAIL] Email providers check:")
+            print(f"   Brevo key: {'Set' if brevo_key and len(brevo_key) > 20 else 'Not set or too short'}")
+            print(f"   SendGrid key: {'Set' if sendgrid_key and len(sendgrid_key) > 30 else 'Not set'}")
+            
+            # Send customer email
+            if order.email:
+                email_sent = False
+                # Try Brevo first (simplest and most reliable)
+                if brevo_key and len(brevo_key) > 20:
+                    print(f"[EMAIL] Trying Brevo first for customer email...")
+                    email_sent = _send_email_brevo(order.email, subject_customer, message)
+                # Fallback to SendGrid if Brevo not configured
+                if not email_sent and sendgrid_key and len(sendgrid_key) > 30:
+                    email_sent = _send_email_sendgrid(order.email, subject_customer, message)
+                
+                if not email_sent:
                 # Try SMTP as fallback - force use SMTP backend
                 try:
                     from django.core.mail import EmailMessage
@@ -495,32 +496,32 @@ def _send_order_emails(order: Order) -> None:
                         connection=smtp_backend
                     )
                     email.send()
-                    print(f"✅ SMTP email sent to customer: {order.email}")
+                    print(f"[SUCCESS] SMTP email sent to customer: {order.email}")
                     email_sent = True
                     smtp_backend.close()
                 except Exception as e:
-                    print(f"⚠️ SMTP email failed: {str(e)}")
+                    print(f"[WARNING] SMTP email failed: {str(e)}")
                     import traceback
                     traceback.print_exc()
             
-            if not email_sent and not whatsapp_sent:
-                print(f"⚠️ Both email and WhatsApp failed. Order #{order.order_number} placed successfully.")
-                print(f"   Customer can view order at: https://shivorganicdairyfarms.com/order/success/?order_id={order.order_number}")
-        
-        # Send company email (always try, as backup to WhatsApp)
-        if company_email:
-            company_message = message + "\n\n--\nReference: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
-            company_email_sent = False
+                if not email_sent and not whatsapp_sent:
+                    print(f"[WARNING] Both email and WhatsApp failed. Order #{order.order_number} placed successfully.")
+                    print(f"   Customer can view order at: https://shivorganicdairyfarms.com/order/success/?order_id={order.order_number}")
             
-            # Try Brevo first (simplest and most reliable)
-            if brevo_key and len(brevo_key) > 20:
-                print(f"📧 Trying Brevo first for company email...")
-                company_email_sent = _send_email_brevo(company_email, subject_company, company_message)
-            # Fallback to SendGrid if Brevo not configured
-            if not company_email_sent and sendgrid_key and len(sendgrid_key) > 30:
-                company_email_sent = _send_email_sendgrid(company_email, subject_company, company_message)
-            
-            if not company_email_sent:
+            # Send company email (always try, as backup to WhatsApp)
+            if company_email:
+                company_message = message + "\n\n--\nReference: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
+                company_email_sent = False
+                
+                # Try Brevo first (simplest and most reliable)
+                if brevo_key and len(brevo_key) > 20:
+                    print(f"[EMAIL] Trying Brevo first for company email...")
+                    company_email_sent = _send_email_brevo(company_email, subject_company, company_message)
+                # Fallback to SendGrid if Brevo not configured
+                if not company_email_sent and sendgrid_key and len(sendgrid_key) > 30:
+                    company_email_sent = _send_email_sendgrid(company_email, subject_company, company_message)
+                
+                if not company_email_sent:
                 # Try SMTP as fallback - force use SMTP backend
                 try:
                     from django.core.mail import EmailMessage
@@ -544,19 +545,32 @@ def _send_order_emails(order: Order) -> None:
                         connection=smtp_backend
                     )
                     email.send()
-                    print(f"✅ Company SMTP email sent (backup to WhatsApp)")
+                    print(f"[SUCCESS] Company SMTP email sent (backup to WhatsApp)")
                     company_email_sent = True
                     smtp_backend.close()
                 except Exception as e:
-                    print(f"⚠️ Company SMTP email failed: {str(e)}")
+                    print(f"[WARNING] Company SMTP email failed: {str(e)}")
                     import traceback
                     traceback.print_exc()
             
-            if not company_email_sent and not company_whatsapp_sent:
-                print(f"⚠️ Company notification failed (both WhatsApp and email), but order was saved. Check admin panel.")
+                if not company_email_sent and not company_whatsapp_sent:
+                    print(f"[WARNING] Company notification failed (both WhatsApp and email), but order was saved. Check admin panel.")
+        except Exception as e:
+            print(f"[ERROR] Exception in notification thread: {str(e)}")
+            import traceback
+            traceback.print_exc()
     
     # Start notifications in background thread
-    threading.Thread(target=send_notifications_async, daemon=True).start()
+    try:
+        threading.Thread(target=send_notifications_async, daemon=True).start()
+        print(f"[INFO] Started notification thread for order #{order.order_number}")
+    except Exception as e:
+        print(f"[ERROR] Failed to start notification thread: {str(e)}")
+        # Fallback: try sending synchronously if thread fails
+        try:
+            send_notifications_async()
+        except Exception as e2:
+            print(f"[ERROR] Synchronous notification also failed: {str(e2)}")
 
 def check_status(request: HttpRequest, order_number: str) -> JsonResponse:
     try:
@@ -1040,9 +1054,9 @@ SHIV AGRO DAIRY FARMS System
             )
             email.send()
             smtp_backend.close()
-            print("✅ Order confirmation email sent via SMTP")
+            print("[SUCCESS] Order confirmation email sent via SMTP")
         except Exception as e:
-            print(f"⚠️ Failed to send order confirmation email: {str(e)}")
+            print(f"[WARNING] Failed to send order confirmation email: {str(e)}")
             import traceback
             traceback.print_exc()
         
