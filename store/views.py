@@ -177,13 +177,18 @@ def _send_email_brevo(to_email: str, subject: str, message: str) -> bool:
     try:
         import requests
         
-        brevo_api_key = getattr(settings, 'BREVO_API_KEY', '')
+        brevo_api_key = getattr(settings, 'BREVO_API_KEY', '').strip()
         from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'shivorganicdairyfarms@gmail.com')
         from_name = getattr(settings, 'EMAIL_FROM_NAME', 'Shiv Organic Dairy Farms')
         
         if not brevo_api_key:
             print("⚠️ Brevo API key not configured")
             return False
+        
+        # Add xkeysib- prefix if missing (some systems don't allow it in env vars)
+        if not brevo_api_key.startswith('xkeysib-'):
+            brevo_api_key = f'xkeysib-{brevo_api_key}'
+            print(f"📧 Added xkeysib- prefix to Brevo API key")
         
         url = "https://api.brevo.com/v3/smtp/email"
         headers = {
