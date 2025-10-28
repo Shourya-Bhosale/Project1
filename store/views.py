@@ -97,13 +97,13 @@ def place_order(request: HttpRequest) -> HttpResponse:
                          'application/json' in request.headers.get('Accept', '')
                 
                 if order.payment_method == 'COD':
-                    # Defer email until after commit to avoid DB locks
-                    def on_commit_send():
-                        try:
-                            _send_order_emails(order)
-                        except Exception as e:
-                            print(f"Warning: Email sending failed: {str(e)}")
-                    transaction.on_commit(on_commit_send)
+                    # Send emails immediately after order is saved
+                    try:
+                        _send_order_emails(order)
+                    except Exception as e:
+                        print(f"Warning: Email sending failed: {str(e)}")
+                        import traceback
+                        traceback.print_exc()
                     return redirect(reverse('order_success') + f'?order_id={order.order_number}')
                 elif order.payment_method == 'RAZORPAY' and is_ajax:
                     # For RAZORPAY via AJAX, return JSON with order info for payment initiation
