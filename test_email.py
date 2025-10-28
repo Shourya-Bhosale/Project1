@@ -51,6 +51,10 @@ try:
     # Close the connection
     smtp_backend.close()
     print("[OK] SMTP connection closed properly")
+    print("\n" + "="*60)
+    print("TEST PASSED: Email configuration is working correctly!")
+    print("Check your inbox: shivorganicdairyfarms@gmail.com")
+    print("="*60)
     
 except Exception as e:
     print(f"[ERROR] Error sending email: {str(e)}")
