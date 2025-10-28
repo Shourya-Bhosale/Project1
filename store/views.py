@@ -436,14 +436,36 @@ def _send_order_emails(order: Order) -> None:
                 company_email_sent = _send_email_sendgrid(company_email, subject_company, company_message)
             
             if not company_email_sent:
-                # Try SMTP as fallback
+                # Try SMTP as fallback (force SMTP backend if SendGrid failed)
                 try:
-                    result = send_mail(subject_company, company_message, from_email, [company_email], fail_silently=True)
-                    if result:
-                        print(f"✅ Company SMTP email sent (backup to WhatsApp)")
-                        company_email_sent = True
+                    from django.core.mail import EmailMessage
+                    from django.core.mail.backends.smtp import EmailBackend
+                    
+                    # Create SMTP backend manually to bypass SendGrid
+                    smtp_backend = EmailBackend(
+                        host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                        port=getattr(settings, 'EMAIL_PORT', 587),
+                        username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                        password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                        use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                        timeout=getattr(settings, 'EMAIL_TIMEOUT', 5),
+                    )
+                    
+                    email = EmailMessage(
+                        subject=subject_company,
+                        body=company_message,
+                        from_email=from_email,
+                        to=[company_email],
+                        connection=smtp_backend
+                    )
+                    email.send()
+                    print(f"✅ Company SMTP email sent (backup to WhatsApp)")
+                    company_email_sent = True
+                    smtp_backend.close()
                 except Exception as e:
                     print(f"⚠️ Company SMTP email failed: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
             
             if not company_email_sent and not company_whatsapp_sent:
                 print(f"⚠️ Company notification failed (both WhatsApp and email), but order was saved. Check admin panel.")

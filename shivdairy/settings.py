@@ -174,19 +174,25 @@ DEFAULT_FROM_EMAIL = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gm
 ORDER_NOTIFICATION_EMAIL = os.environ.get('ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
 COMPANY_WHATSAPP_PHONE = os.environ.get('COMPANY_WHATSAPP_PHONE', '')  # Company WhatsApp number for order notifications
 
+# Email configuration - Always set SMTP settings for fallback
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com')
+EMAIL_HOST_PASSWORD_RAW = os.environ.get('EMAIL_HOST_PASSWORD', '')
+EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_RAW.replace(' ', '') if EMAIL_HOST_PASSWORD_RAW else ''
+EMAIL_TIMEOUT = 5
+
 # Fallback to SMTP if SendGrid not configured
 if not SENDGRID_API_KEY:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com')
-    EMAIL_HOST_PASSWORD_RAW = os.environ.get('EMAIL_HOST_PASSWORD', 'ifos qbmm euwz jqes')
-    EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_RAW.replace(' ', '')
-    EMAIL_TIMEOUT = 5
     print(f"📧 Using SMTP backend (SendGrid not configured)")
+    if not EMAIL_HOST_PASSWORD:
+        print(f"⚠️ WARNING: EMAIL_HOST_PASSWORD not set! SMTP will fail.")
 else:
-    print(f"📧 Using SendGrid API for emails")
+    print(f"📧 Using SendGrid API for emails (SMTP configured as fallback)")
+    if not EMAIL_HOST_PASSWORD:
+        print(f"⚠️ WARNING: EMAIL_HOST_PASSWORD not set! SMTP fallback will fail if SendGrid fails.")
 
 # WhatsApp (Twilio)
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
