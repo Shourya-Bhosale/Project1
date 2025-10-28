@@ -218,79 +218,85 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
     try:
         from twilio.rest import Client
         
-        account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '')
-        auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', '')
-        messaging_service_sid = getattr(settings, 'TWILIO_MESSAGING_SERVICE_SID', '')
-        from_number = getattr(settings, 'TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')
+        account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '').strip()
+        auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', '').strip()
+        messaging_service_sid = getattr(settings, 'TWILIO_MESSAGING_SERVICE_SID', '').strip()
+        from_number = getattr(settings, 'TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886').strip()
+        
+        # Remove any spaces from from_number
+        from_number = from_number.replace(' ', '')
         
         if not account_sid or not auth_token:
             print("⚠️ Twilio credentials not configured")
-            print(f"   Account SID: {'Set' if account_sid else 'Missing'}, Auth Token: {'Set' if auth_token else 'Missing'}")
             return False
         
-        # Check auth token length (should be 32 characters)
         if len(auth_token) < 30:
-            print(f"⚠️ Twilio Auth Token too short ({len(auth_token)} chars, should be 32)")
-            print(f"   Get correct token from: https://console.twilio.com/")
+            print(f"⚠️ Twilio Auth Token too short ({len(auth_token)} chars)")
             return False
         
-        # Debug: Check credentials (don't print full values)
-        print(f"📱 Twilio Account SID: {account_sid[:4]}... (length: {len(account_sid)}), Auth Token length: {len(auth_token)}")
+        print(f"📱 Sending WhatsApp to {phone} via Twilio")
         
-        # Format phone number (add country code if needed)
+        # Format phone number
+        original_phone = phone
         if not phone.startswith('+'):
-            phone = f'+91{phone.lstrip("0")}'  # Add India country code
+            phone = f'+91{phone.lstrip("0")}'
         
         if not phone.startswith('whatsapp:'):
             phone = f'whatsapp:{phone}'
         
+        print(f"   Formatted: {phone} (from {original_phone})")
+        print(f"   From: {from_number}")
+        
         client = Client(account_sid, auth_token)
         
-        # Try messaging service first, fallback to direct number if it fails
-        try:
-            if messaging_service_sid:
-                print(f"   Using Messaging Service: {messaging_service_sid}")
+        # Try all methods in order until one works
+        methods_tried = []
+        
+        # Method 1: Try Messaging Service
+        if messaging_service_sid:
+            try:
+                print(f"   Trying Messaging Service...")
                 message_obj = client.messages.create(
                     body=message,
                     messaging_service_sid=messaging_service_sid,
                     to=phone
                 )
-            else:
-                print(f"   Using direct number: {from_number}")
+                print(f"✅ WhatsApp sent via Messaging Service! SID: {message_obj.sid}")
+                return True
+            except Exception as e:
+                methods_tried.append(f"Messaging Service: {str(e)[:100]}")
+        
+        # Method 2: Try direct from number
+        if from_number:
+            try:
+                print(f"   Trying direct number...")
                 message_obj = client.messages.create(
                     body=message,
                     from_=from_number,
                     to=phone
                 )
-            
-            print(f"✅ WhatsApp sent to {phone} (SID: {message_obj.sid})")
-            return True
-        except Exception as msg_error:
-            # If messaging service fails, try direct number as fallback
-            if messaging_service_sid:
-                print(f"⚠️ Messaging Service failed: {str(msg_error)}")
-                print(f"   Trying fallback with direct number...")
-                try:
-                    message_obj = client.messages.create(
-                        body=message,
-                        from_=from_number,
-                        to=phone
-                    )
-                    print(f"✅ WhatsApp sent via fallback to {phone} (SID: {message_obj.sid})")
-                    return True
-                except Exception as fallback_error:
-                    raise fallback_error
-            else:
-                raise msg_error
+                print(f"✅ WhatsApp sent via direct number! SID: {message_obj.sid}")
+                return True
+            except Exception as e:
+                methods_tried.append(f"Direct number: {str(e)[:100]}")
+        
+        # All methods failed
+        print(f"❌ All WhatsApp methods failed:")
+        for method in methods_tried:
+            print(f"   - {method}")
+        
+        # Check for common errors
+        last_error = methods_tried[-1] if methods_tried else "Unknown"
+        if "21608" in last_error or "not enrolled" in last_error.lower():
+            print(f"   → Customer needs to join Twilio sandbox first")
+            print(f"   → Send 'join [keyword]' to +1 415 523 8886")
+        elif "401" in last_error or "authenticate" in last_error.lower():
+            print(f"   → Check Twilio Account SID and Auth Token")
+        
+        return False
+        
     except Exception as e:
-        error_str = str(e)
-        if "401" in error_str or "Authenticate" in error_str:
-            print(f"❌ Twilio Authentication Failed")
-            print(f"   → Check Account SID and Auth Token in Render environment")
-            print(f"   → Auth Token should be 32 characters long")
-            print(f"   → Get correct values from: https://console.twilio.com/")
-        else:
-            print(f"❌ WhatsApp error: {error_str}")
+        print(f"❌ WhatsApp error: {str(e)}")
         import traceback
         traceback.print_exc()
         return False
