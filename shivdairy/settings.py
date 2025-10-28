@@ -183,7 +183,9 @@ ORDER_NOTIFICATION_EMAIL = os.environ.get('ORDER_NOTIFICATION_EMAIL', 'shivorgan
 EMAIL_TIMEOUT = 5  # 5 seconds timeout for email operations
 
 # Debug: Print email config (without showing full password)
-print(f"Email Config - User: {EMAIL_HOST_USER}, Password length: {len(EMAIL_HOST_PASSWORD)}, Company: {ORDER_NOTIFICATION_EMAIL}")
+print(f"📧 Email Config - User: {EMAIL_HOST_USER}, Password length: {len(EMAIL_HOST_PASSWORD)}, Company: {ORDER_NOTIFICATION_EMAIL}")
+if len(EMAIL_HOST_PASSWORD) != 16:
+    print(f"⚠️ WARNING: Gmail app passwords should be 16 characters, but got {len(EMAIL_HOST_PASSWORD)}")
 
 # Fallback to console for testing if SMTP fails
 if not DEBUG:
