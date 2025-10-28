@@ -228,8 +228,14 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
             print(f"   Account SID: {'Set' if account_sid else 'Missing'}, Auth Token: {'Set' if auth_token else 'Missing'}")
             return False
         
+        # Check auth token length (should be 32 characters)
+        if len(auth_token) < 30:
+            print(f"⚠️ Twilio Auth Token too short ({len(auth_token)} chars, should be 32)")
+            print(f"   Get correct token from: https://console.twilio.com/")
+            return False
+        
         # Debug: Check credentials (don't print full values)
-        print(f"📱 Twilio Account SID: {account_sid[:4]}... (length: {len(account_sid)}), Auth Token: {auth_token[:4]}... (length: {len(auth_token)})")
+        print(f"📱 Twilio Account SID: {account_sid[:4]}... (length: {len(account_sid)}), Auth Token length: {len(auth_token)}")
         
         # Format phone number (add country code if needed)
         if not phone.startswith('+'):
@@ -257,7 +263,14 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
         print(f"✅ WhatsApp sent to {phone} (SID: {message_obj.sid})")
         return True
     except Exception as e:
-        print(f"❌ WhatsApp error: {str(e)}")
+        error_str = str(e)
+        if "401" in error_str or "Authenticate" in error_str:
+            print(f"❌ Twilio Authentication Failed")
+            print(f"   → Check Account SID and Auth Token in Render environment")
+            print(f"   → Auth Token should be 32 characters long")
+            print(f"   → Get correct values from: https://console.twilio.com/")
+        else:
+            print(f"❌ WhatsApp error: {error_str}")
         import traceback
         traceback.print_exc()
         return False
@@ -314,42 +327,48 @@ def _send_order_emails(order: Order) -> None:
     whatsapp_msg += "\nWe'll contact you for delivery details soon!"
     
     def send_notifications_async():
-        """Send emails and WhatsApp in background"""
-        # Try SendGrid first, fallback to SMTP
+        """Send emails and WhatsApp in background - try both, don't let one failure block the other"""
+        # Send WhatsApp FIRST (most reliable)
+        whatsapp_sent = False
+        if order.phone:
+            print(f"📱 Attempting WhatsApp to {order.phone}...")
+            whatsapp_sent = _send_whatsapp_message(order.phone, whatsapp_msg)
+            if whatsapp_sent:
+                print(f"✅ WhatsApp notification sent successfully!")
+        
+        # Try SendGrid email, fallback to SMTP
         sendgrid_key = getattr(settings, 'SENDGRID_API_KEY', '')
         
         # Send customer email
         if order.email:
-            if sendgrid_key:
-                _send_email_sendgrid(order.email, subject_customer, message)
-            else:
+            email_sent = False
+            if sendgrid_key and len(sendgrid_key) > 30:  # Valid SendGrid key should be long
+                email_sent = _send_email_sendgrid(order.email, subject_customer, message)
+            
+            if not email_sent:
+                # Try SMTP as fallback
                 try:
                     result = send_mail(subject_customer, message, from_email, [order.email], fail_silently=True)
                     if result:
                         print(f"✅ SMTP email sent to customer: {order.email}")
-                    else:
-                        print(f"⚠️ SMTP email failed for customer")
+                        email_sent = True
                 except Exception as e:
-                    print(f"❌ SMTP email error: {str(e)}")
+                    print(f"⚠️ SMTP email failed: {str(e)}")
+            
+            if not email_sent and not whatsapp_sent:
+                print(f"⚠️ Both email and WhatsApp failed. Order #{order.order_number} placed successfully.")
+                print(f"   Customer can view order at: https://shivorganicdairyfarms.com/order/success/?order_id={order.order_number}")
         
-        # Send company email
+        # Send company email (always try)
         if company_email:
             company_message = message + "\n\n--\nReference: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
-            if sendgrid_key:
+            if sendgrid_key and len(sendgrid_key) > 30:
                 _send_email_sendgrid(company_email, subject_company, company_message)
             else:
                 try:
-                    result = send_mail(subject_company, company_message, from_email, [company_email], fail_silently=True)
-                    if result:
-                        print(f"✅ SMTP email sent to company: {company_email}")
-                    else:
-                        print(f"⚠️ SMTP email failed for company")
-                except Exception as e:
-                    print(f"❌ SMTP email error: {str(e)}")
-        
-        # Send WhatsApp to customer
-        if order.phone:
-            _send_whatsapp_message(order.phone, whatsapp_msg)
+                    send_mail(subject_company, company_message, from_email, [company_email], fail_silently=True)
+                except:
+                    pass
     
     # Start notifications in background thread
     threading.Thread(target=send_notifications_async, daemon=True).start()
