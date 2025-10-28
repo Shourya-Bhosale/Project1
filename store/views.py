@@ -43,55 +43,70 @@ def place_order(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
         form = OrderForm(request.POST)
         if form.is_valid():
-            order: Order = form.save(commit=False)
-            # Save core details from form
-            order.payment_method = form.cleaned_data.get('payment_method')
-            order.payment_reference = form.cleaned_data.get('payment_reference', '')
-            
-            # For RAZORPAY, set payment_status to pending
-            if order.payment_method == 'RAZORPAY':
-                order.payment_status = 'pending'
-            
-            order.save()
-            total = 0
-            for product in products:
-                qty_str = request.POST.get(f'qty_{product.id}', '0').strip() or '0'
-                try:
-                    qty = int(qty_str)
-                except ValueError:
-                    qty = 0
-                if qty > 0:
-                    OrderItem.objects.create(
-                        order=order,
-                        product=product,
-                        quantity=qty,
-                        unit_price=product.price,
-                    )
-                    total += qty * product.price
-            order.total_amount = total
-            order.save()
-
-            if order.items.count() == 0:
-                order.delete()
-                form.add_error(None, 'Please add at least one product to your order.')
-            else:
-                # Store order ID in session for payment processing
-                request.session['pending_order_id'] = order.id
+            try:
+                order: Order = form.save(commit=False)
+                # Save core details from form
+                order.payment_method = form.cleaned_data.get('payment_method')
+                order.payment_reference = form.cleaned_data.get('payment_reference', '')
                 
-                if order.payment_method == 'COD':
-                    # Defer email until after commit to avoid DB locks
-                    def on_commit_send():
-                        _send_order_emails(order)
-                    transaction.on_commit(on_commit_send)
-                    return redirect(reverse('order_success') + f'?order_id={order.order_number}')
+                # For RAZORPAY, set payment_status to pending
+                if order.payment_method == 'RAZORPAY':
+                    order.payment_status = 'pending'
+                
+                order.save()
+                total = 0
+                for product in products:
+                    qty_str = request.POST.get(f'qty_{product.id}', '0').strip() or '0'
+                    try:
+                        qty = int(qty_str)
+                    except ValueError:
+                        qty = 0
+                    if qty > 0:
+                        OrderItem.objects.create(
+                            order=order,
+                            product=product,
+                            quantity=qty,
+                            unit_price=product.price,
+                        )
+                        total += qty * product.price
+                order.total_amount = total
+                order.save()
+
+                if order.items.count() == 0:
+                    order.delete()
+                    form.add_error(None, 'Please add at least one product to your order.')
                 else:
-                    # For RAZORPAY, return JSON with order info for payment initiation
-                    # The frontend will handle payment, then redirect to payment_success
-                    return JsonResponse({
-                        'order_id': order.id,
-                        'order_number': order.order_number,
-                        'total_amount': order.total_amount
-                    })
+                    # Store order ID in session for payment processing
+                    request.session['pending_order_id'] = order.id
+                    
+                    # Check if this is an AJAX request (for RAZORPAY)
+                    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
+                             request.content_type == 'application/json' or \
+                             'application/json' in request.headers.get('Accept', '')
+                    
+                    if order.payment_method == 'COD':
+                        # Defer email until after commit to avoid DB locks
+                        def on_commit_send():
+                            _send_order_emails(order)
+                        transaction.on_commit(on_commit_send)
+                        return redirect(reverse('order_success') + f'?order_id={order.order_number}')
+                    elif order.payment_method == 'RAZORPAY' and is_ajax:
+                        # For RAZORPAY via AJAX, return JSON with order info for payment initiation
+                        return JsonResponse({
+                            'order_id': order.id,
+                            'order_number': order.order_number,
+                            'total_amount': order.total_amount
+                        })
+                    else:
+                        # If RAZORPAY but not AJAX, redirect to order success (fallback)
+                        return redirect(reverse('order_success') + f'?order_id={order.order_number}')
+                        
+            except Exception as e:
+                import traceback
+                print(f"Error in place_order: {str(e)}")
+                print(traceback.format_exc())
+                form.add_error(None, f'An error occurred while processing your order. Please try again.')
+        # If form is invalid, render form with errors
     else:
         form = OrderForm()
 
