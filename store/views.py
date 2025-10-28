@@ -97,10 +97,12 @@ def place_order(request: HttpRequest) -> HttpResponse:
                 
                 if order.payment_method == 'COD':
                     # Send emails immediately after order is saved
+                    print(f"[ORDER] COD order placed: #{order.order_number}, Customer: {order.email}")
                     try:
                         _send_order_emails(order)
+                        print(f"[ORDER] Email notification function called for order #{order.order_number}")
                     except Exception as e:
-                        print(f"Warning: Email sending failed: {str(e)}")
+                        print(f"[ERROR] Email sending failed for order #{order.order_number}: {str(e)}")
                         import traceback
                         traceback.print_exc()
                     return redirect(reverse('order_success') + f'?order_id={order.order_number}')
@@ -379,7 +381,7 @@ def _send_order_emails(order: Order) -> None:
     lines.append('')
     lines.append(f'Payment method: {order.get_payment_method_display()}')
     if order.payment_method == 'RAZORPAY' and order.payment_status == 'paid':
-        lines.append(f'Payment status: ✅ Paid')
+        lines.append(f'Payment status: Paid')
         if order.razorpay_payment_id:
             lines.append(f'Razorpay Payment ID: {order.razorpay_payment_id}')
     elif order.payment_reference:
@@ -396,28 +398,28 @@ def _send_order_emails(order: Order) -> None:
     order_items = list(order.items.select_related('product'))
     
     # Create customer WhatsApp message (shorter format)
-    whatsapp_msg = f"✅ Order #{order.order_number} Confirmed!\n\n"
-    whatsapp_msg += f"Total: ₹{order.total_amount}\n"
+    whatsapp_msg = f"Order #{order.order_number} Confirmed!\n\n"
+    whatsapp_msg += f"Total: Rs {order.total_amount}\n"
     whatsapp_msg += f"Payment: {order.get_payment_method_display()}\n"
     if order.address_line1:
-        whatsapp_msg += f"📍 {order.address_line1}, {order.city}\n"
+        whatsapp_msg += f"Location: {order.address_line1}, {order.city}\n"
     whatsapp_msg += "\nWe'll contact you for delivery details soon!"
     
     # Create company WhatsApp message (detailed format)
-    company_whatsapp_msg = f"🚨 NEW ORDER #{order.order_number}\n\n"
-    company_whatsapp_msg += f"👤 {order.customer_name}\n"
-    company_whatsapp_msg += f"📞 {order.phone}\n"
-    company_whatsapp_msg += f"💳 Payment: {order.get_payment_method_display()}\n"
+    company_whatsapp_msg = f"NEW ORDER #{order.order_number}\n\n"
+    company_whatsapp_msg += f"Customer: {order.customer_name}\n"
+    company_whatsapp_msg += f"Phone: {order.phone}\n"
+    company_whatsapp_msg += f"Payment: {order.get_payment_method_display()}\n"
     if order.payment_method == 'RAZORPAY' and order.payment_status == 'paid':
-        company_whatsapp_msg += f"✅ Payment Status: Paid\n"
-    company_whatsapp_msg += f"💰 Total: ₹{order.total_amount}\n\n"
+        company_whatsapp_msg += f"Payment Status: Paid\n"
+    company_whatsapp_msg += f"Total: Rs {order.total_amount}\n\n"
     
     # Add order items
-    company_whatsapp_msg += "📦 Items:\n"
+    company_whatsapp_msg += "Items:\n"
     for item in order_items:
-        company_whatsapp_msg += f"   • {item.product.name} x {item.quantity} = ₹{item.line_total()}\n"
+        company_whatsapp_msg += f"   - {item.product.name} x {item.quantity} = Rs {item.line_total()}\n"
     
-    company_whatsapp_msg += "\n📍 Delivery:\n"
+    company_whatsapp_msg += "\nDelivery:\n"
     if order.latitude and order.longitude:
         company_whatsapp_msg += f"   {order.address_line1}\n"
         company_whatsapp_msg += f"   {order.city}, {order.state} {order.postal_code}\n"
@@ -427,7 +429,7 @@ def _send_order_emails(order: Order) -> None:
         company_whatsapp_msg += f"   {order.city}, {order.state} {order.postal_code}\n"
     
     if order.notes:
-        company_whatsapp_msg += f"\n📝 Notes: {order.notes}\n"
+        company_whatsapp_msg += f"\nNotes: {order.notes}\n"
     
     def send_notifications_async():
         """Send emails and WhatsApp in background - try both, don't let one failure block the other"""
@@ -560,17 +562,25 @@ def _send_order_emails(order: Order) -> None:
             import traceback
             traceback.print_exc()
     
-    # Start notifications in background thread
+    # Start notifications in background thread (non-daemon so it completes)
+    print(f"[EMAIL] Starting email notification for order #{order.order_number}")
+    print(f"[EMAIL] Customer email: {order.email if order.email else 'NOT PROVIDED'}")
     try:
-        threading.Thread(target=send_notifications_async, daemon=True).start()
-        print(f"[INFO] Started notification thread for order #{order.order_number}")
+        thread = threading.Thread(target=send_notifications_async, daemon=False)
+        thread.start()
+        print(f"[EMAIL] Notification thread started for order #{order.order_number}")
     except Exception as e:
         print(f"[ERROR] Failed to start notification thread: {str(e)}")
+        import traceback
+        traceback.print_exc()
         # Fallback: try sending synchronously if thread fails
         try:
+            print(f"[EMAIL] Falling back to synchronous email sending...")
             send_notifications_async()
         except Exception as e2:
             print(f"[ERROR] Synchronous notification also failed: {str(e2)}")
+            import traceback
+            traceback.print_exc()
 
 def check_status(request: HttpRequest, order_number: str) -> JsonResponse:
     try:
