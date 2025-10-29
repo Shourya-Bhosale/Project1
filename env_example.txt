@@ -17,6 +17,12 @@ EMAIL_HOST_USER=your-email@gmail.com
 EMAIL_HOST_PASSWORD=your-app-password
 ORDER_NOTIFICATION_EMAIL=your-company-email@gmail.com
 
-# Company WhatsApp Notification (optional but recommended)
-# Format: +91XXXXXXXXXX or whatsapp:+91XXXXXXXXXX
+# WhatsApp Cloud API (Meta) - 1,000 free messages/month
+# Get credentials from: https://business.facebook.com/settings/system-users
+WHATSAPP_ACCESS_TOKEN=your_meta_access_token_here
+WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id_here
+WHATSAPP_API_VERSION=v18.0
+
+# Company WhatsApp Phone (where to send order alerts)
+# Format: +91XXXXXXXXXX
 COMPANY_WHATSAPP_PHONE=+91XXXXXXXXXX
