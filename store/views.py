@@ -96,11 +96,83 @@ def place_order(request: HttpRequest) -> HttpResponse:
                          'application/json' in request.headers.get('Accept', '')
                 
                 if order.payment_method == 'COD':
-                    # Send emails immediately after order is saved
+                    # Send emails immediately after order is saved (synchronously to ensure completion)
                     print(f"[ORDER] COD order placed: #{order.order_number}, Customer: {order.email}")
                     try:
-                        _send_order_emails(order)
-                        print(f"[ORDER] Email notification function called for order #{order.order_number}")
+                        # Send emails synchronously for COD to ensure they complete
+                        from django.core.mail import EmailMessage
+                        from django.core.mail.backends.smtp import EmailBackend
+                        from django.conf import settings
+                        
+                        subject_customer = f'Your Shiv Organic Dairy Farm order #{order.order_number} confirmation'
+                        lines = [
+                            f'Thank you {order.customer_name} for your order!',
+                            '',
+                            f'Order Number: {order.order_number}',
+                            'Order summary:',
+                        ]
+                        for item in order.items.select_related('product'):
+                            lines.append(f"- {item.product.name} x {item.quantity} @ ₹{item.unit_price} = ₹{item.line_total()}")
+                        lines.append(f'Total: ₹{order.total_amount}')
+                        if order.latitude and order.longitude:
+                            lines.append(f'Delivery location: {order.latitude}, {order.longitude}')
+                            lines.append(f'Maps link: https://maps.google.com/?q={order.latitude},{order.longitude}')
+                        lines.append('')
+                        lines.append(f'Payment method: {order.get_payment_method_display()}')
+                        lines.append('')
+                        lines.append('We will contact you shortly about delivery details.')
+                        message = '\n'.join(lines)
+                        
+                        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'shivorganicdairyfarms@gmail.com')
+                        company_email = getattr(settings, 'ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
+                        
+                        # Send customer email directly (synchronous)
+                        if order.email:
+                            print(f"[EMAIL] Sending customer email synchronously to {order.email}...")
+                            smtp_backend = EmailBackend(
+                                host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                                port=getattr(settings, 'EMAIL_PORT', 587),
+                                username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                                password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                                use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                                timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
+                            )
+                            email = EmailMessage(
+                                subject=subject_customer,
+                                body=message,
+                                from_email=from_email,
+                                to=[order.email],
+                                connection=smtp_backend
+                            )
+                            email.send()
+                            print(f"[SUCCESS] Customer email sent to {order.email}")
+                            smtp_backend.close()
+                        
+                        # Send company email directly (synchronous)
+                        if company_email:
+                            print(f"[EMAIL] Sending company email synchronously to {company_email}...")
+                            smtp_backend = EmailBackend(
+                                host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                                port=getattr(settings, 'EMAIL_PORT', 587),
+                                username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                                password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                                use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                                timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
+                            )
+                            company_message = message + "\n\n--\nReference: Order placed via COD"
+                            subject_company = f'New order #{order.order_number} received - Shiv Organic Dairy Farm'
+                            email = EmailMessage(
+                                subject=subject_company,
+                                body=company_message,
+                                from_email=from_email,
+                                to=[company_email],
+                                connection=smtp_backend
+                            )
+                            email.send()
+                            print(f"[SUCCESS] Company email sent to {company_email}")
+                            smtp_backend.close()
+                        
+                        print(f"[ORDER] Email notification completed for order #{order.order_number}")
                     except Exception as e:
                         print(f"[ERROR] Email sending failed for order #{order.order_number}: {str(e)}")
                         import traceback
