@@ -269,17 +269,6 @@
                         <div class="muted">Any special instructions for your order (optional)</div>
                     </div>
 
-                    <!-- Coupon Code Section -->
-                    <div class="full" style="background: #f8f9fa; padding: 20px; border-radius: 10px; border: 2px solid #e9ecef; margin-top: 20px;">
-                        <label style="color: #2c5aa0; font-weight: bold; font-size: 1.1em;">🎆 Diwali Coupon Code (Optional)</label>
-                        <div style="display: flex; gap: 10px; margin-top: 10px;">
-                            <input type="text" id="coupon_code" name="coupon_code" placeholder="Enter coupon code DW@SHIV" style="flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 1em;" onchange="applyCoupon()">
-                            <button type="button" onclick="applyCoupon()" style="background: linear-gradient(135deg, #ff6b35, #f7931e); color: white; padding: 12px 20px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-                                Apply
-                            </button>
-                        </div>
-                        <div id="coupon_message" style="margin-top: 10px; font-size: 0.9em;"></div>
-                    </div>
                     <div>
                         <label>Payment Method</label>
                         {{ form.payment_method }}
@@ -406,38 +395,13 @@
             
             console.log('Total bill items:', billItems.length, 'Total amount:', total);
             
-            // Apply coupon discount if valid
-            const couponCode = document.getElementById('coupon_code').value.trim().toUpperCase();
-            let finalTotal = total;
-            let discount = 0;
-            if (couponCode === 'DW@SHIV') {
-                discount = Math.round(total * 0.05); // 5% discount
-                finalTotal = total - discount;
-            }
-            
-            // Update bill display with discount
-            updateBillDisplay(billItems, total, discount, finalTotal);
+            // Update bill display
+            updateBillDisplay(billItems, total, 0, total);
             
             // Update payment amounts
-            document.getElementById('onlinePaymentAmount').textContent = finalTotal;
+            document.getElementById('onlinePaymentAmount').textContent = total;
         }
 
-        function applyCoupon() {
-            const couponCode = document.getElementById('coupon_code').value.trim().toUpperCase();
-            const messageDiv = document.getElementById('coupon_message');
-            
-            if (couponCode === 'DW@SHIV') {
-                messageDiv.innerHTML = '<span style="color: #28a745; font-weight: bold;">✅ Coupon Applied! 5% Diwali Discount Applied!</span>';
-                messageDiv.style.color = '#28a745';
-                updateTotalAmount(); // Recalculate with discount
-            } else if (couponCode === '') {
-                messageDiv.innerHTML = '';
-                updateTotalAmount(); // Recalculate without discount
-            } else {
-                messageDiv.innerHTML = '<span style="color: #dc3545; font-weight: bold;">❌ Invalid coupon code. Try DW@SHIV for 5% off!</span>';
-                messageDiv.style.color = '#dc3545';
-            }
-        }
 
         function handleOrderSubmission(event) {
             event.preventDefault();
@@ -642,8 +606,8 @@
             const billSubtotal = document.getElementById('bill-subtotal');
             const billTotalAmount = document.getElementById('bill-total-amount');
             
-            // Use finalTotal if provided, otherwise use subtotal
-            const total = finalTotal !== null ? finalTotal : subtotal;
+            // Use subtotal as total (no discounts)
+            const total = subtotal;
             
             if (billItems.length > 0) {
                 billItemsDiv.innerHTML = billItems.map(item => `
@@ -666,27 +630,6 @@
                 
                 // Show subtotal
                 billSubtotal.textContent = subtotal;
-                
-                // Show discount if applicable
-                if (discount > 0) {
-                    // Add discount line to the bill
-                    const discountLine = document.createElement('div');
-                    discountLine.className = 'bill-item';
-                    discountLine.style.borderTop = '1px solid #eee';
-                    discountLine.style.paddingTop = '10px';
-                    discountLine.innerHTML = `
-                        <div class="bill-item-info">
-                            <div class="bill-item-details">
-                                <h5 style="color: #28a745;">🎆 Diwali Discount (DW@SHIV)</h5>
-                            </div>
-                        </div>
-                        <div class="bill-item-quantity"></div>
-                        <div class="bill-item-price" style="color: #28a745; font-weight: bold;">
-                            -₹${discount}
-                        </div>
-                    `;
-                    billItemsDiv.appendChild(discountLine);
-                }
                 
                 // Show final total
                 billTotalAmount.textContent = total;
