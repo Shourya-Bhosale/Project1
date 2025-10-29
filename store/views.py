@@ -125,54 +125,106 @@ def place_order(request: HttpRequest) -> HttpResponse:
                         
                         from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'shivorganicdairyfarms@gmail.com')
                         company_email = getattr(settings, 'ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
+                        company_whatsapp = getattr(settings, 'COMPANY_WHATSAPP_PHONE', '').strip()
+                        
+                        # Send customer WhatsApp notification (fast and reliable)
+                        if order.phone:
+                            print(f"[WHATSAPP] Sending customer WhatsApp to {order.phone}...")
+                            customer_whatsapp_msg = f"Order #{order.order_number} Confirmed!\n\n"
+                            customer_whatsapp_msg += f"Total: Rs {order.total_amount}\n"
+                            customer_whatsapp_msg += f"Payment: {order.get_payment_method_display()}\n"
+                            if order.address_line1:
+                                customer_whatsapp_msg += f"Location: {order.address_line1}, {order.city}\n"
+                            customer_whatsapp_msg += "\nWe'll contact you for delivery details soon!"
+                            try:
+                                whatsapp_sent = _send_whatsapp_message(order.phone, customer_whatsapp_msg)
+                                if whatsapp_sent:
+                                    print(f"[SUCCESS] Customer WhatsApp sent to {order.phone}")
+                                else:
+                                    print(f"[WARNING] Customer WhatsApp failed, email will be sent")
+                            except Exception as e:
+                                print(f"[ERROR] Customer WhatsApp error: {str(e)}")
                         
                         # Send customer email directly (synchronous)
                         if order.email:
                             print(f"[EMAIL] Sending customer email synchronously to {order.email}...")
-                            smtp_backend = EmailBackend(
-                                host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
-                                port=getattr(settings, 'EMAIL_PORT', 587),
-                                username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
-                                password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
-                                use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
-                                timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
-                            )
-                            email = EmailMessage(
-                                subject=subject_customer,
-                                body=message,
-                                from_email=from_email,
-                                to=[order.email],
-                                connection=smtp_backend
-                            )
-                            email.send()
-                            print(f"[SUCCESS] Customer email sent to {order.email}")
-                            smtp_backend.close()
+                            try:
+                                smtp_backend = EmailBackend(
+                                    host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                                    port=getattr(settings, 'EMAIL_PORT', 587),
+                                    username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                                    password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                                    use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                                    timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
+                                )
+                                email = EmailMessage(
+                                    subject=subject_customer,
+                                    body=message,
+                                    from_email=from_email,
+                                    to=[order.email],
+                                    connection=smtp_backend
+                                )
+                                email.send()
+                                print(f"[SUCCESS] Customer email sent to {order.email}")
+                                smtp_backend.close()
+                            except Exception as e:
+                                print(f"[WARNING] Customer email failed: {str(e)}")
+                        
+                        # Send company WhatsApp notification (instant notification)
+                        if company_whatsapp:
+                            print(f"[WHATSAPP] Sending company WhatsApp to {company_whatsapp}...")
+                            company_whatsapp_msg = f"NEW ORDER #{order.order_number}\n\n"
+                            company_whatsapp_msg += f"Customer: {order.customer_name}\n"
+                            company_whatsapp_msg += f"Phone: {order.phone}\n"
+                            company_whatsapp_msg += f"Payment: {order.get_payment_method_display()}\n"
+                            company_whatsapp_msg += f"Total: Rs {order.total_amount}\n\n"
+                            company_whatsapp_msg += "Items:\n"
+                            for item in order.items.select_related('product'):
+                                company_whatsapp_msg += f"   - {item.product.name} x {item.quantity} = Rs {item.line_total()}\n"
+                            company_whatsapp_msg += f"\nDelivery:\n"
+                            company_whatsapp_msg += f"   {order.address_line1}\n"
+                            company_whatsapp_msg += f"   {order.city}, {order.state} {order.postal_code}\n"
+                            if order.latitude and order.longitude:
+                                company_whatsapp_msg += f"   https://maps.google.com/?q={order.latitude},{order.longitude}\n"
+                            if order.notes:
+                                company_whatsapp_msg += f"\nNotes: {order.notes}\n"
+                            try:
+                                whatsapp_sent = _send_whatsapp_message(company_whatsapp, company_whatsapp_msg)
+                                if whatsapp_sent:
+                                    print(f"[SUCCESS] Company WhatsApp sent to {company_whatsapp}")
+                                else:
+                                    print(f"[WARNING] Company WhatsApp failed, email will be sent")
+                            except Exception as e:
+                                print(f"[ERROR] Company WhatsApp error: {str(e)}")
                         
                         # Send company email directly (synchronous)
                         if company_email:
                             print(f"[EMAIL] Sending company email synchronously to {company_email}...")
-                            smtp_backend = EmailBackend(
-                                host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
-                                port=getattr(settings, 'EMAIL_PORT', 587),
-                                username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
-                                password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
-                                use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
-                                timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
-                            )
-                            company_message = message + "\n\n--\nReference: Order placed via COD"
-                            subject_company = f'New order #{order.order_number} received - Shiv Organic Dairy Farm'
-                            email = EmailMessage(
-                                subject=subject_company,
-                                body=company_message,
-                                from_email=from_email,
-                                to=[company_email],
-                                connection=smtp_backend
-                            )
-                            email.send()
-                            print(f"[SUCCESS] Company email sent to {company_email}")
-                            smtp_backend.close()
+                            try:
+                                smtp_backend = EmailBackend(
+                                    host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                                    port=getattr(settings, 'EMAIL_PORT', 587),
+                                    username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                                    password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                                    use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                                    timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
+                                )
+                                company_message = message + "\n\n--\nReference: Order placed via COD"
+                                subject_company = f'New order #{order.order_number} received - Shiv Organic Dairy Farm'
+                                email = EmailMessage(
+                                    subject=subject_company,
+                                    body=company_message,
+                                    from_email=from_email,
+                                    to=[company_email],
+                                    connection=smtp_backend
+                                )
+                                email.send()
+                                print(f"[SUCCESS] Company email sent to {company_email}")
+                                smtp_backend.close()
+                            except Exception as e:
+                                print(f"[WARNING] Company email failed: {str(e)}")
                         
-                        print(f"[ORDER] Email notification completed for order #{order.order_number}")
+                        print(f"[ORDER] Email and WhatsApp notifications completed for order #{order.order_number}")
                     except Exception as e:
                         print(f"[ERROR] Email sending failed for order #{order.order_number}: {str(e)}")
                         import traceback
@@ -335,86 +387,84 @@ def _send_email_sendgrid(to_email: str, subject: str, message: str) -> bool:
         return False
 
 def _send_whatsapp_message(phone: str, message: str) -> bool:
-    """Send WhatsApp message using Twilio"""
+    """Send WhatsApp message using Meta WhatsApp Cloud API (1,000 free messages/month)"""
     try:
-        from twilio.rest import Client
+        import requests
         
-        account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '').strip()
-        auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', '').strip()
-        messaging_service_sid = getattr(settings, 'TWILIO_MESSAGING_SERVICE_SID', '').strip()
-        from_number = getattr(settings, 'TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886').strip()
+        whatsapp_token = getattr(settings, 'WHATSAPP_ACCESS_TOKEN', '').strip()
+        phone_number_id = getattr(settings, 'WHATSAPP_PHONE_NUMBER_ID', '').strip()
+        whatsapp_api_version = getattr(settings, 'WHATSAPP_API_VERSION', 'v18.0').strip()
         
-        # Remove any spaces from from_number
-        from_number = from_number.replace(' ', '')
-        
-        if not account_sid or not auth_token:
-            print("[WHATSAPP] Twilio credentials not configured")
+        if not whatsapp_token or not phone_number_id:
+            print("[WHATSAPP] Meta WhatsApp Cloud API credentials not configured")
+            print("[WHATSAPP] Need: WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID")
             return False
         
-        if len(auth_token) < 30:
-            print(f"[WARNING] Twilio Auth Token too short ({len(auth_token)} chars)")
-            return False
+        print(f"[WHATSAPP] Sending WhatsApp to {phone} via Meta Cloud API")
         
-        print(f"[WHATSAPP] Sending WhatsApp to {phone} via Twilio")
-        
-        # Format phone number
+        # Format phone number (Meta requires E.164 format: +1234567890)
         original_phone = phone
+        # Remove any existing whatsapp: prefix
+        phone = phone.replace('whatsapp:', '').strip()
+        # Ensure starts with +
         if not phone.startswith('+'):
-            phone = f'+91{phone.lstrip("0")}'
-        
-        if not phone.startswith('whatsapp:'):
-            phone = f'whatsapp:{phone}'
+            # Assume Indian number if starts with 0 or doesn't have country code
+            if phone.startswith('0'):
+                phone = f'+91{phone[1:]}'
+            elif len(phone) == 10:
+                phone = f'+91{phone}'
+            else:
+                phone = f'+91{phone}'
         
         print(f"   Formatted: {phone} (from {original_phone})")
-        print(f"   From: {from_number}")
         
-        client = Client(account_sid, auth_token)
+        # Meta WhatsApp Cloud API endpoint
+        url = f"https://graph.facebook.com/{whatsapp_api_version}/{phone_number_id}/messages"
         
-        # Try all methods in order until one works
-        methods_tried = []
+        headers = {
+            "Authorization": f"Bearer {whatsapp_token}",
+            "Content-Type": "application/json"
+        }
         
-        # Method 1: Try Messaging Service
-        if messaging_service_sid:
-            try:
-                print(f"   Trying Messaging Service...")
-                message_obj = client.messages.create(
-                    body=message,
-                    messaging_service_sid=messaging_service_sid,
-                    to=phone
-                )
-                print(f"[SUCCESS] WhatsApp sent via Messaging Service! SID: {message_obj.sid}")
+        # Meta WhatsApp message payload
+        payload = {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": phone,
+            "type": "text",
+            "text": {
+                "preview_url": False,
+                "body": message
+            }
+        }
+        
+        print(f"[WHATSAPP] Sending via Meta API...")
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if result.get('messages'):
+                message_id = result['messages'][0].get('id', 'unknown')
+                print(f"[SUCCESS] WhatsApp sent via Meta Cloud API! Message ID: {message_id}")
                 return True
-            except Exception as e:
-                methods_tried.append(f"Messaging Service: {str(e)[:100]}")
-        
-        # Method 2: Try direct from number
-        if from_number:
-            try:
-                print(f"   Trying direct number...")
-                message_obj = client.messages.create(
-                    body=message,
-                    from_=from_number,
-                    to=phone
-                )
-                print(f"[SUCCESS] WhatsApp sent via direct number! SID: {message_obj.sid}")
-                return True
-            except Exception as e:
-                methods_tried.append(f"Direct number: {str(e)[:100]}")
-        
-        # All methods failed
-        print(f"[ERROR] All WhatsApp methods failed:")
-        for method in methods_tried:
-            print(f"   - {method}")
-        
-        # Check for common errors
-        last_error = methods_tried[-1] if methods_tried else "Unknown"
-        if "21608" in last_error or "not enrolled" in last_error.lower():
-            print(f"   -> Customer needs to join Twilio sandbox first")
-            print(f"   -> Send 'join [keyword]' to +1 415 523 8886")
-        elif "401" in last_error or "authenticate" in last_error.lower():
-            print(f"   -> Check Twilio Account SID and Auth Token")
-        
-        return False
+            else:
+                print(f"[WARNING] Meta API returned success but no message ID: {result}")
+                return False
+        else:
+            error_msg = response.text
+            print(f"[WARNING] Meta API returned status {response.status_code}: {error_msg}")
+            
+            # Check for common errors
+            if response.status_code == 401:
+                print(f"   -> Invalid access token. Check WHATSAPP_ACCESS_TOKEN")
+            elif response.status_code == 403:
+                print(f"   -> Access forbidden. Check phone number permissions")
+            elif response.status_code == 404:
+                print(f"   -> Phone number ID not found. Check WHATSAPP_PHONE_NUMBER_ID")
+            elif response.status_code == 429:
+                print(f"   -> Rate limit exceeded. Meta allows 1,000 free messages/month")
+            
+            return False
         
     except Exception as e:
         print(f"[ERROR] WhatsApp error: {str(e)}")
@@ -923,9 +973,9 @@ def payment_success(request: HttpRequest) -> HttpResponse:
                 if 'pending_order_id' in request.session:
                     del request.session['pending_order_id']
                 
-                # Defer email until after commit
+                # Send email and WhatsApp notifications after payment success
                 def on_commit_send():
-                    _send_order_emails(order)
+                    _send_payment_success_notifications(order)
                 transaction.on_commit(on_commit_send)
                 
                 # Redirect to unified success page
@@ -963,12 +1013,9 @@ def payment_success(request: HttpRequest) -> HttpResponse:
                 if 'pending_order_id' in request.session:
                     del request.session['pending_order_id']
                 
-                # Defer email until after commit (non-blocking)
+                # Send email and WhatsApp notifications after payment success
                 def on_commit_send():
-                    try:
-                        _send_order_emails(order)
-                    except Exception as e:
-                        print(f"Warning: Email sending failed: {str(e)}")
+                    _send_payment_success_notifications(order)
                 transaction.on_commit(on_commit_send)
                 
                 return redirect(reverse('order_success') + f'?order_id={order.order_number}')

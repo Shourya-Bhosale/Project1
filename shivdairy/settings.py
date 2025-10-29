@@ -225,11 +225,20 @@ if not EMAIL_HOST_PASSWORD:
 else:
     print(f"[OK] SMTP email backend ready")
 
-# WhatsApp (Twilio)
-TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
-TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
-TWILIO_MESSAGING_SERVICE_SID = os.environ.get('TWILIO_MESSAGING_SERVICE_SID', '')
-TWILIO_WHATSAPP_FROM = os.environ.get('TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886')  # Twilio sandbox
+# WhatsApp Cloud API (Meta/Facebook) - 1,000 free messages/month
+WHATSAPP_ACCESS_TOKEN = os.environ.get('WHATSAPP_ACCESS_TOKEN', '').strip()
+WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '').strip()
+WHATSAPP_API_VERSION = os.environ.get('WHATSAPP_API_VERSION', 'v18.0').strip()
+
+# Debug WhatsApp configuration
+if WHATSAPP_ACCESS_TOKEN:
+    print(f"[WHATSAPP] Meta WhatsApp Cloud API configured")
+    print(f"   Phone Number ID: {WHATSAPP_PHONE_NUMBER_ID if WHATSAPP_PHONE_NUMBER_ID else 'Not set'}")
+    print(f"   API Version: {WHATSAPP_API_VERSION}")
+else:
+    print(f"[WHATSAPP] Meta WhatsApp Cloud API NOT configured")
+    print(f"   Set WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID environment variables")
+    print(f"   Get them from: https://business.facebook.com/")
 
 # Razorpay Configuration
 # For production - using real keys from environment variables
