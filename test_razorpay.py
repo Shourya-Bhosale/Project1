@@ -17,7 +17,8 @@ def test_razorpay_connection():
     """Test Razorpay API connection"""
     try:
         # Set test keys (you'll need to replace with your actual keys)
-        key_id = "rzp_live_RVik0FVKDm160O"  # Your live key
+        import os
+        key_id = os.environ.get("RAZORPAY_KEY_ID", "")  # Read from environment
         key_secret = "YOUR_SECRET_KEY"  # You need to provide this
         
         print(f"Testing Razorpay with Key ID: {key_id}")
@@ -43,7 +44,8 @@ def test_razorpay_connection():
 def test_payment_order_creation():
     """Test creating a payment order"""
     try:
-        key_id = "rzp_live_RVik0FVKDm160O"
+        import os
+        key_id = os.environ.get("RAZORPAY_KEY_ID", "")
         key_secret = "YOUR_SECRET_KEY"  # You need to provide this
         
         client = razorpay.Client(auth=(key_id, key_secret))

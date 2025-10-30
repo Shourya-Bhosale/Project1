@@ -245,8 +245,8 @@ else:
 
 # Razorpay Configuration
 # For production - using real keys from environment variables
-RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_live_RWEKgl0f53hP0K')
-RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'tRqLY2hHQ3jClL6MRw1x6jtx')
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
 
 # For production, set these environment variables:
 # RAZORPAY_KEY_ID=rzp_live_your_actual_key_id
