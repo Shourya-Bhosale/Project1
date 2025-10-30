@@ -209,7 +209,54 @@ def place_order(request: HttpRequest) -> HttpResponse:
                                     use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
                                     timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
                                 )
-                                company_message = message + "\n\n--\nReference: Order placed via COD"
+                                # Build detailed company email with all order fields
+                                company_lines = []
+                                company_lines.append(f"NEW ORDER #{order.order_number}")
+                                company_lines.append("")
+                                company_lines.append("Customer Details:")
+                                company_lines.append(f"Full Name: {order.customer_name}")
+                                company_lines.append(f"Email: {order.email if order.email else '-'}")
+                                company_lines.append(f"Phone: {order.phone if order.phone else '-'}")
+                                company_lines.append("")
+                                company_lines.append("Delivery Address:")
+                                company_lines.append(f"Address Line 1: {order.address_line1}")
+                                company_lines.append(f"Address Line 2: {order.address_line2 if order.address_line2 else '-'}")
+                                company_lines.append(f"City: {order.city}")
+                                company_lines.append(f"State: {order.state}")
+                                company_lines.append(f"Pincode: {order.postal_code}")
+                                # Location link
+                                maps_link = None
+                                if order.latitude and order.longitude:
+                                    maps_link = f"https://maps.google.com/?q={order.latitude},{order.longitude}"
+                                elif order.address_line1:
+                                    from urllib.parse import quote_plus
+                                    addr_parts = [order.address_line1, order.city, order.state, order.postal_code]
+                                    q = quote_plus(', '.join([p for p in addr_parts if p and p != '-']))
+                                    maps_link = f"https://www.google.com/maps/search/?api=1&query={q}"
+                                if maps_link:
+                                    company_lines.append(f"Location Link: {maps_link}")
+                                company_lines.append("")
+                                company_lines.append("Payment:")
+                                company_lines.append(f"Payment Method: {order.get_payment_method_display()}")
+                                if order.payment_reference:
+                                    company_lines.append(f"Payment Reference (COD note): {order.payment_reference}")
+                                if order.payment_method == 'RAZORPAY':
+                                    company_lines.append(f"Payment Status: {order.payment_status}")
+                                    if order.razorpay_payment_id:
+                                        company_lines.append(f"Razorpay Payment ID: {order.razorpay_payment_id}")
+                                company_lines.append("")
+                                company_lines.append("Order Items:")
+                                for item in order.items.select_related('product'):
+                                    company_lines.append(f"- {item.product.name} x {item.quantity} @ ₹{item.unit_price} = ₹{item.line_total()}")
+                                company_lines.append(f"Total Amount: ₹{order.total_amount}")
+                                if order.notes:
+                                    company_lines.append("")
+                                    company_lines.append("Order Instructions:")
+                                    company_lines.append(order.notes)
+                                company_lines.append("")
+                                company_lines.append("--")
+                                company_lines.append("Reference: Order placed via COD")
+                                company_message = "\n".join(company_lines)
                                 subject_company = f'New order #{order.order_number} received - Shiv Organic Dairy Farm'
                                 email = EmailMessage(
                                     subject=subject_company,
@@ -692,6 +739,55 @@ def _send_order_emails(order: Order) -> None:
                             use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
                             timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
                         )
+                        
+                        # Build detailed company email with all order fields
+                        company_lines = []
+                        company_lines.append(f"NEW ORDER #{order.order_number}")
+                        company_lines.append("")
+                        company_lines.append("Customer Details:")
+                        company_lines.append(f"Full Name: {order.customer_name}")
+                        company_lines.append(f"Email: {order.email if order.email else '-'}")
+                        company_lines.append(f"Phone: {order.phone if order.phone else '-'}")
+                        company_lines.append("")
+                        company_lines.append("Delivery Address:")
+                        company_lines.append(f"Address Line 1: {order.address_line1}")
+                        company_lines.append(f"Address Line 2: {order.address_line2 if order.address_line2 else '-'}")
+                        company_lines.append(f"City: {order.city}")
+                        company_lines.append(f"State: {order.state}")
+                        company_lines.append(f"Pincode: {order.postal_code}")
+                        # Location link
+                        maps_link = None
+                        if order.latitude and order.longitude:
+                            maps_link = f"https://maps.google.com/?q={order.latitude},{order.longitude}"
+                        elif order.address_line1:
+                            from urllib.parse import quote_plus
+                            addr_parts = [order.address_line1, order.city, order.state, order.postal_code]
+                            q = quote_plus(', '.join([p for p in addr_parts if p and p != '-']))
+                            maps_link = f"https://www.google.com/maps/search/?api=1&query={q}"
+                        if maps_link:
+                            company_lines.append(f"Location Link: {maps_link}")
+                        company_lines.append("")
+                        company_lines.append("Payment:")
+                        company_lines.append(f"Payment Method: {order.get_payment_method_display()}")
+                        if order.payment_reference:
+                            company_lines.append(f"Payment Reference (COD note): {order.payment_reference}")
+                        if order.payment_method == 'RAZORPAY':
+                            company_lines.append(f"Payment Status: {order.payment_status}")
+                            if order.razorpay_payment_id:
+                                company_lines.append(f"Razorpay Payment ID: {order.razorpay_payment_id}")
+                        company_lines.append("")
+                        company_lines.append("Order Items:")
+                        for item in order_items:
+                            company_lines.append(f"- {item.product.name} x {item.quantity} @ ₹{item.unit_price} = ₹{item.line_total()}")
+                        company_lines.append(f"Total Amount: ₹{order.total_amount}")
+                        if order.notes:
+                            company_lines.append("")
+                            company_lines.append("Order Instructions:")
+                            company_lines.append(order.notes)
+                        company_lines.append("")
+                        company_lines.append("--")
+                        company_lines.append("Reference: If payment method is RAZORPAY, verify payment in Razorpay dashboard.")
+                        company_message = "\n".join(company_lines)
                         
                         email = EmailMessage(
                             subject=subject_company,
