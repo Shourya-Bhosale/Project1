@@ -191,18 +191,21 @@ else:
 if SENDGRID_API_KEY:
     print(f"[EMAIL] SendGrid API key configured")
 ORDER_NOTIFICATION_EMAIL = os.environ.get('ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
-COMPANY_WHATSAPP_PHONE = os.environ.get('COMPANY_WHATSAPP_PHONE', '')  # Company WhatsApp number for order notifications
+COMPANY_WHATSAPP_PHONE = os.environ.get('COMPANY_WHATSAPP_PHONE', '+919158019119')  # Company WhatsApp number for order notifications
 
-# Email configuration - SMTP settings (Gmail or Brevo SMTP)
-# Default to Gmail SMTP for reliable general SMTP
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')  # Default to Gmail
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-EMAIL_USE_TLS = True
+# Email configuration - SMTP settings (Gmail)
+# Use environment variables for credentials
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com')
-EMAIL_HOST_PASSWORD_RAW = os.environ.get('EMAIL_HOST_PASSWORD', '')
-EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_RAW.replace(' ', '') if EMAIL_HOST_PASSWORD_RAW else ''
-EMAIL_TIMEOUT = 30  # Increased from 5 to 30 seconds for better reliability
-EMAIL_USE_SSL = False  # Use TLS, not SSL
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '').strip()
+EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '30'))
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+EMAIL_FAIL_SILENTLY = False
+SERVER_EMAIL = EMAIL_HOST_USER
+
 
 # Always set SMTP as the backend to ensure it works
 # The views.py will try API methods first, then fall back to SMTP
@@ -242,8 +245,8 @@ else:
 
 # Razorpay Configuration
 # For production - using real keys from environment variables
-RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_live_your_actual_key_id')
-RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'your_actual_secret_key')
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_live_RWEKgl0f53hP0K')
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'tRqLY2hHQ3jClL6MRw1x6jtx')
 
 # For production, set these environment variables:
 # RAZORPAY_KEY_ID=rzp_live_your_actual_key_id

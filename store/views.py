@@ -387,7 +387,7 @@ def _send_email_sendgrid(to_email: str, subject: str, message: str) -> bool:
         return False
 
 def _send_whatsapp_message(phone: str, message: str) -> bool:
-    """Send WhatsApp message using Meta WhatsApp Cloud API (1,000 free messages/month)"""
+    """Send WhatsApp via Meta Cloud API when configured; otherwise fallback to Twilio."""
     try:
         import requests
         
@@ -395,12 +395,10 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
         phone_number_id = getattr(settings, 'WHATSAPP_PHONE_NUMBER_ID', '').strip()
         whatsapp_api_version = getattr(settings, 'WHATSAPP_API_VERSION', 'v18.0').strip()
         
-        if not whatsapp_token or not phone_number_id:
-            print("[WHATSAPP] Meta WhatsApp Cloud API credentials not configured")
-            print("[WHATSAPP] Need: WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID")
-            return False
+        use_meta = bool(whatsapp_token and phone_number_id)
         
-        print(f"[WHATSAPP] Sending WhatsApp to {phone} via Meta Cloud API")
+        if use_meta:
+            print(f"[WHATSAPP] Sending WhatsApp to {phone} via Meta Cloud API")
         
         # Format phone number (Meta requires E.164 format: +1234567890)
         original_phone = phone
@@ -441,7 +439,7 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
         print(f"[WHATSAPP] Sending via Meta API...")
         response = requests.post(url, json=payload, headers=headers, timeout=10)
         
-        if response.status_code == 200:
+        if use_meta and response.status_code == 200:
             result = response.json()
             if result.get('messages'):
                 message_id = result['messages'][0].get('id', 'unknown')
@@ -450,7 +448,7 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
             else:
                 print(f"[WARNING] Meta API returned success but no message ID: {result}")
                 return False
-        else:
+        elif use_meta:
             error_msg = response.text
             print(f"[WARNING] Meta API returned status {response.status_code}: {error_msg}")
             
@@ -463,7 +461,41 @@ def _send_whatsapp_message(phone: str, message: str) -> bool:
                 print(f"   -> Phone number ID not found. Check WHATSAPP_PHONE_NUMBER_ID")
             elif response.status_code == 429:
                 print(f"   -> Rate limit exceeded. Meta allows 1,000 free messages/month")
-            
+            # If Meta configured but failed, try Twilio fallback below
+        
+        # Twilio fallback if Meta not configured or failed
+        try:
+            from twilio.rest import Client  # type: ignore
+            account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '').strip()
+            auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', '').strip()
+            messaging_service_sid = getattr(settings, 'TWILIO_MESSAGING_SERVICE_SID', '').strip()
+            from_number = getattr(settings, 'TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886').strip()
+            from_number = from_number.replace(' ', '')
+            if not account_sid or not auth_token:
+                print("[WHATSAPP] Twilio credentials not configured; cannot send WhatsApp")
+                return False
+            if len(auth_token) < 20:
+                print(f"[WARNING] Twilio Auth Token length looks short ({len(auth_token)} chars)")
+            print(f"[WHATSAPP] Fallback to Twilio for {phone}")
+            original_phone = phone
+            if not phone.startswith('+'):
+                phone = f'+91{phone.lstrip("0")}'
+            if not phone.startswith('whatsapp:'):
+                phone = f'whatsapp:{phone}'
+            client = Client(account_sid, auth_token)
+            if messaging_service_sid:
+                try:
+                    msg = client.messages.create(body=message, messaging_service_sid=messaging_service_sid, to=phone)
+                    print(f"[SUCCESS] WhatsApp via Twilio Messaging Service. SID: {msg.sid}")
+                    return True
+                except Exception:
+                    pass
+            # Direct number
+            msg = client.messages.create(body=message, from_=from_number, to=phone)
+            print(f"[SUCCESS] WhatsApp via Twilio direct number. SID: {msg.sid}")
+            return True
+        except Exception as e_twilio:
+            print(f"[WARNING] Twilio fallback failed: {str(e_twilio)}")
             return False
         
     except Exception as e:
