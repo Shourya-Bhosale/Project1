@@ -832,6 +832,21 @@ def _send_order_emails(order: Order) -> None:
             import traceback
             traceback.print_exc()
 
+
+def _send_payment_success_notifications(order: Order) -> None:
+    """Send customer/company notifications after successful online payment.
+    Uses the same rich email content as COD path but ensures 'paid' status details are included.
+    """
+    try:
+        # Ensure we have fresh instance with items
+        fresh = Order.objects.select_related().prefetch_related('items__product').get(id=order.id)
+        _send_order_emails(fresh)
+        print(f"[NOTIFY] Payment success notifications queued for order #{fresh.order_number}")
+    except Exception as e:
+        print(f"[ERROR] Payment success notification error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+
 def check_status(request: HttpRequest, order_number: str) -> JsonResponse:
     try:
         order = Order.objects.get(order_number=order_number)
