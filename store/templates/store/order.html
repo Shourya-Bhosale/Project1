@@ -323,10 +323,10 @@
                     </div>
                 </div>
                 
-                <!-- Hidden inputs for quantities -->
-                <input type="hidden" name="qty_3" id="qty_3" value="0" data-size="250">
-                <input type="hidden" name="qty_2" id="qty_2" value="0" data-size="500">
-                <input type="hidden" name="qty_1" id="qty_1" value="0" data-size="1000">
+                <!-- Hidden inputs for quantities (match backend expects qty_{product.id}) -->
+                {% for p in products %}
+                <input type="hidden" name="qty_{{ p.id }}" id="qty_{{ p.id }}" value="0" data-size="{{ p.size_ml }}">
+                {% endfor %}
 
 
 
