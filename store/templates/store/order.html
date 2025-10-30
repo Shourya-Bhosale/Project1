@@ -523,6 +523,8 @@
                     name: 'Shiv Organic Dairy Farm',
                     description: 'Premium A2 Gir Cow Ghee - Shiv Organic Dairy Farm',
                     order_id: data.order_id,
+                    callback_url: '/payment/success/',
+                    redirect: true,
                     handler: function(response) {
                         // Payment successful - redirect to success page
                         window.location.href = '/payment/success/?razorpay_order_id=' + response.razorpay_order_id +
@@ -533,6 +535,11 @@
                         name: document.querySelector('[name="customer_name"]').value,
                         email: document.querySelector('[name="email"]').value,
                         contact: document.querySelector('[name="phone"]').value
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            alert('Payment window closed. If amount was deducted, you will be redirected automatically after confirmation.');
+                        }
                     },
                     theme: {
                         color: '#2d5016'
@@ -819,6 +826,8 @@
                         name: 'Shiv Organic Dairy Farm',
                         description: 'Premium A2 Gir Cow Ghee - Shiv Organic Dairy Farm',
                         order_id: data.order_id,
+                        callback_url: '/payment/success/',
+                        redirect: true,
                         handler: function(response) {
                             // Payment successful - redirect to success page
                             window.location.href = '/payment/success/?razorpay_order_id=' + response.razorpay_order_id +
@@ -829,6 +838,11 @@
                             name: document.querySelector('[name="customer_name"]').value,
                             email: document.querySelector('[name="email"]').value,
                             contact: document.querySelector('[name="phone"]').value
+                        },
+                        modal: {
+                            ondismiss: function() {
+                                alert('Payment window closed. If amount was deducted, you will be redirected automatically after confirmation.');
+                            }
                         },
                         theme: {
                             color: '#2d5016'

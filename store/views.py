@@ -955,6 +955,34 @@ def disclaimer(request: HttpRequest) -> HttpResponse:
         return HttpResponse(f"Error loading template: {str(e)}", status=500)
 
 
+# Additional policy pages
+def contact_us(request: HttpRequest) -> HttpResponse:
+    try:
+        return render(request, 'store/contact_us.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
+
+
+def shipping_policy(request: HttpRequest) -> HttpResponse:
+    try:
+        return render(request, 'store/shipping_policy.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
+
+
+def terms_and_conditions(request: HttpRequest) -> HttpResponse:
+    try:
+        return render(request, 'store/terms_and_conditions.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
+
+
+def cancellations_and_refunds(request: HttpRequest) -> HttpResponse:
+    try:
+        return render(request, 'store/cancellations_and_refunds.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
+
 # Razorpay Payment Views
 @csrf_exempt
 def create_payment(request: HttpRequest) -> JsonResponse:
@@ -977,12 +1005,14 @@ def create_payment(request: HttpRequest) -> JsonResponse:
             return JsonResponse({'error': f'Razorpay client initialization failed: {str(e)}'}, status=500)
         
         # Create real Razorpay order
+        # Use the pending order id stored in session as the receipt so we can map back on callback
+        pending_order_id = request.session.get('pending_order_id')
         order_data = {
             'amount': amount,
             'currency': currency,
-            'receipt': f'order_{request.session.get("order_id", "temp")}',
+            'receipt': f'order_{pending_order_id if pending_order_id else "temp"}',
             'notes': {
-                'order_id': request.session.get('order_id', 'temp'),
+                'order_id': pending_order_id if pending_order_id else 'temp',
                 'customer_name': data.get('customer_name', ''),
                 'customer_email': data.get('customer_email', ''),
                 'company': 'Shiv Organic Dairy Farm',
@@ -1081,14 +1111,29 @@ def payment_success(request: HttpRequest) -> HttpResponse:
                 })
             
             # Find order from session
+            order = None
             order_id = request.session.get('pending_order_id')
-            if not order_id:
+            if order_id:
+                order = Order.objects.filter(id=order_id).first()
+            
+            # If session is missing or order not found, fetch Razorpay order to map via receipt
+            if not order:
+                try:
+                    rp_order = client.order.fetch(razorpay_order_id)
+                    receipt = rp_order.get('receipt', '')  # format: order_<id>
+                    if receipt.startswith('order_'):
+                        local_id_str = receipt.split('order_', 1)[1]
+                        if local_id_str.isdigit():
+                            order = Order.objects.filter(id=int(local_id_str)).first()
+                except Exception as e:
+                    pass
+            
+            if not order:
                 return render(request, 'store/payment_error.html', {
-                    'error': 'Order not found in session'
+                    'error': 'Order not found'
                 })
             
             try:
-                order = Order.objects.get(id=order_id)
                 
                 # Update order with payment details
                 order.payment_status = 'paid'
@@ -1121,14 +1166,29 @@ def payment_success(request: HttpRequest) -> HttpResponse:
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
             
             # Get order from session
+            order = None
             order_id = request.session.get('pending_order_id')
-            if not order_id:
+            if order_id:
+                order = Order.objects.filter(id=order_id).first()
+            if not order:
+                # Try map via order id in submitted data or Razorpay fetch
+                try:
+                    rp_order_id = data.get('razorpay_order_id')
+                    if rp_order_id:
+                        rp_order = client.order.fetch(rp_order_id)
+                        receipt = rp_order.get('receipt', '')
+                        if receipt.startswith('order_'):
+                            local_id_str = receipt.split('order_', 1)[1]
+                            if local_id_str.isdigit():
+                                order = Order.objects.filter(id=int(local_id_str)).first()
+                except Exception:
+                    pass
+            if not order:
                 return render(request, 'store/payment_error.html', {
                     'error': 'Order not found'
                 })
             
             try:
-                order = Order.objects.get(id=order_id)
                 
                 # Update order status
                 order.payment_status = 'paid'

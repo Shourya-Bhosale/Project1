@@ -22,6 +22,10 @@ urlpatterns = [
     path('refund-policy/', views.refund_policy, name='refund_policy'),
     path('privacy-policy/', views.privacy_policy, name='privacy_policy'),
     path('disclaimer/', views.disclaimer, name='disclaimer'),
+    path('contact-us/', views.contact_us, name='contact_us'),
+    path('shipping-policy/', views.shipping_policy, name='shipping_policy'),
+    path('terms-and-conditions/', views.terms_and_conditions, name='terms_and_conditions'),
+    path('cancellations-and-refunds/', views.cancellations_and_refunds, name='cancellations_and_refunds'),
 ]
 
 
