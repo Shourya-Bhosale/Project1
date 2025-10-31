@@ -114,6 +114,161 @@
             color: #333;
         }
         
+        /* Payment Method Dropdown Styles */
+        .payment-method-label {
+            display: block;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            color: #2d5016;
+            font-weight: 600;
+        }
+        
+        .payment-method-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(145deg, #ffffff, #f8fafc);
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        
+        .payment-method-wrapper::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .payment-method-wrapper:hover {
+            border-color: #22c55e;
+            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .payment-method-wrapper:hover::before {
+            opacity: 1;
+        }
+        
+        .payment-method-wrapper:focus-within {
+            border-color: #22c55e;
+            box-shadow: 0 4px 20px rgba(34, 197, 94, 0.2);
+            outline: none;
+        }
+        
+        .payment-method-wrapper:focus-within::before {
+            opacity: 1;
+        }
+        
+        .payment-select-icon {
+            position: absolute;
+            left: 18px;
+            font-size: 1.4em;
+            z-index: 1;
+            pointer-events: none;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+        }
+        
+        .payment-method-wrapper select {
+            width: 100%;
+            padding: 16px 50px 16px 55px;
+            border: none;
+            background: transparent;
+            font-size: 1.05em;
+            font-weight: 500;
+            color: #2d5016;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-method-wrapper select option {
+            padding: 12px;
+            background: #ffffff;
+            color: #2d5016;
+            font-size: 1em;
+            font-weight: 500;
+        }
+        
+        .payment-method-wrapper select:focus {
+            outline: none;
+        }
+        
+        .payment-select-arrow {
+            position: absolute;
+            right: 18px;
+            font-size: 0.9em;
+            color: #64748b;
+            pointer-events: none;
+            z-index: 1;
+            transition: transform 0.3s ease;
+        }
+        
+        .payment-method-wrapper:hover .payment-select-arrow,
+        .payment-method-wrapper:focus-within .payment-select-arrow {
+            color: #22c55e;
+            transform: translateY(2px);
+        }
+        
+        .payment-method-hint {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: linear-gradient(145deg, #f0fdf4, #dcfce7);
+            border-left: 3px solid #22c55e;
+            border-radius: 8px;
+            font-size: 0.9em;
+            color: #166534;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-method-hint .hint-icon {
+            font-size: 1.1em;
+            flex-shrink: 0;
+        }
+        
+        .payment-method-hint span:last-child {
+            line-height: 1.5;
+        }
+        
+        @media (max-width: 640px) {
+            .payment-method-wrapper {
+                padding: 0;
+            }
+            
+            .payment-method-wrapper select {
+                padding: 14px 45px 14px 50px;
+                font-size: 1em;
+            }
+            
+            .payment-select-icon {
+                left: 15px;
+                font-size: 1.2em;
+            }
+            
+            .payment-select-arrow {
+                right: 15px;
+            }
+            
+            .payment-method-hint {
+                padding: 8px 12px;
+                font-size: 0.85em;
+            }
+        }
+        
         /* Order Bill Styles */
         .order-bill {
             background: #f8f9fa;
@@ -269,9 +424,17 @@
                         <div class="muted">Any special instructions for your order (optional)</div>
                     </div>
 
-                    <div>
-                        <label>Payment Method</label>
-                        {{ form.payment_method }}
+                    <div class="full">
+                        <label class="payment-method-label" for="id_payment_method">Payment Method</label>
+                        <div class="payment-method-wrapper">
+                            <div class="payment-select-icon">💳</div>
+                            {{ form.payment_method }}
+                            <div class="payment-select-arrow">▼</div>
+                        </div>
+                        <div class="payment-method-hint">
+                            <span class="hint-icon">ℹ️</span>
+                            <span id="paymentHintText">Secure online payment via cards, UPI, net banking, and wallets</span>
+                        </div>
                     </div>
                     
                     <!-- Online Payment Section -->
@@ -694,6 +857,47 @@
         
         pmSelect && pmSelect.addEventListener('change', togglePaymentSections);
         togglePaymentSections();
+        
+        // Payment Method Dropdown Enhancement
+        const paymentSelect = document.querySelector('[name="payment_method"]');
+        const paymentIcon = document.querySelector('.payment-select-icon');
+        const paymentHintText = document.getElementById('paymentHintText');
+        
+        function updatePaymentHint() {
+            if (!paymentSelect || !paymentHintText) return;
+            
+            const selectedValue = paymentSelect.value;
+            const paymentHintDiv = document.querySelector('.payment-method-hint');
+            
+            // Update icon based on selection
+            if (paymentIcon) {
+                if (selectedValue === 'RAZORPAY') {
+                    paymentIcon.textContent = '💳';
+                } else {
+                    paymentIcon.textContent = '💰';
+                }
+            }
+            
+            // Update hint text based on selection
+            if (selectedValue === 'RAZORPAY') {
+                if (paymentHintDiv) paymentHintDiv.style.display = 'flex';
+                paymentHintText.textContent = 'Secure online payment via cards, UPI, net banking, and wallets';
+            } else {
+                // Hide hint for COD
+                if (paymentHintDiv) paymentHintDiv.style.display = 'none';
+            }
+        }
+        
+        // Update on initial load
+        updatePaymentHint();
+        
+        // Update when selection changes
+        if (paymentSelect) {
+            paymentSelect.addEventListener('change', function() {
+                updatePaymentHint();
+                togglePaymentSections();
+            });
+        }
         
         // Note: Quantity controls removed - quantities are set from homepage cart data
 

@@ -1013,6 +1013,20 @@ def create_payment(request: HttpRequest) -> JsonResponse:
         if amount <= 0:
             return JsonResponse({'error': 'Invalid amount'}, status=400)
         
+        # Guard: ensure we have a pending order and it is not already paid
+        pending_order_id = request.session.get('pending_order_id')
+        if not pending_order_id:
+            return JsonResponse({'error': 'No pending order found. Please place order again.'}, status=400)
+        try:
+            pending_order = Order.objects.get(id=pending_order_id)
+        except Order.DoesNotExist:
+            return JsonResponse({'error': 'Order not found. Please place order again.'}, status=404)
+        if pending_order.payment_status == 'paid':
+            return JsonResponse({'error': 'This order is already paid.'}, status=400)
+        if pending_order.total_amount * 100 != amount:
+            # Optional: align amounts to prevent tampering
+            amount = pending_order.total_amount * 100
+        
         # Initialize Razorpay client for real payments
         try:
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
@@ -1021,7 +1035,6 @@ def create_payment(request: HttpRequest) -> JsonResponse:
         
         # Create real Razorpay order
         # Use the pending order id stored in session as the receipt so we can map back on callback
-        pending_order_id = request.session.get('pending_order_id')
         order_data = {
             'amount': amount,
             'currency': currency,

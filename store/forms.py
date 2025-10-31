@@ -16,7 +16,7 @@ class OrderForm(forms.ModelForm):
             'latitude', 'longitude', 'notes'
         ]
 
-    payment_method = forms.ChoiceField(choices=[('COD','Cash on Delivery'),('RAZORPAY','Online Payment')], initial='COD')
+    payment_method = forms.ChoiceField(choices=[('COD','Cash on Delivery'),('RAZORPAY','Online Payment')], initial='RAZORPAY')
     payment_reference = forms.CharField(required=False, max_length=120)
 
     def clean(self):
