@@ -1021,8 +1021,24 @@ def create_payment(request: HttpRequest) -> JsonResponse:
         pending_order_id = request.session.get('pending_order_id')
         print(f"[DEBUG] create_payment - pending_order_id from session: {pending_order_id}")
         print(f"[DEBUG] create_payment - session keys: {list(request.session.keys())}")
+        
+        # Fallback: try to get order_id from request body if session doesn't have it
+        if not pending_order_id:
+            pending_order_id = data.get('order_id')
+            print(f"[DEBUG] create_payment - order_id from request body: {pending_order_id}")
+            if pending_order_id:
+                # Also update session for future requests
+                try:
+                    request.session['pending_order_id'] = pending_order_id
+                    request.session.modified = True
+                    request.session.save()
+                    print(f"[SESSION] Updated session with order_id from request: {pending_order_id}")
+                except Exception as e:
+                    print(f"[WARNING] Could not update session: {str(e)}")
+        
         if not pending_order_id:
             return JsonResponse({'error': 'No pending order found. Please place order again.'}, status=400)
+        
         try:
             pending_order = Order.objects.get(id=pending_order_id)
         except Order.DoesNotExist:
