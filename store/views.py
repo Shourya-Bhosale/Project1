@@ -86,9 +86,13 @@ def place_order(request: HttpRequest) -> HttpResponse:
                 # Store order ID in session for payment processing
                 try:
                     request.session['pending_order_id'] = order.id
+                    request.session.modified = True
                     request.session.save()
+                    print(f"[SESSION] Saved pending_order_id: {order.id} to session")
                 except Exception as e:
-                    print(f"Warning: Could not save session: {str(e)}")
+                    print(f"[ERROR] Could not save session: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
                 
                 # Check if this is an AJAX request (for RAZORPAY)
                 is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or \
@@ -1015,6 +1019,8 @@ def create_payment(request: HttpRequest) -> JsonResponse:
         
         # Guard: ensure we have a pending order and it is not already paid
         pending_order_id = request.session.get('pending_order_id')
+        print(f"[DEBUG] create_payment - pending_order_id from session: {pending_order_id}")
+        print(f"[DEBUG] create_payment - session keys: {list(request.session.keys())}")
         if not pending_order_id:
             return JsonResponse({'error': 'No pending order found. Please place order again.'}, status=400)
         try:
