@@ -1170,14 +1170,179 @@ def payment_success(request: HttpRequest) -> HttpResponse:
                 order.razorpay_signature = razorpay_signature
                 order.save()
                 
+                # Send emails immediately after payment is verified (synchronously to ensure completion)
+                print(f"[ORDER] RAZORPAY payment successful: #{order.order_number}, Customer: {order.email}")
+                try:
+                    # Send emails synchronously for Razorpay to ensure they complete (same as COD)
+                    from django.core.mail import EmailMessage
+                    from django.core.mail.backends.smtp import EmailBackend
+                    from django.conf import settings
+                    
+                    subject_customer = f'Your Shiv Organic Dairy Farm order #{order.order_number} confirmation'
+                    lines = [
+                        f'Thank you {order.customer_name} for your order!',
+                        '',
+                        f'Order Number: {order.order_number}',
+                        'Order summary:',
+                    ]
+                    for item in order.items.select_related('product'):
+                        lines.append(f"- {item.product.name} x {item.quantity} @ ₹{item.unit_price} = ₹{item.line_total()}")
+                    lines.append(f'Total: ₹{order.total_amount}')
+                    if order.latitude and order.longitude:
+                        lines.append(f'Delivery location: {order.latitude}, {order.longitude}')
+                        lines.append(f'Maps link: https://maps.google.com/?q={order.latitude},{order.longitude}')
+                    lines.append('')
+                    lines.append(f'Payment method: {order.get_payment_method_display()}')
+                    lines.append(f'Payment status: Paid')
+                    if order.razorpay_payment_id:
+                        lines.append(f'Payment ID: {order.razorpay_payment_id}')
+                    lines.append('')
+                    lines.append('We will contact you shortly about delivery details.')
+                    message = '\n'.join(lines)
+                    
+                    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'shivorganicdairyfarms@gmail.com')
+                    company_email = getattr(settings, 'ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
+                    company_whatsapp = getattr(settings, 'COMPANY_WHATSAPP_PHONE', '').strip()
+                    
+                    # Send customer WhatsApp notification
+                    if order.phone:
+                        print(f"[WHATSAPP] Sending customer WhatsApp to {order.phone}...")
+                        customer_whatsapp_msg = f"Order #{order.order_number} Confirmed!\n\n"
+                        customer_whatsapp_msg += f"Payment: Paid ✅\n"
+                        customer_whatsapp_msg += f"Total: Rs {order.total_amount}\n"
+                        if order.address_line1:
+                            customer_whatsapp_msg += f"Location: {order.address_line1}, {order.city}\n"
+                        customer_whatsapp_msg += "\nWe'll contact you for delivery details soon!"
+                        try:
+                            whatsapp_sent = _send_whatsapp_message(order.phone, customer_whatsapp_msg)
+                            if whatsapp_sent:
+                                print(f"[SUCCESS] Customer WhatsApp sent to {order.phone}")
+                        except Exception as e:
+                            print(f"[ERROR] Customer WhatsApp error: {str(e)}")
+                    
+                    # Send customer email directly (synchronous)
+                    if order.email:
+                        print(f"[EMAIL] Sending customer email synchronously to {order.email}...")
+                        try:
+                            smtp_backend = EmailBackend(
+                                host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                                port=getattr(settings, 'EMAIL_PORT', 587),
+                                username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                                password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                                use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                                timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
+                            )
+                            email = EmailMessage(
+                                subject=subject_customer,
+                                body=message,
+                                from_email=from_email,
+                                to=[order.email],
+                                connection=smtp_backend
+                            )
+                            email.send()
+                            print(f"[SUCCESS] Customer email sent to {order.email}")
+                            smtp_backend.close()
+                        except Exception as e:
+                            print(f"[WARNING] Customer email failed: {str(e)}")
+                    
+                    # Send company WhatsApp notification
+                    if company_whatsapp:
+                        print(f"[WHATSAPP] Sending company WhatsApp to {company_whatsapp}...")
+                        company_whatsapp_msg = f"NEW ORDER #{order.order_number} - PAID ✅\n\n"
+                        company_whatsapp_msg += f"Customer: {order.customer_name}\n"
+                        company_whatsapp_msg += f"Phone: {order.phone}\n"
+                        company_whatsapp_msg += f"Payment: {order.get_payment_method_display()} - PAID ✅\n"
+                        company_whatsapp_msg += f"Payment ID: {order.razorpay_payment_id}\n"
+                        company_whatsapp_msg += f"Total: Rs {order.total_amount}\n\n"
+                        company_whatsapp_msg += "Items:\n"
+                        for item in order.items.select_related('product'):
+                            company_whatsapp_msg += f"   - {item.product.name} x {item.quantity} = Rs {item.line_total()}\n"
+                        company_whatsapp_msg += f"\nDelivery:\n"
+                        company_whatsapp_msg += f"   {order.address_line1}\n"
+                        company_whatsapp_msg += f"   {order.city}, {order.state} {order.postal_code}\n"
+                        if order.latitude and order.longitude:
+                            company_whatsapp_msg += f"   https://maps.google.com/?q={order.latitude},{order.longitude}\n"
+                        if order.notes:
+                            company_whatsapp_msg += f"\nNotes: {order.notes}\n"
+                        try:
+                            whatsapp_sent = _send_whatsapp_message(company_whatsapp, company_whatsapp_msg)
+                            if whatsapp_sent:
+                                print(f"[SUCCESS] Company WhatsApp sent to {company_whatsapp}")
+                        except Exception as e:
+                            print(f"[ERROR] Company WhatsApp error: {str(e)}")
+                    
+                    # Send company email directly (synchronous)
+                    if company_email:
+                        print(f"[EMAIL] Sending company email synchronously to {company_email}...")
+                        try:
+                            smtp_backend = EmailBackend(
+                                host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                                port=getattr(settings, 'EMAIL_PORT', 587),
+                                username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                                password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                                use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                                timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
+                            )
+                            # Build detailed company email
+                            company_lines = []
+                            company_lines.append(f"NEW ORDER #{order.order_number} - PAYMENT RECEIVED ✅")
+                            company_lines.append("")
+                            company_lines.append("Customer Details:")
+                            company_lines.append(f"Full Name: {order.customer_name}")
+                            company_lines.append(f"Email: {order.email if order.email else '-'}")
+                            company_lines.append(f"Phone: {order.phone if order.phone else '-'}")
+                            company_lines.append("")
+                            company_lines.append("Delivery Address:")
+                            company_lines.append(f"Address Line 1: {order.address_line1}")
+                            company_lines.append(f"Address Line 2: {order.address_line2 if order.address_line2 else '-'}")
+                            company_lines.append(f"City: {order.city}")
+                            company_lines.append(f"State: {order.state}")
+                            company_lines.append(f"Pincode: {order.postal_code}")
+                            if order.latitude and order.longitude:
+                                maps_link = f"https://maps.google.com/?q={order.latitude},{order.longitude}"
+                                company_lines.append(f"Location Link: {maps_link}")
+                            company_lines.append("")
+                            company_lines.append("Payment:")
+                            company_lines.append(f"Payment Method: {order.get_payment_method_display()}")
+                            company_lines.append(f"Payment Status: Paid ✅")
+                            company_lines.append(f"Razorpay Payment ID: {order.razorpay_payment_id}")
+                            company_lines.append(f"Razorpay Order ID: {order.razorpay_order_id}")
+                            company_lines.append("")
+                            company_lines.append("Order Items:")
+                            for item in order.items.select_related('product'):
+                                company_lines.append(f"- {item.product.name} x {item.quantity} @ ₹{item.unit_price} = ₹{item.line_total()}")
+                            company_lines.append(f"Total Amount: ₹{order.total_amount}")
+                            if order.notes:
+                                company_lines.append("")
+                                company_lines.append("Order Instructions:")
+                                company_lines.append(order.notes)
+                            company_lines.append("")
+                            company_lines.append("--")
+                            company_lines.append("Reference: Payment received via Razorpay - Order confirmed ✅")
+                            company_message = "\n".join(company_lines)
+                            subject_company = f'New order #{order.order_number} received - PAYMENT RECEIVED ✅ - Shiv Organic Dairy Farm'
+                            email = EmailMessage(
+                                subject=subject_company,
+                                body=company_message,
+                                from_email=from_email,
+                                to=[company_email],
+                                connection=smtp_backend
+                            )
+                            email.send()
+                            print(f"[SUCCESS] Company email sent to {company_email}")
+                            smtp_backend.close()
+                        except Exception as e:
+                            print(f"[WARNING] Company email failed: {str(e)}")
+                    
+                    print(f"[ORDER] Email and WhatsApp notifications completed for order #{order.order_number}")
+                except Exception as e:
+                    print(f"[ERROR] Email sending failed for order #{order.order_number}: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
+                
                 # Clear session
                 if 'pending_order_id' in request.session:
                     del request.session['pending_order_id']
-                
-                # Send email and WhatsApp notifications after payment success
-                def on_commit_send():
-                    _send_payment_success_notifications(order)
-                transaction.on_commit(on_commit_send)
                 
                 # Redirect to unified success page
                 return redirect(reverse('order_success') + f'?order_id={order.order_number}')
@@ -1225,14 +1390,179 @@ def payment_success(request: HttpRequest) -> HttpResponse:
                 order.razorpay_signature = data.get('razorpay_signature')
                 order.save()
                 
+                # Send emails immediately after payment is verified (synchronously to ensure completion)
+                print(f"[ORDER] RAZORPAY payment successful (POST): #{order.order_number}, Customer: {order.email}")
+                try:
+                    # Send emails synchronously for Razorpay to ensure they complete (same as COD)
+                    from django.core.mail import EmailMessage
+                    from django.core.mail.backends.smtp import EmailBackend
+                    from django.conf import settings
+                    
+                    subject_customer = f'Your Shiv Organic Dairy Farm order #{order.order_number} confirmation'
+                    lines = [
+                        f'Thank you {order.customer_name} for your order!',
+                        '',
+                        f'Order Number: {order.order_number}',
+                        'Order summary:',
+                    ]
+                    for item in order.items.select_related('product'):
+                        lines.append(f"- {item.product.name} x {item.quantity} @ ₹{item.unit_price} = ₹{item.line_total()}")
+                    lines.append(f'Total: ₹{order.total_amount}')
+                    if order.latitude and order.longitude:
+                        lines.append(f'Delivery location: {order.latitude}, {order.longitude}')
+                        lines.append(f'Maps link: https://maps.google.com/?q={order.latitude},{order.longitude}')
+                    lines.append('')
+                    lines.append(f'Payment method: {order.get_payment_method_display()}')
+                    lines.append(f'Payment status: Paid')
+                    if order.razorpay_payment_id:
+                        lines.append(f'Payment ID: {order.razorpay_payment_id}')
+                    lines.append('')
+                    lines.append('We will contact you shortly about delivery details.')
+                    message = '\n'.join(lines)
+                    
+                    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'shivorganicdairyfarms@gmail.com')
+                    company_email = getattr(settings, 'ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
+                    company_whatsapp = getattr(settings, 'COMPANY_WHATSAPP_PHONE', '').strip()
+                    
+                    # Send customer WhatsApp notification
+                    if order.phone:
+                        print(f"[WHATSAPP] Sending customer WhatsApp to {order.phone}...")
+                        customer_whatsapp_msg = f"Order #{order.order_number} Confirmed!\n\n"
+                        customer_whatsapp_msg += f"Payment: Paid ✅\n"
+                        customer_whatsapp_msg += f"Total: Rs {order.total_amount}\n"
+                        if order.address_line1:
+                            customer_whatsapp_msg += f"Location: {order.address_line1}, {order.city}\n"
+                        customer_whatsapp_msg += "\nWe'll contact you for delivery details soon!"
+                        try:
+                            whatsapp_sent = _send_whatsapp_message(order.phone, customer_whatsapp_msg)
+                            if whatsapp_sent:
+                                print(f"[SUCCESS] Customer WhatsApp sent to {order.phone}")
+                        except Exception as e:
+                            print(f"[ERROR] Customer WhatsApp error: {str(e)}")
+                    
+                    # Send customer email directly (synchronous)
+                    if order.email:
+                        print(f"[EMAIL] Sending customer email synchronously to {order.email}...")
+                        try:
+                            smtp_backend = EmailBackend(
+                                host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                                port=getattr(settings, 'EMAIL_PORT', 587),
+                                username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                                password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                                use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                                timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
+                            )
+                            email = EmailMessage(
+                                subject=subject_customer,
+                                body=message,
+                                from_email=from_email,
+                                to=[order.email],
+                                connection=smtp_backend
+                            )
+                            email.send()
+                            print(f"[SUCCESS] Customer email sent to {order.email}")
+                            smtp_backend.close()
+                        except Exception as e:
+                            print(f"[WARNING] Customer email failed: {str(e)}")
+                    
+                    # Send company WhatsApp notification
+                    if company_whatsapp:
+                        print(f"[WHATSAPP] Sending company WhatsApp to {company_whatsapp}...")
+                        company_whatsapp_msg = f"NEW ORDER #{order.order_number} - PAID ✅\n\n"
+                        company_whatsapp_msg += f"Customer: {order.customer_name}\n"
+                        company_whatsapp_msg += f"Phone: {order.phone}\n"
+                        company_whatsapp_msg += f"Payment: {order.get_payment_method_display()} - PAID ✅\n"
+                        company_whatsapp_msg += f"Payment ID: {order.razorpay_payment_id}\n"
+                        company_whatsapp_msg += f"Total: Rs {order.total_amount}\n\n"
+                        company_whatsapp_msg += "Items:\n"
+                        for item in order.items.select_related('product'):
+                            company_whatsapp_msg += f"   - {item.product.name} x {item.quantity} = Rs {item.line_total()}\n"
+                        company_whatsapp_msg += f"\nDelivery:\n"
+                        company_whatsapp_msg += f"   {order.address_line1}\n"
+                        company_whatsapp_msg += f"   {order.city}, {order.state} {order.postal_code}\n"
+                        if order.latitude and order.longitude:
+                            company_whatsapp_msg += f"   https://maps.google.com/?q={order.latitude},{order.longitude}\n"
+                        if order.notes:
+                            company_whatsapp_msg += f"\nNotes: {order.notes}\n"
+                        try:
+                            whatsapp_sent = _send_whatsapp_message(company_whatsapp, company_whatsapp_msg)
+                            if whatsapp_sent:
+                                print(f"[SUCCESS] Company WhatsApp sent to {company_whatsapp}")
+                        except Exception as e:
+                            print(f"[ERROR] Company WhatsApp error: {str(e)}")
+                    
+                    # Send company email directly (synchronous)
+                    if company_email:
+                        print(f"[EMAIL] Sending company email synchronously to {company_email}...")
+                        try:
+                            smtp_backend = EmailBackend(
+                                host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                                port=getattr(settings, 'EMAIL_PORT', 587),
+                                username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                                password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                                use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                                timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
+                            )
+                            # Build detailed company email
+                            company_lines = []
+                            company_lines.append(f"NEW ORDER #{order.order_number} - PAYMENT RECEIVED ✅")
+                            company_lines.append("")
+                            company_lines.append("Customer Details:")
+                            company_lines.append(f"Full Name: {order.customer_name}")
+                            company_lines.append(f"Email: {order.email if order.email else '-'}")
+                            company_lines.append(f"Phone: {order.phone if order.phone else '-'}")
+                            company_lines.append("")
+                            company_lines.append("Delivery Address:")
+                            company_lines.append(f"Address Line 1: {order.address_line1}")
+                            company_lines.append(f"Address Line 2: {order.address_line2 if order.address_line2 else '-'}")
+                            company_lines.append(f"City: {order.city}")
+                            company_lines.append(f"State: {order.state}")
+                            company_lines.append(f"Pincode: {order.postal_code}")
+                            if order.latitude and order.longitude:
+                                maps_link = f"https://maps.google.com/?q={order.latitude},{order.longitude}"
+                                company_lines.append(f"Location Link: {maps_link}")
+                            company_lines.append("")
+                            company_lines.append("Payment:")
+                            company_lines.append(f"Payment Method: {order.get_payment_method_display()}")
+                            company_lines.append(f"Payment Status: Paid ✅")
+                            company_lines.append(f"Razorpay Payment ID: {order.razorpay_payment_id}")
+                            company_lines.append(f"Razorpay Order ID: {order.razorpay_order_id}")
+                            company_lines.append("")
+                            company_lines.append("Order Items:")
+                            for item in order.items.select_related('product'):
+                                company_lines.append(f"- {item.product.name} x {item.quantity} @ ₹{item.unit_price} = ₹{item.line_total()}")
+                            company_lines.append(f"Total Amount: ₹{order.total_amount}")
+                            if order.notes:
+                                company_lines.append("")
+                                company_lines.append("Order Instructions:")
+                                company_lines.append(order.notes)
+                            company_lines.append("")
+                            company_lines.append("--")
+                            company_lines.append("Reference: Payment received via Razorpay - Order confirmed ✅")
+                            company_message = "\n".join(company_lines)
+                            subject_company = f'New order #{order.order_number} received - PAYMENT RECEIVED ✅ - Shiv Organic Dairy Farm'
+                            email = EmailMessage(
+                                subject=subject_company,
+                                body=company_message,
+                                from_email=from_email,
+                                to=[company_email],
+                                connection=smtp_backend
+                            )
+                            email.send()
+                            print(f"[SUCCESS] Company email sent to {company_email}")
+                            smtp_backend.close()
+                        except Exception as e:
+                            print(f"[WARNING] Company email failed: {str(e)}")
+                    
+                    print(f"[ORDER] Email and WhatsApp notifications completed for order #{order.order_number}")
+                except Exception as e:
+                    print(f"[ERROR] Email sending failed for order #{order.order_number}: {str(e)}")
+                    import traceback
+                    traceback.print_exc()
+                
                 # Clear session
                 if 'pending_order_id' in request.session:
                     del request.session['pending_order_id']
-                
-                # Send email and WhatsApp notifications after payment success
-                def on_commit_send():
-                    _send_payment_success_notifications(order)
-                transaction.on_commit(on_commit_send)
                 
                 return redirect(reverse('order_success') + f'?order_id={order.order_number}')
                 
