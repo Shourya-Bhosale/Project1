@@ -695,10 +695,10 @@
                     name: 'Shiv Organic Dairy Farm',
                     description: 'Premium A2 Gir Cow Ghee - Shiv Organic Dairy Farm',
                     order_id: data.order_id,
-                    callback_url: '/payment/success/',
-                    redirect: true,
+                    callback_url: window.location.origin + '/payment/success/',
                     handler: function(response) {
-                        // Payment successful - redirect to success page
+                        // Payment successful - redirect to success page with payment details
+                        console.log('Payment successful:', response);
                         window.location.href = '/payment/success/?razorpay_order_id=' + response.razorpay_order_id +
                                               '&razorpay_payment_id=' + response.razorpay_payment_id +
                                               '&razorpay_signature=' + response.razorpay_signature;
