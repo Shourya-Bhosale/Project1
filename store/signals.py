@@ -26,7 +26,7 @@ def seed_products(sender, **kwargs):
                     Product(
                         name='Gir Cow Ghee 250ml',
                         size_ml=250,
-                        price=349,
+                        price=10,
                         description='Pure A2 Gir Cow Bilona Ghee (250ml).',
                         image_url='/static/store/images/product_250ml.jpg',
                     ),

@@ -68,15 +68,19 @@ def place_order(request: HttpRequest) -> HttpResponse:
                     except ValueError:
                         qty = 0
                     if qty > 0:
+                        # Always use current product price, not any stored price
+                        current_price = product.price
                         OrderItem.objects.create(
                             order=order,
                             product=product,
                             quantity=qty,
-                            unit_price=product.price,
+                            unit_price=current_price,
                         )
-                        total += qty * product.price
+                        total += qty * current_price
+                        print(f"[ORDER] Added {qty}x {product.name} @ ₹{current_price} = ₹{qty * current_price}")
                 order.total_amount = total
                 order.save()
+                print(f"[ORDER] Order #{order.order_number} total_amount set to ₹{total}")
 
                 if order.items.count() == 0:
                     order.delete()
@@ -1045,9 +1049,30 @@ def create_payment(request: HttpRequest) -> JsonResponse:
             return JsonResponse({'error': 'Order not found. Please place order again.'}, status=404)
         if pending_order.payment_status == 'paid':
             return JsonResponse({'error': 'This order is already paid.'}, status=400)
-        if pending_order.total_amount * 100 != amount:
-            # Optional: align amounts to prevent tampering
-            amount = pending_order.total_amount * 100
+        
+        # ALWAYS recalculate order total from current product prices to ensure accuracy
+        # This ensures prices are always up-to-date even if product prices changed
+        old_total = pending_order.total_amount
+        recalculated_total = 0
+        for item in pending_order.items.all():
+            # Use current product price, not the stored unit_price
+            current_price = item.product.price
+            item_total = item.quantity * current_price
+            recalculated_total += item_total
+            print(f"[PRICE_CHECK] {item.product.name} x{item.quantity} @ ₹{current_price} = ₹{item_total}")
+        
+        # ALWAYS update order total with recalculated amount
+        pending_order.total_amount = recalculated_total
+        pending_order.save()
+        
+        if recalculated_total != old_total:
+            print(f"[PRICE_UPDATE] Updated order #{pending_order.order_number} total from ₹{old_total} to ₹{recalculated_total}")
+        else:
+            print(f"[PRICE_CHECK] Order #{pending_order.order_number} total is correct: ₹{recalculated_total}")
+        
+        # Use recalculated amount for payment
+        amount = recalculated_total * 100  # Convert to paise
+        print(f"[PAYMENT] Using amount: ₹{recalculated_total} ({amount} paise)")
         
         # Initialize Razorpay client for real payments
         try:
