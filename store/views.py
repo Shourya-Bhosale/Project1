@@ -110,7 +110,7 @@ def place_order(request: HttpRequest) -> HttpResponse:
                         # Send emails synchronously for COD to ensure they complete
                         from django.core.mail import EmailMessage
                         from django.core.mail.backends.smtp import EmailBackend
-                        from django.conf import settings
+                        # Note: settings is already imported at top of file
                         
                         subject_customer = f'Your Shiv Organic Dairy Farm order #{order.order_number} confirmation'
                         lines = [
@@ -1223,7 +1223,7 @@ def payment_success(request: HttpRequest) -> HttpResponse:
                     # Send emails synchronously for Razorpay to ensure they complete (same as COD)
                     from django.core.mail import EmailMessage
                     from django.core.mail.backends.smtp import EmailBackend
-                    from django.conf import settings
+                    # Note: settings is already imported at top of file
                     
                     subject_customer = f'Your Shiv Organic Dairy Farm order #{order.order_number} confirmation'
                     lines = [
@@ -1443,7 +1443,7 @@ def payment_success(request: HttpRequest) -> HttpResponse:
                     # Send emails synchronously for Razorpay to ensure they complete (same as COD)
                     from django.core.mail import EmailMessage
                     from django.core.mail.backends.smtp import EmailBackend
-                    from django.conf import settings
+                    # Note: settings is already imported at top of file
                     
                     subject_customer = f'Your Shiv Organic Dairy Farm order #{order.order_number} confirmation'
                     lines = [
