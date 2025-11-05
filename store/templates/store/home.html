@@ -141,8 +141,28 @@
             font-family: 'Poppins', 'Inter', system-ui, -apple-system, sans-serif;
             line-height: 1.7;
             color: #1f2937;
-            background: linear-gradient(180deg, #fefbf3 0%, #fffbf0 50%, #f9fafb 100%);
+            background: linear-gradient(180deg, #f0f9f1 0%, #e8f5e9 50%, #e1f3e2 100%);
             overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Farm Background Image - covers entire viewport */
+        .nature-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+            background: url('{% static "store/images/farm-bg.png" %}') center center / cover no-repeat fixed;
+        }
+        
+        /* Content above background */
+        body > *:not(.nature-background) {
+            position: relative;
+            z-index: 1;
         }
         
         /* Enhanced Header */
@@ -247,7 +267,7 @@
         section {
             padding: 80px 20px;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
         }
         
         section::before {
@@ -285,27 +305,11 @@
         
         /* Home Section Enhancement */
         #home {
-            background: linear-gradient(135deg, #fefce8 0%, #fef3c7 50%, #fde68a 100%);
+            background: transparent;
             padding: 100px 20px;
             text-align: center;
             position: relative;
-            overflow: hidden;
-        }
-        
-        #home::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
-        }
-        
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            overflow: visible;
         }
         
         #home h2 {
@@ -352,7 +356,7 @@
         
         /* About Section Enhancement */
         #about {
-            background: linear-gradient(180deg, #ffffff 0%, #f0fdf4 100%);
+            background: transparent;
             padding: 90px 20px;
         }
         
@@ -429,7 +433,7 @@
         
         /* Benefits Section Enhancement */
         #benefits {
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f9fafb 100%);
+            background: transparent;
             padding: 90px 20px;
         }
         
@@ -474,7 +478,7 @@
         
         /* Buy Section Enhancement */
         #buy {
-            background: linear-gradient(180deg, #ffffff 0%, #fefbf3 100%);
+            background: transparent;
             padding: 90px 20px;
         }
         
@@ -566,7 +570,7 @@
         
         /* Reviews Section Enhancement */
         #Reviews {
-            background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+            background: transparent;
             padding: 90px 20px;
         }
         
@@ -587,7 +591,7 @@
         
         /* Contact Section Enhancement */
         #contact {
-            background: linear-gradient(180deg, #f9fafb 0%, #ffffff 100%);
+            background: transparent;
             padding: 90px 20px;
         }
         
@@ -661,15 +665,15 @@
         @media (max-width: 768px) {
             /* Header and Navigation */
             header {
-                padding: 12px 15px;
+                padding: 10px 12px;
             }
             
             .header-title h1 {
-                font-size: 1.6rem;
+                font-size: 1.3rem;
             }
             
             .header-logo {
-                height: 60px;
+                height: 50px;
             }
             
             .main-nav {
@@ -683,340 +687,203 @@
             .main-nav a {
                 white-space: nowrap;
                 flex-shrink: 0;
-                font-size: 0.85rem;
-                padding: 8px 14px;
+                font-size: 0.75rem;
+                padding: 8px 12px;
             }
             
             /* Sections */
             section {
-                padding: 50px 15px;
+                padding: 30px 12px;
             }
             
             section h2 {
-                font-size: 1.8rem;
-                margin-bottom: 20px;
+                font-size: 1.3rem;
+                margin-bottom: 15px;
             }
             
             section h2::after {
-                width: 60px;
+                width: 50px;
                 height: 3px;
             }
             
             /* Home Section */
             #home {
-                padding: 60px 15px;
+                padding: 40px 12px;
             }
             
             #home h2 {
-                font-size: 1.8rem;
-                margin-bottom: 15px;
+                font-size: 1.2rem;
+                margin-bottom: 12px;
             }
             
             #home p {
-                font-size: 1rem;
-                line-height: 1.6;
+                font-size: 0.9rem;
+                line-height: 1.5;
             }
             
             /* About Section */
             .grid-2 {
                 grid-template-columns: 1fr;
-                gap: 20px;
+                gap: 15px;
             }
             
             .method-grid {
                 grid-template-columns: 1fr;
-                gap: 20px;
+                gap: 15px;
             }
             
             .method-box {
-                padding: 20px;
-                border-radius: 16px;
+                padding: 15px;
+                border-radius: 14px;
             }
             
             .method-box img {
-                height: 180px;
-                padding: 10px;
+                height: 150px;
+                padding: 8px;
             }
             
             .method-box p {
-                font-size: 0.9rem;
+                font-size: 0.85rem;
             }
             
             /* Benefits Section */
             .grid-4 {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
+                gap: 12px;
             }
             
             .benefit {
-                padding: 20px 15px;
-                border-radius: 14px;
+                padding: 15px 10px;
+                border-radius: 12px;
             }
             
             .benefit img {
-                width: 80px;
-                height: 80px;
-                margin-bottom: 12px;
+                width: 60px;
+                height: 60px;
+                margin-bottom: 10px;
             }
             
             .benefit h4 {
-                font-size: 1rem;
+                font-size: 0.85rem;
             }
             
             /* Buy Section */
             .buy-grid {
                 grid-template-columns: 1fr;
-                gap: 25px;
+                gap: 20px;
             }
             
             .product-box {
-                padding: 25px 20px;
-                border-radius: 18px;
+                padding: 20px 15px;
+                border-radius: 16px;
             }
             
             .product-box img {
                 width: 100%;
-                height: 280px;
-                padding: 15px;
-                border-radius: 16px;
+                height: 220px;
+                padding: 12px;
+                border-radius: 14px;
             }
             
             .product-box h3 {
-                font-size: 1.3rem;
-                margin-bottom: 12px;
+                font-size: 1.1rem;
+                margin-bottom: 10px;
             }
             
             .product-box .description {
-                font-size: 0.9rem;
-                margin-bottom: 15px;
+                font-size: 0.85rem;
+                margin-bottom: 12px;
             }
             
             /* Price Display - Mobile */
             .product-box > div[style*="text-align: center"] {
-                margin: 12px 0 !important;
-                padding: 10px !important;
-                border-radius: 10px !important;
+                margin: 10px 0 !important;
+                padding: 8px !important;
+                border-radius: 8px !important;
             }
             
             .product-box span[style*="font-size: 1.8em"] {
-                font-size: 1.5em !important;
+                font-size: 1.3em !important;
             }
             
             .product-box span[style*="font-size: 1em"] {
-                font-size: 0.85em !important;
+                font-size: 0.8em !important;
             }
             
             /* Quantity Controls */
             .quantity-controls {
                 gap: 6px;
-                margin: 12px 0;
+                margin: 10px 0;
             }
             
             .qty-btn {
-                width: 36px;
-                height: 36px;
-                font-size: 18px;
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
             }
             
             .qty-input {
-                width: 65px;
-                height: 36px;
-                font-size: 15px;
+                width: 60px;
+                height: 32px;
+                font-size: 14px;
             }
             
             /* Cart Summary */
             .cart-summary {
-                padding: 15px;
-                margin: 15px 0;
-                border-radius: 12px;
+                padding: 12px;
+                margin: 12px 0;
+                border-radius: 10px;
             }
             
             .cart-summary h3 {
-                font-size: 1.2rem;
-                margin-bottom: 12px;
+                font-size: 1rem;
+                margin-bottom: 10px;
             }
             
             .cart-item {
-                padding: 8px 0;
+                padding: 6px 0;
                 flex-wrap: wrap;
-                gap: 8px;
+                gap: 6px;
             }
             
             /* Feature List */
             .feature-list {
-                gap: 12px;
-                margin-top: 30px;
+                gap: 10px;
+                margin-top: 20px;
                 flex-direction: column;
                 align-items: center;
             }
             
             .feature-list span {
-                padding: 10px 20px;
-                font-size: 0.85rem;
+                padding: 8px 16px;
+                font-size: 0.8rem;
                 width: 100%;
-                max-width: 300px;
+                max-width: 280px;
                 text-align: center;
             }
             
             /* Reviews Section */
             .carousel-slide {
-                padding: 20px;
-                border-radius: 16px;
+                padding: 15px;
+                border-radius: 14px;
             }
             
             /* Contact Section */
             .location-container {
-                padding: 25px 20px;
-                border-radius: 18px;
+                padding: 20px 15px;
+                border-radius: 16px;
             }
             
             /* Footer */
             footer {
-                padding: 25px 15px;
+                padding: 20px 12px;
             }
             
             footer p {
-                font-size: 0.85rem;
-            }
-            
-            /* Customer Support Section - Mobile */
-            .customer-support-section {
-                padding: 15px 10px !important;
-            }
-            
-            .customer-support-container {
-                max-width: 100% !important;
-                padding: 0 5px;
-            }
-            
-            .customer-support-section h2 {
-                font-size: 1.3em !important;
-                margin-bottom: 8px !important;
-            }
-            
-            .customer-support-section > div > p {
-                font-size: 0.9em !important;
-                padding: 0 5px;
-            }
-            
-            .customer-support-section > div > div {
-                padding: 12px 8px !important;
-            }
-            
-            .customer-support-section h3 {
-                font-size: 1.1em !important;
-                margin-bottom: 8px !important;
-            }
-            
-            .email-support-link {
-                font-size: 0.9em !important;
-                padding: 10px 12px !important;
-                display: block !important;
-                margin: 0 auto !important;
-                max-width: calc(100% - 10px) !important;
-                word-break: break-all !important;
-                white-space: normal !important;
-                text-align: center !important;
-                line-height: 1.4 !important;
-                overflow-wrap: break-word !important;
-            }
-            
-            .email-support-link:hover {
-                transform: scale(1.02);
-                box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
-            }
-            
-            .customer-support-section > div > div > p {
-                font-size: 0.85em !important;
-                margin-top: 10px !important;
-            }
-        }
-        
-        /* Extra Small Devices */
-        @media (max-width: 480px) {
-            header {
-                padding: 10px 12px;
-            }
-            
-            .header-title h1 {
-                font-size: 1.3rem;
-            }
-            
-            .header-logo {
-                height: 50px;
-            }
-            
-            .main-nav a {
-                font-size: 0.7rem;
-                padding: 6px 8px;
-                white-space: nowrap;
-            }
-            
-            .method-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            section {
-                padding: 40px 12px;
-            }
-            
-            section h2 {
-                font-size: 1.5rem;
-            }
-            
-            #home {
-                padding: 50px 12px;
-            }
-            
-            #home h2 {
-                font-size: 1.5rem;
-            }
-            
-            #home p {
-                font-size: 0.95rem;
-            }
-            
-            .grid-4 {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-            
-            .benefit {
-                padding: 15px 12px;
-            }
-            
-            .benefit img {
-                width: 70px;
-                height: 70px;
-            }
-            
-            .product-box {
-                padding: 20px 15px;
-            }
-            
-            .product-box img {
-                height: 240px;
-                padding: 12px;
-            }
-            
-            .product-box h3 {
-                font-size: 1.2rem;
-            }
-            
-            .method-box {
-                padding: 15px;
-            }
-            
-            .method-box img {
-                height: 160px;
-            }
-            
-            .feature-list span {
-                padding: 8px 16px;
                 font-size: 0.8rem;
             }
             
-            /* Customer Support Section - Extra Small */
+            /* Customer Support Section - Mobile */
             .customer-support-section {
                 padding: 12px 8px !important;
             }
@@ -1027,7 +894,7 @@
             }
             
             .customer-support-section h2 {
-                font-size: 1.2em !important;
+                font-size: 1.1em !important;
                 margin-bottom: 6px !important;
             }
             
@@ -1058,6 +925,11 @@
                 line-height: 1.3 !important;
                 overflow-wrap: break-word !important;
                 border-radius: 15px !important;
+            }
+            
+            .email-support-link:hover {
+                transform: scale(1.02);
+                box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
             }
             
             .customer-support-section > div > div > p {
@@ -1221,6 +1093,8 @@
     </style>
 </head>
 <body>
+    <!-- Farm Background -->
+    <div class="nature-background"></div>
 
     <header class="header-container">
         <img src="{% static 'store/images/Shiv Logo (1).png' %}" alt="SHIV Logo" class="header-logo" />
@@ -1242,71 +1116,6 @@
     <section id="home">
         <h2 style="font-size: 1.8em;">Pure A2 Gir Cow Ghee in Pune - SHIV Organic Dairy Farm</h2>
         <p>Welcome to SHIV Organic Dairy Farm - Your trusted source for <strong>100% pure A2 Gir Cow Ghee in Pune, Maharashtra</strong>!</p>
-    </section>
-
-    <section id="about">
-        <h2>About Our Ghee</h2>
-        <div class="method-grid">
-            <div class="method-box">
-                <img src="{% static 'store/images/Bilona.png' %}" alt="Gir Cow" />
-                <p><strong>Bilona Method:</strong> We follow the ancient bilona method which is a time-honored, artisanal technique for crafting authentic ghee: fresh milk is cultured into curd, which is then hand-churned using a wooden bilona to extract butter, and finally gently heated until the water evaporates and pure, golden ghee remains </p>
-            </div>
-            <div class="method-box">
-                <img src="{% static 'store/images/100%.png' %}" alt="Bilona Method" />
-                <p><strong>100% Natural:</strong> Our 100% Pure Ghee is crafted from thoughtfully sourced cow’s milk using traditional methods—completely free of preservatives, additives, or vegetable oils—ensuring a rich, authentic flavor, granular texture, and all the nutrition of full-fat, unadulterated ghee </p>
-            </div>
-            <div class="method-box">
-                <img src="{% static 'store/images/COW.png' %}" alt="Ghee Image" />
-                <p><strong>Traditional Process:</strong>Our 100% Pure Gir Cow Ghee comes exclusively from A2 milk of free-grazing Gir cows, ethically raised on lush pastures under the open sky. Crafted using the revered Bilona method, this ghee preserves the rich golden hue, nutty aroma, and nutrient-packed goodness—rich in omega-3 fatty acids, vitamins A, D, E, K, and butyric acid—offering an authentic, wholesome superfood with no additives or impurities.</p>
-            </div>
-            <div class="method-box">
-                <img src="{% static 'store/images/500 Ml.png' %}" alt="Ghee Image" />
-                <p><strong>Grass-fed Cows:</strong> Our Ghee is made from the rich, nutritious milk of Gir cows—an indigenous breed renowned for its high-quality A2 milk. Made traditionally by slowly simmering this pure butter to retain natural flavor, aroma, and nutrients, it's free from additives, preservatives, and any artificial ingredients—just authentic, wholesome goodness in every spoonful. </p>
-            </div>
-        </div>
-    </section>
-
-    <section id="benefits" aria-labelledby="benefits-title" style="padding:40px 20px; background:linear-gradient(180deg,#fff8f0,#fff);">
-        <h2 id="benefits-title" style="text-align:center; font-size:1.6rem; margin-bottom:18px;">Why Choose SHIV A2 Gir Cow Ghee in Pune?</h2>
-        <p style="max-width:900px; margin:0 auto 28px; text-align:center; color:#444;">Discover the <strong>best A2 Gir cow ghee in Pune</strong> - Pure, traditional, and made with care. Here are the main benefits that make SHIV Organic Dairy Farm the <strong>preferred choice for organic ghee in Maharashtra</strong>.</p>
-        <div class="benefits">
-            <div class="grid-4">
-                <div class="benefit">
-                    <img src="{% static 'store/images/B1.png' %}" alt="Boosts Immunity">
-                    <h4>Boosts Immunity</h4>
-                </div>
-                <div class="benefit">
-                    <img src="{% static 'store/images/B2.png' %}" alt="Improves Digestion">
-                    <h4>Boosts Memory</h4>
-                </div>
-                <div class="benefit">
-                    <img src="{% static 'store/images/B3.png' %}" alt="Rich in Nutrients">
-                    <h4>Natural Energy</h4>
-                </div>
-                <div class="benefit">
-                    <img src="{% static 'store/images/B4.png' %}" alt="Natural Energy">
-                    <h4>Improves Heart Health</h4>
-                </div>
-            </div>
-            <div class="grid-4" style="margin-top:16px;">
-                <div class="benefit">
-                    <img src="{% static 'store/images/B5.png' %}" alt="Skin Health">
-                    <h4>Improves Digestion</h4>
-                </div>
-                <div class="benefit">
-                    <img src="{% static 'store/images/B6.png' %}" alt="Gut Support">
-                    <h4>Improves Skin Health</h4>
-                </div>
-                <div class="benefit">
-                    <img src="{% static 'store/images/B7.png' %}" alt="Heart & Vision">
-                    <h4>Increases Metabolism</h4>
-                </div>
-                <div class="benefit">
-                    <img src="{% static 'store/images/B8.png' %}" alt="Additional Benefit">
-                    <h4>Supports Wellness</h4>
-                </div>
-            </div>
-        </div>
     </section>
 
     <section id="buy">
@@ -1373,7 +1182,70 @@
         </div>
     </section>
 
-    
+    <section id="about">
+        <h2>About Our Ghee</h2>
+        <div class="method-grid">
+            <div class="method-box">
+                <img src="{% static 'store/images/Bilona.png' %}" alt="Gir Cow" />
+                <p><strong>Bilona Method:</strong> We follow the ancient bilona method which is a time-honored, artisanal technique for crafting authentic ghee: fresh milk is cultured into curd, which is then hand-churned using a wooden bilona to extract butter, and finally gently heated until the water evaporates and pure, golden ghee remains </p>
+            </div>
+            <div class="method-box">
+                <img src="{% static 'store/images/100%.png' %}" alt="Bilona Method" />
+                <p><strong>100% Natural:</strong> Our 100% Pure Ghee is crafted from thoughtfully sourced cow’s milk using traditional methods—completely free of preservatives, additives, or vegetable oils—ensuring a rich, authentic flavor, granular texture, and all the nutrition of full-fat, unadulterated ghee </p>
+            </div>
+            <div class="method-box">
+                <img src="{% static 'store/images/COW.png' %}" alt="Ghee Image" />
+                <p><strong>Traditional Process:</strong>Our 100% Pure Gir Cow Ghee comes exclusively from A2 milk of free-grazing Gir cows, ethically raised on lush pastures under the open sky. Crafted using the revered Bilona method, this ghee preserves the rich golden hue, nutty aroma, and nutrient-packed goodness—rich in omega-3 fatty acids, vitamins A, D, E, K, and butyric acid—offering an authentic, wholesome superfood with no additives or impurities.</p>
+            </div>
+            <div class="method-box">
+                <img src="{% static 'store/images/500 Ml.png' %}" alt="Ghee Image" />
+                <p><strong>Grass-fed Cows:</strong> Our Ghee is made from the rich, nutritious milk of Gir cows—an indigenous breed renowned for its high-quality A2 milk. Made traditionally by slowly simmering this pure butter to retain natural flavor, aroma, and nutrients, it's free from additives, preservatives, and any artificial ingredients—just authentic, wholesome goodness in every spoonful. </p>
+            </div>
+        </div>
+    </section>
+
+    <section id="benefits" aria-labelledby="benefits-title" style="padding:40px 20px; background:linear-gradient(180deg,#fff8f0,#fff);">
+        <h2 id="benefits-title" style="text-align:center; font-size:1.6rem; margin-bottom:18px;">Why Choose SHIV A2 Gir Cow Ghee in Pune?</h2>
+        <p style="max-width:900px; margin:0 auto 28px; text-align:center; color:#444;">Discover the <strong>best A2 Gir cow ghee in Pune</strong> - Pure, traditional, and made with care. Here are the main benefits that make SHIV Organic Dairy Farm the <strong>preferred choice for organic ghee in Maharashtra</strong>.</p>
+        <div class="benefits">
+            <div class="grid-4">
+                <div class="benefit">
+                    <img src="{% static 'store/images/B1.png' %}" alt="Boosts Immunity">
+                    <h4>Boosts Immunity</h4>
+                </div>
+                <div class="benefit">
+                    <img src="{% static 'store/images/B2.png' %}" alt="Improves Digestion">
+                    <h4>Boosts Memory</h4>
+                </div>
+                <div class="benefit">
+                    <img src="{% static 'store/images/B3.png' %}" alt="Rich in Nutrients">
+                    <h4>Natural Energy</h4>
+                </div>
+                <div class="benefit">
+                    <img src="{% static 'store/images/B4.png' %}" alt="Natural Energy">
+                    <h4>Improves Heart Health</h4>
+                </div>
+            </div>
+            <div class="grid-4" style="margin-top:16px;">
+                <div class="benefit">
+                    <img src="{% static 'store/images/B5.png' %}" alt="Skin Health">
+                    <h4>Improves Digestion</h4>
+                </div>
+                <div class="benefit">
+                    <img src="{% static 'store/images/B6.png' %}" alt="Gut Support">
+                    <h4>Improves Skin Health</h4>
+                </div>
+                <div class="benefit">
+                    <img src="{% static 'store/images/B7.png' %}" alt="Heart & Vision">
+                    <h4>Increases Metabolism</h4>
+                </div>
+                <div class="benefit">
+                    <img src="{% static 'store/images/B8.png' %}" alt="Additional Benefit">
+                    <h4>Supports Wellness</h4>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <section id="Reviews">
         <h2>Reviews</h2>
@@ -1505,12 +1377,6 @@
                                 <div class="icon-container">
                                     <span class="icon">📷</span>
                                     <span class="icon-label">Instagram</span>
-                                </div>
-                            </a>
-                            <a href="https://facebook.com/shivagrofoodsltd" target="_blank" class="contact-icon-link" title="Follow on Facebook">
-                                <div class="icon-container">
-                                    <span class="icon">📘</span>
-                                    <span class="icon-label">Facebook</span>
                                 </div>
                             </a>
                         </div>

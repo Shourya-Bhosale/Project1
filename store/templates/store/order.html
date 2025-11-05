@@ -981,13 +981,14 @@
         // Online Payment Integration
         const onlinePaymentBtn = document.getElementById('onlinePaymentBtn');
         
-        // Online payment handler
+        // Online payment handler - use the same flow as form submission
         if (onlinePaymentBtn) {
             console.log('Online payment button found:', onlinePaymentBtn);
-            onlinePaymentBtn.addEventListener('click', function() {
+            onlinePaymentBtn.addEventListener('click', function(e) {
+                e.preventDefault();
                 console.log('Online payment button clicked');
                 
-                const totalAmount = parseFloat(document.getElementById('onlinePaymentAmount').textContent) * 100; // Convert to paise
+                const totalAmount = parseFloat(document.getElementById('onlinePaymentAmount').textContent);
                 console.log('Total amount:', totalAmount);
                 
                 if (totalAmount <= 0) {
@@ -995,80 +996,15 @@
                     return;
                 }
                 
-                // Create payment order directly
-                fetch('/create-payment/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    },
-                    body: JSON.stringify({
-                        amount: totalAmount,
-                        currency: 'INR',
-                        customer_name: document.querySelector('[name="customer_name"]').value,
-                        customer_email: document.querySelector('[name="email"]').value,
-                        order_id: 'temp_' + Date.now()
-                    })
-                })
-                .then(response => {
-                    console.log('Payment response status:', response.status);
-                    if (!response.ok) {
-                        return response.text().then(text => {
-                            console.error('Payment error response:', text);
-                            throw new Error(`HTTP error! status: ${response.status} - ${text}`);
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Payment data received:', data);
-                    if (data.error) {
-                        console.error('Payment error:', data.error);
-                        alert('Payment error: ' + data.error);
-                        return;
-                    }
-                    
-                    // Real payment mode - use Razorpay
-                    console.log('Opening Razorpay checkout for real payment...');
-                    
-                    // Production mode - use real Razorpay
-                    const options = {
-                        key: data.key,
-                        amount: data.amount,
-                        currency: data.currency,
-                        name: 'Shiv Organic Dairy Farm',
-                        description: 'Premium A2 Gir Cow Ghee - Shiv Organic Dairy Farm',
-                        order_id: data.order_id,
-                        callback_url: '/payment/success/',
-                        redirect: true,
-                        handler: function(response) {
-                            // Payment successful - redirect to success page
-                            window.location.href = '/payment/success/?razorpay_order_id=' + response.razorpay_order_id +
-                                                  '&razorpay_payment_id=' + response.razorpay_payment_id +
-                                                  '&razorpay_signature=' + response.razorpay_signature;
-                        },
-                        prefill: {
-                            name: document.querySelector('[name="customer_name"]').value,
-                            email: document.querySelector('[name="email"]').value,
-                            contact: document.querySelector('[name="phone"]').value
-                        },
-                        modal: {
-                            ondismiss: function() {
-                                alert('Payment window closed. If amount was deducted, you will be redirected automatically after confirmation.');
-                            }
-                        },
-                        theme: {
-                            color: '#2d5016'
-                        }
-                    };
-                    
-                    const rzp = new Razorpay(options);
-                    rzp.open();
-                })
-                .catch(error => {
-                    console.error('Payment initialization error:', error);
-                    alert('Payment initialization failed: ' + error.message + '. Please check console for details.');
-                });
+                // Ensure payment method is set to RAZORPAY
+                const paymentMethodSelect = document.querySelector('select[name="payment_method"]');
+                if (paymentMethodSelect) {
+                    paymentMethodSelect.value = 'RAZORPAY';
+                }
+                
+                // Use the same flow as form submission - create order first, then initiate payment
+                console.log('Creating order first, then initiating payment...');
+                submitOrderAndInitiatePayment();
             });
         }
     </script>
