@@ -478,27 +478,43 @@ def _send_paid_order_notifications_async(order_id: int) -> None:
             
             if order.email:
                 print(f"[EMAIL] Sending customer email asynchronously to {order.email}...")
-                try:
-                    smtp_backend = EmailBackend(
-                        host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
-                        port=getattr(settings, 'EMAIL_PORT', 587),
-                        username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
-                        password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
-                        use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
-                        timeout=getattr(settings, 'EMAIL_TIMEOUT', 15),
-                    )
-                    email = EmailMessage(
-                        subject=subject_customer,
-                        body=message,
-                        from_email=from_email,
-                        to=[order.email],
-                        connection=smtp_backend
-                    )
-                    email.send(fail_silently=True)
-                    smtp_backend.close()
-                    print(f"[SUCCESS] Customer email queued to {order.email}")
-                except Exception as e:
-                    print(f"[WARNING] Customer email failed: {str(e)}")
+                email_sent = False
+                # Try Brevo API first (most reliable on Render free tier)
+                if getattr(settings, 'BREVO_API_KEY', '').strip():
+                    email_sent = _send_email_brevo(order.email, subject_customer, message)
+                    if email_sent:
+                        print(f"[SUCCESS] Customer email sent via Brevo to {order.email}")
+                # Fallback to SendGrid if configured
+                if not email_sent and getattr(settings, 'SENDGRID_API_KEY', '').strip():
+                    email_sent = _send_email_sendgrid(order.email, subject_customer, message)
+                    if email_sent:
+                        print(f"[SUCCESS] Customer email sent via SendGrid to {order.email}")
+                # Final fallback to SMTP (may be blocked on some hosts)
+                if not email_sent:
+                    try:
+                        smtp_backend = EmailBackend(
+                            host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                            port=getattr(settings, 'EMAIL_PORT', 587),
+                            username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                            password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                            use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                            timeout=getattr(settings, 'EMAIL_TIMEOUT', 15),
+                        )
+                        email = EmailMessage(
+                            subject=subject_customer,
+                            body=message,
+                            from_email=from_email,
+                            to=[order.email],
+                            connection=smtp_backend
+                        )
+                        email.send(fail_silently=False)
+                        smtp_backend.close()
+                        email_sent = True
+                        print(f"[SUCCESS] Customer email sent via SMTP to {order.email}")
+                    except Exception as e:
+                        print(f"[WARNING] Customer email failed: {str(e)}")
+                if not email_sent:
+                    print(f"[WARNING] Unable to send customer email to {order.email} via any provider")
             
             if company_whatsapp:
                 print(f"[WHATSAPP] Sending company WhatsApp to {company_whatsapp}...")
@@ -528,66 +544,80 @@ def _send_paid_order_notifications_async(order_id: int) -> None:
             
             if company_email:
                 print(f"[EMAIL] Sending company email asynchronously to {company_email}...")
-                try:
-                    smtp_backend = EmailBackend(
-                        host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
-                        port=getattr(settings, 'EMAIL_PORT', 587),
-                        username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
-                        password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
-                        use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
-                        timeout=getattr(settings, 'EMAIL_TIMEOUT', 15),
-                    )
-                    company_lines = []
-                    company_lines.append(f"NEW ORDER #{order.order_number} - PAYMENT RECEIVED ✅")
+                company_lines = []
+                company_lines.append(f"NEW ORDER #{order.order_number} - PAYMENT RECEIVED ✅")
+                company_lines.append("")
+                company_lines.append("Customer Details:")
+                company_lines.append(f"Full Name: {order.customer_name}")
+                company_lines.append(f"Email: {order.email if order.email else '-'}")
+                company_lines.append(f"Phone: {order.phone if order.phone else '-'}")
+                company_lines.append("")
+                company_lines.append("Delivery Address:")
+                company_lines.append(f"Address Line 1: {order.address_line1}")
+                company_lines.append(f"Address Line 2: {order.address_line2 if order.address_line2 else '-'}")
+                company_lines.append(f"City: {order.city}")
+                company_lines.append(f"State: {order.state}")
+                company_lines.append(f"Pincode: {order.postal_code}")
+                if order.latitude and order.longitude:
+                    maps_link = f"https://maps.google.com/?q={order.latitude},{order.longitude}"
+                    company_lines.append(f"Location Link: {maps_link}")
+                company_lines.append("")
+                company_lines.append("Payment:")
+                company_lines.append(f"Payment Method: {order.get_payment_method_display()}")
+                company_lines.append("Payment Status: Paid ✅")
+                if order.razorpay_payment_id:
+                    company_lines.append(f"Razorpay Payment ID: {order.razorpay_payment_id}")
+                if order.razorpay_order_id:
+                    company_lines.append(f"Razorpay Order ID: {order.razorpay_order_id}")
+                company_lines.append("")
+                company_lines.append("Order Items:")
+                for item in order.items.select_related('product'):
+                    company_lines.append(f"- {item.product.name} x {item.quantity} @ ₹{item.unit_price} = ₹{item.line_total()}")
+                company_lines.append(f"Total Amount: ₹{order.total_amount}")
+                if order.notes:
                     company_lines.append("")
-                    company_lines.append("Customer Details:")
-                    company_lines.append(f"Full Name: {order.customer_name}")
-                    company_lines.append(f"Email: {order.email if order.email else '-'}")
-                    company_lines.append(f"Phone: {order.phone if order.phone else '-'}")
-                    company_lines.append("")
-                    company_lines.append("Delivery Address:")
-                    company_lines.append(f"Address Line 1: {order.address_line1}")
-                    company_lines.append(f"Address Line 2: {order.address_line2 if order.address_line2 else '-'}")
-                    company_lines.append(f"City: {order.city}")
-                    company_lines.append(f"State: {order.state}")
-                    company_lines.append(f"Pincode: {order.postal_code}")
-                    if order.latitude and order.longitude:
-                        maps_link = f"https://maps.google.com/?q={order.latitude},{order.longitude}"
-                        company_lines.append(f"Location Link: {maps_link}")
-                    company_lines.append("")
-                    company_lines.append("Payment:")
-                    company_lines.append(f"Payment Method: {order.get_payment_method_display()}")
-                    company_lines.append("Payment Status: Paid ✅")
-                    if order.razorpay_payment_id:
-                        company_lines.append(f"Razorpay Payment ID: {order.razorpay_payment_id}")
-                    if order.razorpay_order_id:
-                        company_lines.append(f"Razorpay Order ID: {order.razorpay_order_id}")
-                    company_lines.append("")
-                    company_lines.append("Order Items:")
-                    for item in order.items.select_related('product'):
-                        company_lines.append(f"- {item.product.name} x {item.quantity} @ ₹{item.unit_price} = ₹{item.line_total()}")
-                    company_lines.append(f"Total Amount: ₹{order.total_amount}")
-                    if order.notes:
-                        company_lines.append("")
-                        company_lines.append("Order Instructions:")
-                        company_lines.append(order.notes)
-                    company_lines.append("")
-                    company_lines.append("--")
-                    company_lines.append("Reference: Payment received via Razorpay - Order confirmed ✅")
-                    company_message = "\n".join(company_lines)
-                    subject_company = f'New order #{order.order_number} received - PAYMENT RECEIVED ✅ - Shiv Organic Dairy Farm'
-                    email = EmailMessage(
-                        subject=subject_company,
-                        body=company_message,
-                        from_email=from_email,
-                        to=[company_email],
-                        connection=smtp_backend
-                    )
-                    email.send(fail_silently=True)
-                    smtp_backend.close()
-                    print(f"[SUCCESS] Company email queued to {company_email}")
-                except Exception as e:
-                    print(f"[WARNING] Company email failed: {str(e)}")
+                    company_lines.append("Order Instructions:")
+                    company_lines.append(order.notes)
+                company_lines.append("")
+                company_lines.append("--")
+                company_lines.append("Reference: Payment received via Razorpay - Order confirmed ✅")
+                company_message = "\n".join(company_lines)
+                subject_company = f'New order #{order.order_number} received - PAYMENT RECEIVED ✅ - Shiv Organic Dairy Farm'
+                
+                company_email_sent = False
+                if getattr(settings, 'BREVO_API_KEY', '').strip():
+                    company_email_sent = _send_email_brevo(company_email, subject_company, company_message)
+                    if company_email_sent:
+                        print(f"[SUCCESS] Company email sent via Brevo to {company_email}")
+                if not company_email_sent and getattr(settings, 'SENDGRID_API_KEY', '').strip():
+                    company_email_sent = _send_email_sendgrid(company_email, subject_company, company_message)
+                    if company_email_sent:
+                        print(f"[SUCCESS] Company email sent via SendGrid to {company_email}")
+                if not company_email_sent:
+                    try:
+                        smtp_backend = EmailBackend(
+                            host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                            port=getattr(settings, 'EMAIL_PORT', 587),
+                            username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                            password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                            use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                            timeout=getattr(settings, 'EMAIL_TIMEOUT', 15),
+                        )
+                        email = EmailMessage(
+                            subject=subject_company,
+                            body=company_message,
+                            from_email=from_email,
+                            to=[company_email],
+                            connection=smtp_backend
+                        )
+                        email.send(fail_silently=False)
+                        smtp_backend.close()
+                        company_email_sent = True
+                        print(f"[SUCCESS] Company email sent via SMTP to {company_email}")
+                    except Exception as e:
+                        print(f"[WARNING] Company email failed: {str(e)}")
+                if not company_email_sent:
+                    print(f"[WARNING] Unable to send company email to {company_email} via any provider")
             
             print(f"[ORDER] Async notifications completed for order #{order.order_number}")
         except Exception as exc:
