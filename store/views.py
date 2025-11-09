@@ -615,7 +615,7 @@ def _send_paid_order_notifications_async(order_id: int) -> None:
                         company_email_sent = True
                         print(f"[SUCCESS] Company email sent via SMTP to {company_email}")
                     except Exception as e:
-                        print(f"[WARNING] Company email failed: {str(e)}")
+                        print(f"[WARNING] Company email failed via SMTP: {str(e)}")
                 if not company_email_sent:
                     print(f"[WARNING] Unable to send company email to {company_email} via any provider")
             
