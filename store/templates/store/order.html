@@ -366,6 +366,25 @@
             padding-top: 12px;
             margin-top: 8px;
         }
+
+        .address-field-with-status {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 12px;
+        }
+
+        .address-field-with-status .address-line {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .address-location-status {
+            color: #2d5016;
+            font-weight: 600;
+            white-space: nowrap;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -397,10 +416,13 @@
                         <label>Phone</label>
                         {{ form.phone }}
                     </div>
-                    <div>
-                        <label>Address Line 1</label>
-                        {{ form.address_line1 }}
-                        <div class="muted"><a href="#" id="useMyLocation">Use my location</a> <span id="locTick" style="display:none">✅</span></div>
+                    <div class="address-field-with-status">
+                        <div class="address-line">
+                            <label>Address Line 1</label>
+                            {{ form.address_line1 }}
+                            <div class="muted"><a href="#" id="useMyLocation">Use my location</a></div>
+                        </div>
+                        <div class="muted address-location-status" id="locStatus" style="display:none;">✅ Location captured</div>
                     </div>
                     <div>
                         <label>Address Line 2 (Optional)</label>
@@ -445,9 +467,7 @@
                             <div class="payment-amount" style="margin-bottom: 15px;">
                                 <strong>Amount to Pay: ₹<span id="onlinePaymentAmount">0</span></strong>
                                 </div>
-                            <button type="button" id="onlinePaymentBtn" class="btn btn-primary" style="padding: 12px 24px; font-size: 16px; background: #2d5016; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                                Pay Now
-                                </button>
+                           
                         </div>
                     </div>
                     
@@ -494,7 +514,7 @@
 
 
                 <div class="actions">
-                    <button class="btn btn-primary" type="submit" id="submitOrderBtn" onclick="handleOrderSubmission(event)">Place Order</button>
+                    <button class="btn btn-primary" type="submit" id="payNowBtn">Pay Now</button>
                     <a class="btn btn-secondary" href="/home/">Cancel</a>
                 </div>
             </form>
@@ -913,7 +933,6 @@
         // Ask location only when user interacts (e.g., when focusing address)
         const addressField = document.querySelector('[name="address_line1"]');
         const locStatus = document.getElementById('locStatus');
-        const locTick = document.getElementById('locTick');
         const useMyLocation = document.getElementById('useMyLocation');
         function askGeo() {
             if (!navigator.geolocation) return;
@@ -925,7 +944,6 @@
                 if (latInput && !latInput.value) latInput.value = lat;
                 if (lngInput && !lngInput.value) lngInput.value = lng;
                 if (locStatus) locStatus.style.display = 'inline-block';
-                if (locTick) locTick.style.display = 'inline-block';
             });
             addressField && addressField.removeEventListener('focus', askGeo);
         }
@@ -962,7 +980,6 @@
                         latInput.value = pos.coords.latitude.toFixed(6);
                         lngInput.value = pos.coords.longitude.toFixed(6);
                         if (locStatus) locStatus.style.display = 'inline-block';
-                        if (locTick) locTick.style.display = 'inline-block';
                         formEl.dataset.programmaticSubmit = 'true';
                         formEl.submit();
                     }, function(){
@@ -979,33 +996,9 @@
         }
         
         // Online Payment Integration
-        const onlinePaymentBtn = document.getElementById('onlinePaymentBtn');
-        
-        // Online payment handler - use the same flow as form submission
-        if (onlinePaymentBtn) {
-            console.log('Online payment button found:', onlinePaymentBtn);
-            onlinePaymentBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                console.log('Online payment button clicked');
-                
-                const totalAmount = parseFloat(document.getElementById('onlinePaymentAmount').textContent);
-                console.log('Total amount:', totalAmount);
-                
-                if (totalAmount <= 0) {
-                    alert('Please add products to your cart before proceeding with payment.');
-                    return;
-                }
-                
-                // Ensure payment method is set to RAZORPAY
-                const paymentMethodSelect = document.querySelector('select[name="payment_method"]');
-                if (paymentMethodSelect) {
-                    paymentMethodSelect.value = 'RAZORPAY';
-                }
-                
-                // Use the same flow as form submission - create order first, then initiate payment
-                console.log('Creating order first, then initiating payment...');
-                submitOrderAndInitiatePayment();
-            });
+        const payNowBtn = document.getElementById('payNowBtn');
+        if (payNowBtn) {
+            payNowBtn.addEventListener('click', handleOrderSubmission);
         }
     </script>
     
