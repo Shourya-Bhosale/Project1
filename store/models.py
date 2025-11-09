@@ -49,9 +49,18 @@ class Order(models.Model):
     def save(self, *args, **kwargs):
         if not self.order_number:
             # Generate order number starting from 1000
-            last_order = Order.objects.order_by('-order_number').first()
-            if last_order and last_order.order_number.isdigit():
-                next_num = int(last_order.order_number) + 1
+            from django.db.models import IntegerField, Max
+            from django.db.models.functions import Cast
+
+            last_number = (
+                Order.objects.exclude(order_number='')
+                .annotate(order_num_int=Cast('order_number', IntegerField()))
+                .aggregate(max_num=Max('order_num_int'))
+                .get('max_num')
+            )
+
+            if last_number:
+                next_num = last_number + 1
             else:
                 next_num = 1000
             self.order_number = str(next_num)

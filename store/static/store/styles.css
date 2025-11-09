@@ -15,6 +15,9 @@ body{margin:0;font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Ubun
 .brand .logo{height:64px;vertical-align:middle;margin-right:12px;border-radius:8px}
 .links a{margin-left:18px;color:var(--text);text-decoration:none;font-size:16px}
 .navbar .links a{color:#eaf6ec;font-weight:500}
+.navbar .links{display:flex;align-items:center;gap:18px;white-space:nowrap;flex-shrink:0}
+.floating-whatsapp{position:fixed;bottom:24px;right:24px;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;text-decoration:none;box-shadow:0 10px 25px rgba(18,140,126,0.3);z-index:1100;transition:transform 0.2s ease,box-shadow 0.2s ease}
+.floating-whatsapp:hover{transform:translateY(-4px);box-shadow:0 14px 30px rgba(18,140,126,0.4)}
 .section{padding:70px 0}
 .section.alt{background:var(--alt)}
 h2{margin:0 0 24px;font-size:30px}
