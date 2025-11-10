@@ -191,22 +191,26 @@
         .header-wrapper {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 15px 30px;
+            padding: 12px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            min-height: 60px;
         }
         
         .logo-section {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
         }
         
         .header-logo {
-            height: 50px;
+            height: 45px;
             width: auto;
             transition: transform 0.3s ease;
+            flex-shrink: 0;
         }
         
         .header-logo:hover {
@@ -215,6 +219,7 @@
         
         .header-title {
             text-align: left;
+            min-width: 0;
         }
         
         .header-title h1 {
@@ -224,12 +229,23 @@
             margin: 0;
             line-height: 1.2;
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .header-title .mobile-title {
+            display: none;
+        }
+        
+        .header-title .desktop-title {
+            display: block;
         }
         
         .header-title p {
             font-size: 0.75rem;
             color: #6b7280;
             margin: 2px 0 0;
+            display: none;
         }
         
         /* Modern Navigation - All links on right */
@@ -287,6 +303,78 @@
         .main-nav a.active::after {
             width: 100%;
             background: #15803d;
+        }
+        
+        /* Mobile Menu Toggle Button */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            flex-direction: column;
+            gap: 5px;
+            z-index: 1001;
+        }
+        
+        .mobile-menu-toggle span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background: #1f2937;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+        }
+        
+        .mobile-menu-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+        
+        .mobile-menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .mobile-menu-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+        
+        /* Mobile Dropdown Menu */
+        .mobile-nav-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-top: 1px solid #e5e7eb;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .mobile-nav-dropdown.active {
+            display: block;
+            max-height: 500px;
+        }
+        
+        .mobile-nav-dropdown a {
+            display: block;
+            padding: 15px 20px;
+            color: #374151;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background 0.3s ease;
+        }
+        
+        .mobile-nav-dropdown a:hover {
+            background: #f9fafb;
+            color: #22c55e;
+        }
+        
+        .mobile-nav-dropdown a:last-child {
+            border-bottom: none;
         }
         
         /* Enhanced Sections */
@@ -1105,42 +1193,90 @@
             }
             
             .promo-text {
-                font-size: 0.85rem;
+                font-size: 0.7rem;
+                line-height: 1.3;
             }
             
-            /* Header and Navigation - Mobile */
+            .promo-banner {
+                padding: 6px 0;
+            }
+            
+            /* Mobile Header - Single Line */
             .header-wrapper {
-                flex-direction: column;
-                gap: 15px;
-                padding: 15px 20px;
+                padding: 10px 15px;
+                min-height: 50px;
                 position: relative;
             }
             
             .logo-section {
-                width: 100%;
-                justify-content: flex-start;
-                order: 1;
-            }
-            
-            .header-title h1 {
-                font-size: 0.95rem;
+                gap: 8px;
+                flex: 1;
+                min-width: 0;
             }
             
             .header-logo {
-                height: 40px;
+                height: 35px;
             }
             
+            .header-title .desktop-title {
+                display: none;
+            }
+            
+            .header-title .mobile-title {
+                display: block;
+                font-size: 0.85rem;
+            }
+            
+            /* Hide desktop navigation */
             .main-nav-right {
-                order: 2;
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
-                gap: 10px;
+                display: none;
             }
             
-            .main-nav a {
-                font-size: 0.8rem;
-                padding: 6px 10px;
+            /* Show mobile menu toggle */
+            .mobile-menu-toggle {
+                display: flex;
+                flex-shrink: 0;
+            }
+            
+            /* Mobile dropdown navigation */
+            .mobile-nav-dropdown {
+                display: block;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #ffffff;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                border-top: 1px solid #e5e7eb;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+                z-index: 999;
+            }
+            
+            .mobile-nav-dropdown.active {
+                max-height: 400px;
+            }
+            
+            .mobile-nav-dropdown a {
+                display: block;
+                padding: 12px 20px;
+                color: #374151;
+                text-decoration: none;
+                font-weight: 500;
+                font-size: 0.9rem;
+                border-bottom: 1px solid #f3f4f6;
+                transition: background 0.3s ease, color 0.3s ease;
+            }
+            
+            .mobile-nav-dropdown a:hover,
+            .mobile-nav-dropdown a:active {
+                background: #f9fafb;
+                color: #22c55e;
+            }
+            
+            .mobile-nav-dropdown a:last-child {
+                border-bottom: none;
             }
             
             /* Product Main Content - Mobile */
@@ -1157,29 +1293,30 @@
                 grid-template-columns: 1fr;
             }
             
-            /* Sections */
+            /* Sections - Minimized for Mobile */
             section {
-                padding: 40px 15px;
+                padding: 30px 15px;
             }
             
             section h2 {
-                font-size: 1.5rem;
-                margin-bottom: 30px;
+                font-size: 1.4rem;
+                margin-bottom: 20px;
+                line-height: 1.3;
             }
             
             /* Home Section */
             #home {
-                padding: 40px 15px;
+                padding: 30px 15px;
             }
             
             #home h2 {
-                font-size: 1.8rem;
-                margin-bottom: 15px;
+                font-size: 1.5rem;
+                margin-bottom: 12px;
             }
             
             #home p {
-                font-size: 1rem;
-                line-height: 1.6;
+                font-size: 0.9rem;
+                line-height: 1.5;
             }
             
             /* About Section */
@@ -1188,57 +1325,57 @@
                 gap: 15px;
             }
             
-            /* About Section - Mobile */
+            /* About Section - Minimized */
             #about {
-                padding: 40px 15px;
+                padding: 30px 15px;
             }
             
             #about h2 {
-                font-size: 1.75rem;
+                font-size: 1.4rem;
                 line-height: 1.3;
             }
             
             .about-intro {
-                font-size: 1rem;
-                margin-bottom: 30px;
+                font-size: 0.9rem;
+                margin-bottom: 20px;
             }
             
             .about-section {
-                margin-bottom: 35px;
+                margin-bottom: 25px;
             }
             
             .about-section h3 {
-                font-size: 1.25rem;
-                margin-bottom: 15px;
+                font-size: 1.1rem;
+                margin-bottom: 12px;
             }
             
             .about-section p {
-                font-size: 0.95rem;
-                line-height: 1.7;
+                font-size: 0.85rem;
+                line-height: 1.6;
             }
             
             .about-features {
                 grid-template-columns: 1fr;
-                gap: 15px;
-                margin-top: 20px;
+                gap: 12px;
+                margin-top: 15px;
             }
             
             .about-feature-item {
-                padding: 15px;
+                padding: 12px;
             }
             
             .about-feature-icon {
-                width: 45px;
-                height: 45px;
-                font-size: 20px;
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
             }
             
             .about-feature-content h4 {
-                font-size: 1rem;
+                font-size: 0.95rem;
             }
             
             .about-feature-content p {
-                font-size: 0.9rem;
+                font-size: 0.8rem;
             }
             
             .about-image-grid {
@@ -1417,23 +1554,25 @@
             }
             
             .benefit-item {
-                padding: 20px 0;
-                gap: 15px;
+                padding: 15px 0;
+                gap: 12px;
             }
             
             .benefit-icon {
-                width: 45px;
-                height: 45px;
+                width: 40px;
+                height: 40px;
                 font-size: 20px;
+                flex-shrink: 0;
             }
             
             .benefit-content h4 {
-                font-size: 1.1rem;
+                font-size: 0.9rem;
+                margin-bottom: 6px;
             }
             
             .benefit-content p {
-                font-size: 0.95rem;
-                line-height: 1.6;
+                font-size: 0.75rem;
+                line-height: 1.4;
             }
             
             /* Footer - Mobile */
@@ -1724,10 +1863,24 @@
             <div class="logo-section">
                 <img src="{% static 'store/images/Shiv Logo (1).png' %}" alt="SHIV Logo" class="header-logo" />
                 <div class="header-title">
-                    <h1>SHIV Organic Dairy Farm</h1>
+                    <h1 class="desktop-title">SHIV Organic Dairy Farm</h1>
+                    <h1 class="mobile-title">SHIV Dairy</h1>
                 </div>
             </div>
-            <nav class="main-nav main-nav-right">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav class="main-nav main-nav-right" id="mainNav">
+                <a href="#home">HOME</a>
+                <a href="#buy">SHOP</a>
+                <a href="#about">ABOUT US</a>
+                <a href="#contact">CONTACT US</a>
+                <a href="#benefits">BENEFITS</a>
+                <a href="#reviews">REVIEWS</a>
+            </nav>
+            <nav class="mobile-nav-dropdown" id="mobileNavDropdown">
                 <a href="#home">HOME</a>
                 <a href="#buy">SHOP</a>
                 <a href="#about">ABOUT US</a>
@@ -2251,6 +2404,35 @@
     
     <script>
         // Scroll to Top Button Visibility
+        // Mobile Menu Toggle
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileNavDropdown = document.getElementById('mobileNavDropdown');
+        
+        if (mobileMenuToggle && mobileNavDropdown) {
+            mobileMenuToggle.addEventListener('click', function() {
+                this.classList.toggle('active');
+                mobileNavDropdown.classList.toggle('active');
+            });
+            
+            // Close menu when clicking on a link
+            mobileNavDropdown.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', function() {
+                    mobileMenuToggle.classList.remove('active');
+                    mobileNavDropdown.classList.remove('active');
+                });
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!mobileMenuToggle.contains(event.target) && 
+                    !mobileNavDropdown.contains(event.target) &&
+                    mobileNavDropdown.classList.contains('active')) {
+                    mobileMenuToggle.classList.remove('active');
+                    mobileNavDropdown.classList.remove('active');
+                }
+            });
+        }
+        
         window.addEventListener('scroll', function() {
             const scrollToTopBtn = document.getElementById('scrollToTop');
             if (window.pageYOffset > 300) {
