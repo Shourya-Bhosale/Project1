@@ -3,7 +3,7 @@ from store.models import Product
 
 
 class Command(BaseCommand):
-    help = 'Set price of 250ml Gir Cow Ghee to Rs 10'
+    help = 'Set price of 250ml Gir Cow Ghee to Rs 549'
 
     def handle(self, *args, **options):
         updated = 0
@@ -11,10 +11,10 @@ class Command(BaseCommand):
             qs = Product.objects.filter(size_ml=250)
             for p in qs:
                 old = p.price
-                p.price = 10
+                p.price = 549
                 p.save(update_fields=['price'])
                 updated += 1
-                self.stdout.write(self.style.SUCCESS(f"Updated {p.name} from Rs {old} to Rs 10"))
+                self.stdout.write(self.style.SUCCESS(f"Updated {p.name} from Rs {old} to Rs 549"))
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Error updating price: {e}"))
         if updated == 0:
