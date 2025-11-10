@@ -1,608 +1,1045 @@
 <!DOCTYPE html>
 <html lang="en">
-<head style="background-color:;">
+<head>
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Place Order - Shiv Organic Dairy Farm</title>
+    <title>Shopping Cart - SHIV Organic Dairy Farm</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap">
     <link rel="stylesheet" href="{% static 'store/styles.css' %}">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f9fafb;
+            color: #1f2937;
+        }
+        
+        /* Promotional Banner */
+        .promo-banner {
+            background: #15803d;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .promo-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        /* Header */
+        .cart-header {
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .header-logo img {
+            height: 50px;
+            width: auto;
+        }
+        
+        .header-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .cart-icon {
+            position: relative;
+            font-size: 24px;
+            color: #1f2937;
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #22c55e;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        /* Page Title */
+        .page-title {
+            background: #15803d;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .page-title h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Main Container */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        /* Subtotal Display */
+        .subtotal-display {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 20px;
+        }
+        
+        .subtotal-label {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1f2937;
+        }
+        
+        .subtotal-amount {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #15803d;
+        }
+        
+        /* Cart Items Section */
+        .cart-items-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .cart-item {
+            display: flex;
+            gap: 15px;
+            padding: 20px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+        
+        .cart-item-image {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 10px;
+            flex-shrink: 0;
+        }
+        
+        .cart-item-details {
+            flex: 1;
+        }
+        
+        .cart-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .cart-item-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: #1f2937;
+            margin: 0;
+        }
+        
+        .remove-item {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .remove-item:hover {
+            color: #ef4444;
+        }
+        
+        .cart-item-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .cart-item-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        
+        .cart-item-value {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1f2937;
+        }
+        
+        .price-value {
+            color: #15803d;
+        }
+        
         .quantity-controls {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
         
         .qty-btn {
             width: 32px;
             height: 32px;
-            border: 1px solid #ddd;
-            background: #f8f9fa;
-            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 16px;
-            font-weight: bold;
-            color: #333;
-            transition: all 0.2s ease;
+            font-weight: 600;
+            color: #1f2937;
+            transition: all 0.3s ease;
         }
         
         .qty-btn:hover {
-            background: #e9ecef;
-            border-color: #adb5bd;
-        }
-        
-        .qty-btn:active {
-            background: #dee2e6;
+            background: #f9fafb;
+            border-color: #22c55e;
+            color: #22c55e;
         }
         
         .qty-input {
             width: 60px;
             height: 32px;
             text-align: center;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
             font-size: 14px;
+            font-weight: 500;
+            background: white;
         }
         
         .qty-input:focus {
             outline: none;
-            border-color: #2d5016;
-            box-shadow: 0 0 0 2px rgba(45, 80, 22, 0.1);
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
         }
         
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
+        .subtotal-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #15803d;
         }
         
-        .product-item {
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
+        /* Coupon Section */
+        .coupon-section {
+            background: white;
             padding: 20px;
-            background: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: box-shadow 0.3s ease;
+            margin-bottom: 20px;
+            border: 2px dashed #e5e7eb;
+            border-radius: 8px;
         }
         
-        .product-item:hover {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        .coupon-input-wrapper {
+            display: flex;
+            gap: 10px;
         }
         
-        .product-image {
-            text-align: center;
-            margin-bottom: 15px;
+        .coupon-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.95rem;
         }
         
-        .product-image img {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
+        .coupon-input:focus {
+            outline: none;
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
         }
         
-        .product-details {
-            text-align: center;
-            margin-bottom: 15px;
-        }
-        
-        .product-details h4 {
-            margin: 0 0 8px 0;
-            color: #2d5016;
-            font-size: 1.1em;
-        }
-        
-        .product-details .price {
-            margin: 0;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #28a745;
-        }
-        
-        .product-quantity {
-            text-align: center;
-        }
-        
-        .product-quantity label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #333;
-        }
-        
-        /* Payment Method Dropdown Styles */
-        .payment-method-label {
-            display: block;
-            margin-bottom: 12px;
-            font-size: 1.1em;
-            color: #2d5016;
+        .apply-coupon-btn {
+            padding: 12px 24px;
+            background: #15803d;
+            color: white;
+            border: none;
+            border-radius: 8px;
             font-weight: 600;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .apply-coupon-btn:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3);
+        }
+        
+        /* Cart Totals Section */
+        .cart-totals-section {
+            background: white;
+            padding: 25px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        
+        .cart-totals-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .total-row:last-of-type {
+            border-bottom: none;
+        }
+        
+        .total-label {
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .total-value {
+            font-weight: 700;
+            color: #15803d;
+            font-size: 1.1rem;
+        }
+        
+        .shipping-link {
+            color: #15803d;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .shipping-link:hover {
+            color: #16a34a;
+        }
+        
+        .final-total {
+            font-size: 1.3rem;
+            padding-top: 15px;
+            margin-top: 15px;
+            border-top: 2px solid #e5e7eb;
+        }
+        
+        .final-total .total-value {
+            font-size: 1.5rem;
+        }
+        
+        /* Checkout Button */
+        .checkout-btn {
+            width: 100%;
+            padding: 16px;
+            background: #15803d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+        }
+        
+        .checkout-btn:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(21, 128, 61, 0.4);
+        }
+        
+        /* Customer Details Form */
+        .customer-details-form {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .form-section-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group.full {
+            grid-column: 1 / -1;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1f2937;
+            font-size: 0.95rem;
+        }
+        
+        .required-field {
+            color: #ef4444;
+            margin-left: 3px;
+        }
+        
+        .error-message {
+            color: #ef4444;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+        
+        .form-group input:invalid:not(:placeholder-shown),
+        .form-group select:invalid:not(:placeholder-shown),
+        .form-group textarea:invalid:not(:placeholder-shown) {
+            border-color: #ef4444;
+        }
+        
+        .form-group input:valid:not(:placeholder-shown),
+        .form-group select:valid:not(:placeholder-shown),
+        .form-group textarea:valid:not(:placeholder-shown) {
+            border-color: #22c55e;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
         }
         
         .payment-method-wrapper {
             position: relative;
             display: flex;
             align-items: center;
-            background: linear-gradient(145deg, #ffffff, #f8fafc);
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
             padding: 0;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-        }
-        
-        .payment-method-wrapper::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #22c55e, #16a34a);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .payment-method-wrapper:hover {
-            border-color: #22c55e;
-            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.15);
-            transform: translateY(-2px);
-        }
-        
-        .payment-method-wrapper:hover::before {
-            opacity: 1;
         }
         
         .payment-method-wrapper:focus-within {
             border-color: #22c55e;
-            box-shadow: 0 4px 20px rgba(34, 197, 94, 0.2);
-            outline: none;
-        }
-        
-        .payment-method-wrapper:focus-within::before {
-            opacity: 1;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
         }
         
         .payment-select-icon {
             position: absolute;
-            left: 18px;
-            font-size: 1.4em;
+            left: 16px;
+            font-size: 1.2em;
             z-index: 1;
             pointer-events: none;
-            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
         }
         
         .payment-method-wrapper select {
             width: 100%;
-            padding: 16px 50px 16px 55px;
+            padding: 12px 16px 12px 45px;
             border: none;
             background: transparent;
-            font-size: 1.05em;
+            font-size: 0.95rem;
             font-weight: 500;
-            color: #2d5016;
+            color: #1f2937;
             cursor: pointer;
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
             outline: none;
-            transition: all 0.3s ease;
-        }
-        
-        .payment-method-wrapper select option {
-            padding: 12px;
-            background: #ffffff;
-            color: #2d5016;
-            font-size: 1em;
-            font-weight: 500;
-        }
-        
-        .payment-method-wrapper select:focus {
-            outline: none;
         }
         
         .payment-select-arrow {
             position: absolute;
-            right: 18px;
-            font-size: 0.9em;
+            right: 16px;
+            font-size: 0.8em;
             color: #64748b;
             pointer-events: none;
             z-index: 1;
-            transition: transform 0.3s ease;
         }
         
-        .payment-method-wrapper:hover .payment-select-arrow,
-        .payment-method-wrapper:focus-within .payment-select-arrow {
+        .muted {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-top: 5px;
+        }
+        
+        .muted a {
             color: #22c55e;
-            transform: translateY(2px);
+            text-decoration: none;
         }
         
-        .payment-method-hint {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-            padding: 10px 15px;
-            background: linear-gradient(145deg, #f0fdf4, #dcfce7);
-            border-left: 3px solid #22c55e;
-            border-radius: 8px;
-            font-size: 0.9em;
-            color: #166534;
-            transition: all 0.3s ease;
+        .muted a:hover {
+            text-decoration: underline;
         }
         
-        .payment-method-hint .hint-icon {
-            font-size: 1.1em;
-            flex-shrink: 0;
-        }
-        
-        .payment-method-hint span:last-child {
-            line-height: 1.5;
-        }
-        
-        @media (max-width: 640px) {
-            .payment-method-wrapper {
-                padding: 0;
-            }
-            
-            .payment-method-wrapper select {
-                padding: 14px 45px 14px 50px;
-                font-size: 1em;
-            }
-            
-            .payment-select-icon {
-                left: 15px;
-                font-size: 1.2em;
-            }
-            
-            .payment-select-arrow {
-                right: 15px;
-            }
-            
-            .payment-method-hint {
-                padding: 8px 12px;
-                font-size: 0.85em;
-            }
-        }
-        
-        /* Order Bill Styles */
-        .order-bill {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 20px;
-            margin: 20px 0;
-        }
-        
-        .bill-header {
-            border-bottom: 2px solid #2d5016;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .bill-header h4 {
-            color: #2d5016;
-            margin: 0 0 5px 0;
-            font-size: 1.3em;
-        }
-        
-        .order-date {
-            margin: 0;
-            color: #666;
-            font-size: 0.9em;
-        }
-        
-        .bill-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-        
-        .bill-item:last-child {
-            border-bottom: none;
-        }
-        
-        .bill-item-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .bill-item-info img {
-            width: 50px;
-            height: 50px;
-            object-fit: contain;
-            border-radius: 4px;
-        }
-        
-        .bill-item-details h5 {
-            margin: 0 0 4px 0;
-            color: #2d5016;
-            font-size: 1em;
-        }
-        
-        .bill-item-details p {
-            margin: 0;
-            color: #666;
-            font-size: 0.9em;
-        }
-        
-        .bill-item-quantity {
-            text-align: center;
-            min-width: 60px;
-        }
-        
-        .bill-item-price {
-            text-align: right;
-            min-width: 80px;
-            font-weight: bold;
-            color: #2d5016;
-        }
-        
-        .bill-total {
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 2px solid #2d5016;
-        }
-        
-        .total-line {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            font-size: 1.1em;
-        }
-        
-        .total-line:last-child {
-            font-weight: bold;
-            font-size: 1.3em;
-            color: #2d5016;
-            border-top: 1px solid #dee2e6;
-            padding-top: 12px;
-            margin-top: 8px;
-        }
-
-        .address-field-with-status {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-end;
-            gap: 12px;
-        }
-
-        .address-field-with-status .address-line {
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .address-location-status {
-            color: #2d5016;
-            font-weight: 600;
-            white-space: nowrap;
+        /* Hidden inputs */
+        .hidden-inputs {
             display: none;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 20px 15px;
+            }
+            
+            .page-title h1 {
+                font-size: 1.5rem;
+            }
+            
+            .cart-item {
+                flex-direction: column;
+            }
+            
+            .cart-item-image {
+                width: 100%;
+                height: 200px;
+            }
+            
+            .cart-item-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .quantity-controls {
+                width: 100%;
+                justify-content: flex-start;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .coupon-input-wrapper {
+                flex-direction: column;
+            }
+            
+            .apply-coupon-btn {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container nav-flex">
-            <div class="brand"><img class="logo" src="{% static 'store/images/Shiv Logo (1).png' %}" alt="Shiv Organic Dairy Farm" /> Shiv Organic Dairy Farm</div>
-            <div class="links">
-                <a href="/home/">Home</a>
+    <!-- Promotional Banner -->
+    <div class="promo-banner">
+        <div class="promo-content">
+            <span>Enjoy FLAT 10% OFF on First Order | Use : WELCOME10</span>
+            <span>Enjoy FREE SHIPPING on orders above ₹799</span>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="cart-header">
+        <div class="header-content">
+            <div class="header-logo">
+                <img src="{% static 'store/images/Shiv Logo (1).png' %}" alt="SHIV Logo">
+                <div class="header-title">SHIV Organic Dairy Farm</div>
+            </div>
+            <div class="cart-icon">
+                🛒
+                <span class="cart-badge" id="cartBadge">0</span>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <section class="section">
-        <div class="container">
-            <h2>Place Your Order</h2>
-            <form method="post" class="order-form" id="orderForm">
-                {% csrf_token %}
-                <input type="hidden" name="__from_home" value="1" />
-                <div class="grid-2">
-                    <div>
-                        <label>Full Name</label>
-                        {{ form.customer_name }}
-                    </div>
-                    <div>
-                        <label>Email</label>
-                        {{ form.email }}
-                    </div>
-                    <div>
-                        <label>Phone</label>
-                        {{ form.phone }}
-                    </div>
-                    <div class="address-field-with-status">
-                        <div class="address-line">
-                            <label>Address Line 1</label>
-                            {{ form.address_line1 }}
-                            <div class="muted"><a href="#" id="useMyLocation">Use my location</a></div>
-                        </div>
-                        <div class="muted address-location-status" id="locStatus" style="display:none;">✅ Location captured</div>
-                    </div>
-                    <div>
-                        <label>Address Line 2 (Optional)</label>
-                        {{ form.address_line2 }}
-                    </div>
-                    <div>
-                        <label>City</label>
-                        {{ form.city }}
-                    </div>
-                    <div>
-                        <label>State</label>
-                        {{ form.state }}
-                    </div>
-                    <div>
-                        <label>Pincode</label>
-                        {{ form.postal_code }}
-                    </div>
-                    <div class="full">
-                        <label>Order Instructions</label>
-                        {{ form.notes }}
-                        <div class="muted">Any special instructions for your order (optional)</div>
-                    </div>
+    <!-- Page Title -->
+    <div class="page-title">
+        <h1>Shopping Cart</h1>
+    </div>
 
-                    <div class="full">
-                        <label class="payment-method-label" for="id_payment_method">Payment Method</label>
-                        <div class="payment-method-wrapper">
-                            <div class="payment-select-icon">💳</div>
-                            {{ form.payment_method }}
-                            <div class="payment-select-arrow">▼</div>
-                        </div>
-                        <div class="payment-method-hint">
-                            <span class="hint-icon">ℹ️</span>
-                            <span id="paymentHintText">Secure online payment via cards, UPI, net banking, and wallets</span>
-                        </div>
-                    </div>
-                    
-                    <!-- Online Payment Section -->
-                    <div class="online-payment-section" id="onlinePaymentSection" style="display:none; padding: 20px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; margin: 10px 0;">
-                            <div class="payment-info">
-                            <h4 style="margin-bottom: 15px; color: #2d5016;">💳 Secure Online Payment</h4>
-                            <p style="margin-bottom: 15px;">Pay securely online - Accepts all major cards, UPI, net banking, and wallets</p>
-                            <div class="payment-amount" style="margin-bottom: 15px;">
-                                <strong>Amount to Pay: ₹<span id="onlinePaymentAmount">0</span></strong>
-                                </div>
-                           
-                        </div>
-                    </div>
-                    
-                    <div id="paymentRefDiv">
-                        <label id="paymentRefLabel">Payment Reference</label>
-                        {{ form.payment_reference }}
-                        <div class="muted" id="paymentRefHelp">
-                            <span id="codHelp" style="display:none;">Enter any note for Cash on Delivery</span>
-                        </div>
-                    </div>
-                    {{ form.latitude }}
-                    {{ form.longitude }}
-                    <div class="muted" id="locStatus" style="display:none;align-self:center">✅ Location captured</div>
-                </div>
-
-                <h3>Your Order Bill</h3>
-                <div class="order-bill">
-                    <div class="bill-header">
-                        <h4>Order Summary</h4>
-                        <p class="order-date">Order Date: <span id="order-date"></span></p>
-                    </div>
-                    
-                    <div class="bill-items" id="bill-items">
-                        <!-- Bill items will be populated by JavaScript -->
-                            </div>
-                    
-                    <div class="bill-total">
-                        <div class="total-line">
-                            <span>Subtotal:</span>
-                            <span>₹<span id="bill-subtotal">0</span></span>
-                        </div>
-                        <div class="total-line">
-                            <span>Total Amount:</span>
-                            <span>₹<span id="bill-total-amount">0</span></span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Hidden inputs for quantities (match backend expects qty_{product.id}) -->
-                {% for p in products %}
-                <input type="hidden" name="qty_{{ p.id }}" id="qty_{{ p.id }}" value="0" data-size="{{ p.size_ml }}">
-                {% endfor %}
-
-
-
-                <div class="actions">
-                    <button class="btn btn-primary" type="submit" id="payNowBtn">Pay Now</button>
-                    <a class="btn btn-secondary" href="/home/">Cancel</a>
-                </div>
-            </form>
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Subtotal Display -->
+        <div class="subtotal-display">
+            <span class="subtotal-label">SUBTOTAL</span>
+            <span class="subtotal-amount" id="subtotalDisplay">₹0.00</span>
         </div>
-    </section>
+
+        <!-- Cart Items Section -->
+        <div class="cart-items-section" id="cartItemsSection">
+            <!-- Cart items will be populated by JavaScript -->
+        </div>
+
+        <!-- Coupon Section -->
+        <div class="coupon-section">
+            <div class="coupon-input-wrapper">
+                <input type="text" class="coupon-input" placeholder="Coupon code" id="couponInput">
+                <button type="button" class="apply-coupon-btn" id="applyCouponBtn">Apply Coupon</button>
+            </div>
+        </div>
+
+        <!-- Cart Totals Section -->
+        <div class="cart-totals-section">
+            <h2 class="cart-totals-title">Cart Totals</h2>
+            <div class="total-row">
+                <span class="total-label">Subtotal</span>
+                <span class="total-value" id="cartSubtotal">₹0.00</span>
+            </div>
+            <div class="total-row">
+                <span class="total-label">Shipping</span>
+                <span class="shipping-link" id="shippingLink">Calculate shipping</span>
+            </div>
+            <div class="total-row final-total">
+                <span class="total-label">Total</span>
+                <span class="total-value" id="cartTotal">₹0.00</span>
+            </div>
+        </div>
+
+        <!-- Checkout Button -->
+        <button type="button" class="checkout-btn" id="proceedToCheckoutBtn">Proceed to Checkout</button>
+
+        <!-- Customer Details Form (Initially Hidden) -->
+        <form method="post" class="customer-details-form" id="orderForm" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="__from_home" value="1" />
+            
+            <h2 class="form-section-title">Customer Details</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Name <span class="required-field">*</span></label>
+                    {{ form.first_name }}
+                    {% if form.first_name.errors %}
+                        <div class="error-message">{{ form.first_name.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Surname <span class="required-field">*</span></label>
+                    {{ form.last_name }}
+                    {% if form.last_name.errors %}
+                        <div class="error-message">{{ form.last_name.errors }}</div>
+                    {% endif %}
+                </div>
+                <!-- Hidden customer_name field (populated by JavaScript) -->
+                {{ form.customer_name }}
+                <div class="form-group">
+                    <label>Email <span class="required-field">*</span></label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="error-message">{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Phone <span class="required-field">*</span></label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                        <div class="error-message">{{ form.phone.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group full">
+                    <label>Address Line 1 <span class="required-field">*</span></label>
+                    {{ form.address_line1 }}
+                    {% if form.address_line1.errors %}
+                        <div class="error-message">{{ form.address_line1.errors }}</div>
+                    {% endif %}
+                    <div class="muted"><a href="#" id="useMyLocation">Use my location</a></div>
+                </div>
+                <div class="form-group full">
+                    <label>Address Line 2 (Optional)</label>
+                    {{ form.address_line2 }}
+                    {% if form.address_line2.errors %}
+                        <div class="error-message">{{ form.address_line2.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label>City <span class="required-field">*</span></label>
+                    {{ form.city }}
+                    {% if form.city.errors %}
+                        <div class="error-message">{{ form.city.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label>State <span class="required-field">*</span></label>
+                    {{ form.state }}
+                    {% if form.state.errors %}
+                        <div class="error-message">{{ form.state.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label>Pincode <span class="required-field">*</span></label>
+                    {{ form.postal_code }}
+                    {% if form.postal_code.errors %}
+                        <div class="error-message">{{ form.postal_code.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group full">
+                    <label>Order Instructions (Optional)</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                        <div class="error-message">{{ form.notes.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group full">
+                    <label>Payment Method <span class="required-field">*</span></label>
+                    <div class="payment-method-wrapper">
+                        <div class="payment-select-icon">💳</div>
+                        {{ form.payment_method }}
+                        <div class="payment-select-arrow">▼</div>
+                    </div>
+                    <div class="muted" id="paymentHintText">Secure online payment via cards, UPI, net banking, and wallets</div>
+                </div>
+                <div class="form-group full" id="paymentRefDiv">
+                    <label id="paymentRefLabel">Payment Reference (Optional)</label>
+                    {{ form.payment_reference }}
+                    <div class="muted" id="paymentRefHelp">
+                        <span id="codHelp" style="display:none;">Enter any note for Cash on Delivery</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Hidden inputs for quantities -->
+            <div class="hidden-inputs">
+                {% for p in products %}
+                <input type="hidden" name="qty_{{ p.id }}" id="qty_{{ p.id }}" value="0" 
+                       data-size="{{ p.size_ml }}" 
+                       data-price="{{ p.price }}" 
+                       data-name="{{ p.name }}"
+                       data-image="{% if p.size_ml == 250 %}{% static 'store/images/250ml.png' %}{% elif p.size_ml == 500 %}{% static 'store/images/500 Ml.png' %}{% elif p.size_ml == 1000 %}{% static 'store/images/1000 Ml.png' %}{% endif %}">
+                {% endfor %}
+                {{ form.latitude }}
+                {{ form.longitude }}
+            </div>
+            
+            
+            <!-- Online Payment Section -->
+            <div class="online-payment-section" id="onlinePaymentSection" style="display:none; padding: 20px; background: #f0fdf4; border: 1px solid #22c55e; border-radius: 12px; margin: 15px 0;">
+                <div class="payment-info">
+                    <h4 style="margin-bottom: 15px; color: #1f2937; font-weight: 600;">💳 Secure Online Payment</h4>
+                    <p style="margin-bottom: 15px; color: #6b7280;">Pay securely online - Accepts all major cards, UPI, net banking, and wallets</p>
+                    <div class="payment-amount" style="margin-bottom: 15px; padding: 12px; background: #ffffff; border-radius: 8px; border: 1px solid #e5e7eb;">
+                        <strong style="color: #1f2937;">Amount to Pay: ₹<span id="onlinePaymentAmount" style="color: #15803d; font-size: 1.2em;">0</span></strong>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="checkout-btn" id="payNowBtn" style="display: none;">Pay Now</button>
+        </form>
+    </div>
+
     <script>
-        // Preselect product quantity from query param or cart data
-        const params = new URLSearchParams(window.location.search);
-        const prod = params.get('product'); // '250' | '500' | '1000'
-        const cartItems = params.getAll('cart'); // ['250:2', '500:1', etc.]
+        // Product data - get from hidden inputs after DOM loads
+        let products = [];
         
-        if (cartItems.length > 0) {
-            // Handle cart data from homepage
-            console.log('Cart items from homepage:', cartItems);
-            cartItems.forEach(cartItem => {
-                const [size, quantity] = cartItem.split(':');
-                console.log('Processing cart item:', size, quantity);
-                document.querySelectorAll('input[data-size]').forEach(function(inp){
-                    if (String(inp.getAttribute('data-size')) === String(size)) {
-                        inp.value = parseInt(quantity) || 0;
-                        console.log('Set quantity for size', size, 'to', inp.value);
-                    }
+        function initializeProducts() {
+            products = [];
+            document.querySelectorAll('.hidden-inputs input[data-size]').forEach(input => {
+                products.push({
+                    id: input.id,
+                    size: parseInt(input.getAttribute('data-size')),
+                    price: parseFloat(input.getAttribute('data-price')),
+                    name: input.getAttribute('data-name'),
+                    image: input.getAttribute('data-image')
                 });
             });
-        } else if (prod) {
-            // Handle single product selection
-            document.querySelectorAll('.product-quantity input[data-size]').forEach(function(inp){
-                if (String(inp.getAttribute('data-size')) === String(prod)) {
-                    inp.value = 1;
-                }
-            });
+            
+            // Get cart data from URL
+            const params = new URLSearchParams(window.location.search);
+            const cartItems = params.getAll('cart');
+            
+            // Initialize quantities from cart data
+            if (cartItems.length > 0) {
+                cartItems.forEach(cartItem => {
+                    const [size, quantity] = cartItem.split(':');
+                    const product = products.find(p => p.size === parseInt(size));
+                    if (product) {
+                        const qtyInput = document.getElementById(product.id);
+                        if (qtyInput) {
+                            qtyInput.value = parseInt(quantity) || 0;
+                        }
+                    }
+                });
+            }
+            
+            // Update cart display after initialization
+            updateCartDisplay();
         }
         
-        // Calculate total amount and update bill
-        function updateTotalAmount() {
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeProducts);
+        } else {
+            initializeProducts();
+        }
+        
+        // Update cart display
+        function updateCartDisplay() {
+            const cartItemsSection = document.getElementById('cartItemsSection');
+            const subtotalDisplay = document.getElementById('subtotalDisplay');
+            const cartSubtotal = document.getElementById('cartSubtotal');
+            const cartTotal = document.getElementById('cartTotal');
+            const cartBadge = document.getElementById('cartBadge');
+            
             let total = 0;
-            const billItems = [];
+            let itemCount = 0;
+            const cartItems = [];
             
-            // Product data with correct mapping
-            const products = [
-                { id: 'qty_3', size: 250, price: 549, name: 'Gir Cow Ghee 250ml', image: '/static/store/images/250ml.png' },
-                { id: 'qty_2', size: 500, price: 1035, name: 'Gir Cow Ghee 500ml', image: '/static/store/images/500 Ml.png' },
-                { id: 'qty_1', size: 1000, price: 1999, name: 'Gir Cow Ghee 1L', image: '/static/store/images/1000 Ml.png' }
-            ];
-            
-            console.log('Updating total amount...');
             products.forEach(product => {
-                const qty = parseInt(document.getElementById(product.id).value) || 0;
-                console.log('Product:', product.name, 'Quantity:', qty);
+                const qtyInput = document.getElementById(product.id);
+                const qty = parseInt(qtyInput ? qtyInput.value : 0) || 0;
+                
                 if (qty > 0) {
                     const subtotal = qty * product.price;
                     total += subtotal;
-                    billItems.push({
+                    itemCount += qty;
+                    cartItems.push({
                         ...product,
                         quantity: qty,
                         subtotal: subtotal
                     });
-                    console.log('Added to bill:', product.name, 'Qty:', qty, 'Subtotal:', subtotal);
                 }
             });
             
-            console.log('Total bill items:', billItems.length, 'Total amount:', total);
+            // Update cart badge
+            cartBadge.textContent = itemCount;
             
-            // Update bill display
-            updateBillDisplay(billItems, total, 0, total);
+            // Update subtotal displays
+            subtotalDisplay.textContent = `₹${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+            cartSubtotal.textContent = `₹${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+            cartTotal.textContent = `₹${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
             
-            // Update payment amounts
-            document.getElementById('onlinePaymentAmount').textContent = total;
+            // Update cart items display
+            if (cartItems.length > 0) {
+                cartItemsSection.innerHTML = cartItems.map(item => `
+                    <div class="cart-item">
+                        <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+                        <div class="cart-item-details">
+                            <div class="cart-item-header">
+                                <h3 class="cart-item-name">${item.name}</h3>
+                                <button type="button" class="remove-item" onclick="removeItem(${item.size})">×</button>
+                            </div>
+                            <div class="cart-item-row">
+                                <span class="cart-item-label">PRICE</span>
+                                <span class="cart-item-value price-value">₹${item.price.toLocaleString('en-IN')}</span>
+                            </div>
+                            <div class="cart-item-row">
+                                <span class="cart-item-label">QUANTITY</span>
+                                <div class="quantity-controls">
+                                    <button type="button" class="qty-btn" onclick="updateQuantity(${item.size}, -1)">-</button>
+                                    <input type="number" class="qty-input" value="${item.quantity}" min="0" onchange="setQuantity(${item.size}, this.value)">
+                                    <button type="button" class="qty-btn" onclick="updateQuantity(${item.size}, 1)">+</button>
+                                </div>
+                            </div>
+                            <div class="cart-item-row">
+                                <span class="cart-item-label">SUBTOTAL</span>
+                                <span class="cart-item-value subtotal-value">₹${item.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                cartItemsSection.innerHTML = '<p style="text-align: center; padding: 40px; color: #6b7280;">Your cart is empty</p>';
+            }
+            
+            // Update online payment amount
+            const onlinePaymentAmount = document.getElementById('onlinePaymentAmount');
+            if (onlinePaymentAmount) {
+                onlinePaymentAmount.textContent = total;
+            }
         }
-
-
+        
+        // Update quantity functions
+        function updateQuantity(size, change) {
+            const product = products.find(p => p.size === size);
+            if (product) {
+                const qtyInput = document.getElementById(product.id);
+                if (qtyInput) {
+                    const currentQty = parseInt(qtyInput.value) || 0;
+                    const newQty = Math.max(0, currentQty + change);
+                    qtyInput.value = newQty;
+                    updateCartDisplay();
+                }
+            }
+        }
+        
+        function setQuantity(size, value) {
+            const product = products.find(p => p.size === size);
+            if (product) {
+                const qtyInput = document.getElementById(product.id);
+                if (qtyInput) {
+                    qtyInput.value = Math.max(0, parseInt(value) || 0);
+                    updateCartDisplay();
+                }
+            }
+        }
+        
+        function removeItem(size) {
+            if (confirm('Are you sure you want to remove this item from your cart?')) {
+                setQuantity(size, 0);
+            }
+        }
+        
+        // Proceed to checkout
+        document.getElementById('proceedToCheckoutBtn').addEventListener('click', function() {
+            // Check if cart has items
+            let hasItems = false;
+            products.forEach(product => {
+                const qtyInput = document.getElementById(product.id);
+                if (qtyInput && parseInt(qtyInput.value) > 0) {
+                    hasItems = true;
+                }
+            });
+            
+            if (!hasItems) {
+                alert('Please add items to your cart before proceeding to checkout.');
+                return;
+            }
+            
+            // Show customer details form
+            document.getElementById('orderForm').style.display = 'block';
+            document.getElementById('payNowBtn').style.display = 'block';
+            document.getElementById('proceedToCheckoutBtn').style.display = 'none';
+            
+            // Scroll to form
+            document.getElementById('orderForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        
+        // Apply coupon (placeholder)
+        document.getElementById('applyCouponBtn').addEventListener('click', function() {
+            const couponCode = document.getElementById('couponInput').value;
+            if (couponCode) {
+                alert('Coupon code functionality will be implemented soon.');
+            } else {
+                alert('Please enter a coupon code.');
+            }
+        });
+        
+        // Shipping link
+        document.getElementById('shippingLink').addEventListener('click', function() {
+            alert('Shipping will be calculated based on your address. Please proceed to checkout to see shipping options.');
+        });
+        
+        // Cart display will be initialized by initializeProducts()
+        
+        // Payment method handling (from original script)
+        const pmSelect = document.querySelector('[name="payment_method"]');
+        const onlinePaymentSection = document.getElementById('onlinePaymentSection');
+        const paymentRefDiv = document.getElementById('paymentRefDiv');
+        const paymentRefLabel = document.getElementById('paymentRefLabel');
+        const codHelp = document.getElementById('codHelp');
+        const paymentHintText = document.getElementById('paymentHintText');
+        
+        function togglePaymentSections() {
+            if (!pmSelect || !onlinePaymentSection) return;
+            const isOnlinePayment = (pmSelect.value === 'RAZORPAY');
+            
+            onlinePaymentSection.style.display = isOnlinePayment ? 'block' : 'none';
+            
+            if (isOnlinePayment) {
+                paymentRefDiv.style.display = 'none';
+                paymentHintText.textContent = 'Secure online payment via cards, UPI, net banking, and wallets';
+            } else {
+                paymentRefDiv.style.display = 'block';
+                paymentRefLabel.textContent = 'Payment Reference (COD note)';
+                codHelp.style.display = 'block';
+                paymentHintText.textContent = 'Cash on Delivery - Pay when you receive your order';
+            }
+        }
+        
+        if (pmSelect) {
+            pmSelect.addEventListener('change', togglePaymentSections);
+            togglePaymentSections();
+        }
+        
+        // Form submission handler (from original script)
         function handleOrderSubmission(event) {
             event.preventDefault();
             
-            // Get payment method from select dropdown
             const paymentMethodSelect = document.querySelector('select[name="payment_method"]');
             const paymentMethod = paymentMethodSelect ? paymentMethodSelect.value : 'COD';
             
-            console.log('Payment method selected:', paymentMethod);
-            
             if (paymentMethod === 'RAZORPAY') {
-                // For online payment, submit form first to create order, then initiate payment
                 submitOrderAndInitiatePayment();
             } else {
-                // Handle COD - submit form normally
-                console.log('Submitting COD order...');
                 const form = document.getElementById('orderForm');
-                // Set flag to bypass location handler
                 form.dataset.programmaticSubmit = 'true';
                 form.submit();
             }
@@ -612,75 +1049,61 @@
             const form = document.getElementById('orderForm');
             const formData = new FormData(form);
             
-            // Submit form to create order
             fetch(form.action, {
                 method: 'POST',
                 body: formData,
-                credentials: 'include',  // Important: Include cookies for session
+                credentials: 'include',
                 headers: {
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
             .then(response => {
-                console.log('[ORDER] Response status:', response.status);
-                console.log('[ORDER] Response headers:', response.headers);
                 if (!response.ok) {
-                    // If response is not ok, try to get error message
                     return response.text().then(text => {
-                        console.error('[ORDER] Error response:', text);
                         throw new Error(`Server error: ${response.status} - ${text.substring(0, 200)}`);
                     });
                 }
                 const contentType = response.headers.get('content-type');
-                console.log('[ORDER] Content-Type:', contentType);
                 if (contentType && contentType.includes('application/json')) {
                     return response.json();
                 } else {
-                    // If not JSON, might be a redirect or HTML error
                     return response.text().then(text => {
-                        console.error('[ORDER] Non-JSON response:', text.substring(0, 500));
-                        throw new Error('Unexpected response from server - expected JSON but got: ' + (contentType || 'unknown'));
+                        throw new Error('Unexpected response from server');
                     });
                 }
             })
             .then(data => {
                 if (data.success === false || data.error) {
-                    // Handle error response
                     let errorMsg = data.error || 'Failed to create order';
                     if (data.errors) {
                         const errorList = Object.values(data.errors).flat().join(', ');
                         errorMsg += ': ' + errorList;
                     }
                     alert(errorMsg);
-                    console.error('Order creation failed:', data);
                 } else if (data.order_id) {
-                    console.log('Order created:', data.order_number);
-                    // Now initiate Razorpay payment
                     initiateRazorpayPayment(data.total_amount, data.order_id);
                 } else {
                     alert('Failed to create order. Please check the form and try again.');
-                    console.error('Order creation failed:', data);
                 }
             })
             .catch(error => {
                 console.error('Error creating order:', error);
-                alert('Failed to create order: ' + error.message + '. Please check all fields are filled correctly and try again.');
+                alert('Failed to create order: ' + error.message);
             });
         }
         
         function initiateRazorpayPayment(amount, orderId) {
-            const totalAmount = parseInt(amount) * 100; // Convert to paise
+            const totalAmount = parseInt(amount) * 100;
             
             if (totalAmount <= 0) {
                 alert('Please add products to your cart before proceeding with payment.');
                 return;
             }
             
-            // Create Razorpay payment order
             fetch('/create-payment/', {
                 method: 'POST',
-                credentials: 'include',  // Important: Include cookies for session
+                credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
@@ -688,7 +1111,7 @@
                 body: JSON.stringify({
                     amount: totalAmount,
                     currency: 'INR',
-                    customer_name: document.querySelector('[name="customer_name"]').value,
+                    customer_name: (document.querySelector('[name="first_name"]').value + ' ' + document.querySelector('[name="last_name"]').value).trim(),
                     customer_email: document.querySelector('[name="email"]').value,
                     order_id: orderId
                 })
@@ -696,7 +1119,7 @@
             .then(response => {
                 if (!response.ok) {
                     return response.text().then(text => {
-                        throw new Error(`HTTP error! status: ${response.status} - ${text}`);
+                        throw new Error(`HTTP error! status: ${response.status}`);
                     });
                 }
                 return response.json();
@@ -707,7 +1130,6 @@
                     return;
                 }
                 
-                // Open Razorpay checkout
                 const options = {
                     key: data.key,
                     amount: data.amount,
@@ -717,24 +1139,22 @@
                     order_id: data.order_id,
                     callback_url: window.location.origin + '/payment/success/',
                     handler: function(response) {
-                        // Payment successful - redirect to success page with payment details
-                        console.log('Payment successful:', response);
                         window.location.href = '/payment/success/?razorpay_order_id=' + response.razorpay_order_id +
                                               '&razorpay_payment_id=' + response.razorpay_payment_id +
                                               '&razorpay_signature=' + response.razorpay_signature;
                     },
                     prefill: {
-                        name: document.querySelector('[name="customer_name"]').value,
+                        name: (document.querySelector('[name="first_name"]').value + ' ' + document.querySelector('[name="last_name"]').value).trim(),
                         email: document.querySelector('[name="email"]').value,
                         contact: document.querySelector('[name="phone"]').value
                     },
                     modal: {
                         ondismiss: function() {
-                            alert('Payment window closed. If amount was deducted, you will be redirected automatically after confirmation.');
+                            alert('Payment window closed.');
                         }
                     },
                     theme: {
-                        color: '#2d5016'
+                        color: '#15803d'
                     }
                 };
                 
@@ -746,194 +1166,46 @@
                 alert('Payment initialization failed: ' + error.message);
             });
         }
-
-        function handleOnlinePayment() {
-            const form = document.getElementById('orderForm');
-            const formData = new FormData(form);
+        
+        // Update customer_name hidden field when first_name or last_name changes
+        function updateCustomerName() {
+            const firstName = document.querySelector('[name="first_name"]');
+            const lastName = document.querySelector('[name="last_name"]');
+            const customerName = document.querySelector('[name="customer_name"]');
             
-            // Get total amount
-            const totalAmount = document.getElementById('onlinePaymentAmount').textContent;
-            
-            // Create payment order
-            fetch('/create-payment/', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.order_id) {
-                    // Open Razorpay checkout
-                    const options = {
-                        // TODO: Inject this from server-side context/environment
-                        key: 'RAZORPAY_KEY_ID_FROM_SERVER',
-                        amount: data.amount,
-                        currency: 'INR',
-                        name: 'SHIV AGRO DAIRY FARMS',
-                        description: 'A2 Gir Cow Ghee Order',
-                        order_id: data.order_id,
-                        handler: function(response) {
-                            // Payment successful
-                            window.location.href = `/payment/success/?razorpay_payment_id=${response.razorpay_payment_id}&razorpay_order_id=${response.razorpay_order_id}&razorpay_signature=${response.razorpay_signature}`;
-                        },
-                        prefill: {
-                            name: formData.get('customer_name'),
-                            email: formData.get('email'),
-                            contact: formData.get('phone')
-                        },
-                        theme: {
-                            color: '#2c5aa0'
-                        }
-                    };
-                    
-                    const rzp = new Razorpay(options);
-                    rzp.open();
+            if (firstName && lastName && customerName) {
+                const first = firstName.value.trim();
+                const last = lastName.value.trim();
+                if (first && last) {
+                    customerName.value = `${first} ${last}`;
+                } else if (first) {
+                    customerName.value = first;
+                } else if (last) {
+                    customerName.value = last;
                 } else {
-                    alert('Payment initialization failed. Please try again.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Payment initialization failed. Please try again.');
-            });
-        }
-        
-        // Update bill display
-        function updateBillDisplay(billItems, subtotal, discount = 0, finalTotal = null) {
-            const billItemsDiv = document.getElementById('bill-items');
-            const billSubtotal = document.getElementById('bill-subtotal');
-            const billTotalAmount = document.getElementById('bill-total-amount');
-            
-            // Use subtotal as total (no discounts)
-            const total = subtotal;
-            
-            if (billItems.length > 0) {
-                billItemsDiv.innerHTML = billItems.map(item => `
-                    <div class="bill-item">
-                        <div class="bill-item-info">
-                            <img src="${item.image}" alt="${item.name}">
-                            <div class="bill-item-details">
-                                <h5>${item.name}</h5>
-                                <p>₹${item.price} each</p>
-                            </div>
-                        </div>
-                        <div class="bill-item-quantity">
-                            <span>Qty: ${item.quantity}</span>
-                        </div>
-                        <div class="bill-item-price">
-                            ₹${item.subtotal}
-                        </div>
-                    </div>
-                `).join('');
-                
-                // Show subtotal
-                billSubtotal.textContent = subtotal;
-                
-                // Show final total
-                billTotalAmount.textContent = total;
-            } else {
-                billItemsDiv.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No items selected</p>';
-                billSubtotal.textContent = '0';
-                billTotalAmount.textContent = '0';
-            }
-        }
-        
-        // Set order date
-        function setOrderDate() {
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('en-IN', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            document.getElementById('order-date').textContent = dateStr;
-        }
-        
-        // Update total amount after setting quantities
-        updateTotalAmount();
-        setOrderDate();
-        
-        // Toggle payment sections and update payment reference label
-        const pmSelect = document.querySelector('[name="payment_method"]');
-        const onlinePaymentSection = document.getElementById('onlinePaymentSection');
-        const paymentRefDiv = document.getElementById('paymentRefDiv');
-        const paymentRefLabel = document.getElementById('paymentRefLabel');
-        const codHelp = document.getElementById('codHelp');
-        
-        function togglePaymentSections(){
-            if (!pmSelect || !onlinePaymentSection) return;
-            const isOnlinePayment = (pmSelect.value === 'RAZORPAY');
-            console.log('Payment method changed to:', pmSelect.value, 'isOnlinePayment:', isOnlinePayment);
-            
-            // Show/hide online payment section
-            onlinePaymentSection.style.display = isOnlinePayment ? 'block' : 'none';
-            console.log('Online payment section display:', onlinePaymentSection.style.display);
-            
-            // Show/hide payment reference field
-            if (isOnlinePayment) {
-                paymentRefDiv.style.display = 'none';
-            } else {
-                paymentRefDiv.style.display = 'block';
-                paymentRefLabel.textContent = 'Payment Reference (COD note)';
-                codHelp.style.display = 'block';
-            }
-            
-            // Calculate and update total amount
-            updateTotalAmount();
-        }
-        
-        pmSelect && pmSelect.addEventListener('change', togglePaymentSections);
-        togglePaymentSections();
-        
-        // Payment Method Dropdown Enhancement
-        const paymentSelect = document.querySelector('[name="payment_method"]');
-        const paymentIcon = document.querySelector('.payment-select-icon');
-        const paymentHintText = document.getElementById('paymentHintText');
-        
-        function updatePaymentHint() {
-            if (!paymentSelect || !paymentHintText) return;
-            
-            const selectedValue = paymentSelect.value;
-            const paymentHintDiv = document.querySelector('.payment-method-hint');
-            
-            // Update icon based on selection
-            if (paymentIcon) {
-                if (selectedValue === 'RAZORPAY') {
-                    paymentIcon.textContent = '💳';
-                } else {
-                    paymentIcon.textContent = '💰';
+                    customerName.value = '';
                 }
             }
-            
-            // Update hint text based on selection
-            if (selectedValue === 'RAZORPAY') {
-                if (paymentHintDiv) paymentHintDiv.style.display = 'flex';
-                paymentHintText.textContent = 'Secure online payment via cards, UPI, net banking, and wallets';
-            } else {
-                // Hide hint for COD
-                if (paymentHintDiv) paymentHintDiv.style.display = 'none';
-            }
         }
         
-        // Update on initial load
-        updatePaymentHint();
+        // Add event listeners to update customer_name
+        const firstNameInput = document.querySelector('[name="first_name"]');
+        const lastNameInput = document.querySelector('[name="last_name"]');
         
-        // Update when selection changes
-        if (paymentSelect) {
-            paymentSelect.addEventListener('change', function() {
-                updatePaymentHint();
-                togglePaymentSections();
-            });
+        if (firstNameInput) {
+            firstNameInput.addEventListener('input', updateCustomerName);
+            firstNameInput.addEventListener('blur', updateCustomerName);
         }
         
-        // Note: Quantity controls removed - quantities are set from homepage cart data
-
-        // Ask location only when user interacts (e.g., when focusing address)
+        if (lastNameInput) {
+            lastNameInput.addEventListener('input', updateCustomerName);
+            lastNameInput.addEventListener('blur', updateCustomerName);
+        }
+        
+        // Location handling
         const addressField = document.querySelector('[name="address_line1"]');
-        const locStatus = document.getElementById('locStatus');
         const useMyLocation = document.getElementById('useMyLocation');
+        
         function askGeo() {
             if (!navigator.geolocation) return;
             navigator.geolocation.getCurrentPosition(function(pos){
@@ -943,34 +1215,32 @@
                 const lngInput = document.querySelector('[name="longitude"]');
                 if (latInput && !latInput.value) latInput.value = lat;
                 if (lngInput && !lngInput.value) lngInput.value = lng;
-                if (locStatus) locStatus.style.display = 'inline-block';
             });
-            addressField && addressField.removeEventListener('focus', askGeo);
         }
-        addressField && addressField.addEventListener('focus', askGeo);
-
-        // Manual trigger
-        if (useMyLocation){
-            useMyLocation.addEventListener('click', function(e){ e.preventDefault(); askGeo(); });
+        
+        if (addressField) {
+            addressField.addEventListener('focus', askGeo);
         }
-
-        // Ensure location is captured before submit if possible (non-blocking)
-        const formEl = document.querySelector('form.order-form');
-        if (formEl){
+        
+        if (useMyLocation) {
+            useMyLocation.addEventListener('click', function(e){
+                e.preventDefault();
+                askGeo();
+            });
+        }
+        
+        // Form submit handler
+        const formEl = document.getElementById('orderForm');
+        if (formEl) {
             formEl.addEventListener('submit', function(e){
-                // Only try to get location if not already set and if this is a regular form submit (not programmatic)
                 const latInput = document.querySelector('[name="latitude"]');
                 const lngInput = document.querySelector('[name="longitude"]');
                 const missing = !latInput.value || !lngInput.value;
-                
-                // Check if this is a programmatic submit by checking for a flag
                 const isProgrammaticSubmit = formEl.dataset.programmaticSubmit === 'true';
                 
                 if (missing && navigator.geolocation && !isProgrammaticSubmit){
-                    // Try to get location, but don't block if it fails
                     e.preventDefault();
                     const submitTimeout = setTimeout(function(){
-                        // Submit after 2 seconds even if location fails
                         formEl.dataset.programmaticSubmit = 'true';
                         formEl.submit();
                     }, 2000);
@@ -979,23 +1249,17 @@
                         clearTimeout(submitTimeout);
                         latInput.value = pos.coords.latitude.toFixed(6);
                         lngInput.value = pos.coords.longitude.toFixed(6);
-                        if (locStatus) locStatus.style.display = 'inline-block';
                         formEl.dataset.programmaticSubmit = 'true';
                         formEl.submit();
                     }, function(){
                         clearTimeout(submitTimeout);
-                        // Submit even if location fails
                         formEl.dataset.programmaticSubmit = 'true';
                         formEl.submit();
                     });
-                } else {
-                    // Reset the flag for next submission
-                    formEl.dataset.programmaticSubmit = 'false';
                 }
             });
         }
         
-        // Online Payment Integration
         const payNowBtn = document.getElementById('payNowBtn');
         if (payNowBtn) {
             payNowBtn.addEventListener('click', handleOrderSubmission);
@@ -1006,5 +1270,3 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </body>
 </html>
-
-
