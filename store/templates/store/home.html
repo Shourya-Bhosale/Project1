@@ -186,28 +186,30 @@
             top: 0;
             z-index: 1000;
             border-bottom: 1px solid #e5e7eb;
+            margin-bottom: 0 !important;
+            padding-bottom: 0 !important;
         }
         
         .header-wrapper {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 12px 30px;
+            padding: 20px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            min-height: 60px;
+            min-height: 80px;
         }
         
         .logo-section {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
             flex: 1;
             min-width: 0;
         }
         
         .header-logo {
-            height: 45px;
+            height: 60px;
             width: auto;
             transition: transform 0.3s ease;
             flex-shrink: 0;
@@ -223,7 +225,7 @@
         }
         
         .header-title h1 {
-            font-size: 1.1rem;
+            font-size: 1.5rem;
             font-weight: 600;
             color: #1f2937;
             margin: 0;
@@ -248,10 +250,10 @@
             display: none;
         }
         
-        /* Modern Navigation - All links on right */
+        /* Modern Navigation - Elegant Minimalist Design */
         .main-nav {
             display: flex;
-            gap: 25px;
+            gap: 0;
             align-items: center;
         }
         
@@ -261,48 +263,61 @@
         
         .main-nav-right {
             display: flex;
-            gap: 20px;
+            gap: 0;
             align-items: center;
+            background: #f8fafc;
+            padding: 4px;
+            border-radius: 12px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
         }
         
         .main-nav a {
-            color: #374151;
+            color: #64748b;
             text-decoration: none;
             font-weight: 500;
             font-size: 0.9rem;
-            padding: 8px 0;
+            padding: 10px 20px;
             position: relative;
-            transition: color 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             white-space: nowrap;
+            border-radius: 8px;
+            letter-spacing: 0.2px;
+            background: transparent;
         }
         
         .main-nav a::after {
             content: '';
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%) scaleX(0);
+            width: 60%;
             height: 2px;
-            background: #22c55e;
-            transition: width 0.3s ease;
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            border-radius: 2px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .main-nav a:hover {
             color: #22c55e;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
         
         .main-nav a:hover::after {
-            width: 100%;
+            transform: translateX(-50%) scaleX(1);
         }
         
         /* Header Navigation Active State */
         .main-nav a.active {
-            color: #15803d;
+            color: #22c55e;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            font-weight: 600;
         }
         
         .main-nav a.active::after {
-            width: 100%;
-            background: #15803d;
+            transform: translateX(-50%) scaleX(1);
         }
         
         /* Mobile Menu Toggle Button */
@@ -361,20 +376,260 @@
         .mobile-nav-dropdown a {
             display: block;
             padding: 15px 20px;
-            color: #374151;
+            color: #475569;
             text-decoration: none;
             font-weight: 500;
-            border-bottom: 1px solid #f3f4f6;
-            transition: background 0.3s ease;
+            border-bottom: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            letter-spacing: 0.2px;
+            position: relative;
+        }
+        
+        .mobile-nav-dropdown a::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #22c55e, #16a34a);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
         }
         
         .mobile-nav-dropdown a:hover {
-            background: #f9fafb;
+            background: #f1f5f9;
             color: #22c55e;
+            padding-left: 24px;
+        }
+        
+        .mobile-nav-dropdown a:hover::before {
+            transform: scaleY(1);
         }
         
         .mobile-nav-dropdown a:last-child {
             border-bottom: none;
+        }
+        
+        /* Hero Banner Slider */
+        .hero-slider-container {
+            position: relative;
+            width: 100% !important;
+            height: 400px;
+            overflow: hidden;
+            background: #ffffff;
+            margin: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
+            padding: 0 !important;
+            display: block !important;
+            visibility: visible !important;
+            box-sizing: border-box;
+        }
+        
+        .hero-slider {
+            position: relative;
+            width: 100% !important;
+            height: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
+            display: block !important;
+        }
+        
+        .hero-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        .hero-slide.active {
+            opacity: 1 !important;
+            z-index: 1;
+            visibility: visible !important;
+        }
+        
+        
+        .hero-slide-images {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            width: 100% !important;
+            height: 100%;
+            padding: 0 !important;
+            box-sizing: border-box;
+            margin: 0;
+        }
+        
+        .hero-slide img {
+            width: 100% !important;
+            max-width: 100% !important;
+            max-height: 100%;
+            height: auto;
+            object-fit: contain;
+            object-position: center center;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            margin: 0;
+        }
+        
+        .hero-slide img:only-child {
+            width: 100% !important;
+            max-width: 100% !important;
+            max-height: 100%;
+        }
+        
+        .hero-slide.active img {
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: block !important;
+        }
+        
+        @media (min-width: 1200px) {
+            .hero-slider-container {
+                height: 500px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .hero-slider-container {
+                height: 300px;
+            }
+            
+            .hero-slide-images {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
+            }
+            
+            .hero-slide img {
+                max-width: 100%;
+                max-height: 48%;
+            }
+        }
+        
+        /* Navigation Buttons - Side Positioning */
+        .hero-slider-nav {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .hero-nav-btn {
+            background: rgba(34, 197, 94, 0.95);
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: all;
+            line-height: 1;
+            position: absolute;
+            z-index: 20;
+        }
+        
+        .hero-nav-btn.prev-btn {
+            left: 3px;
+        }
+        
+        .hero-nav-btn.next-btn {
+            right: 3px;
+        }
+        
+        .hero-nav-btn:hover {
+            background: rgba(22, 163, 74, 1);
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .hero-nav-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Slider Indicators */
+        .hero-slider-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        .hero-slider-indicators .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+        
+        .hero-slider-indicators .indicator.active {
+            background: #22c55e;
+            border-color: #22c55e;
+            width: 30px;
+            border-radius: 6px;
+        }
+        
+        .hero-slider-indicators .indicator:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+                padding: 0;
+            }
+            
+            .hero-slider-nav {
+                padding: 0;
+            }
+            
+            .hero-nav-btn.prev-btn {
+                left: 3px;
+            }
+            
+            .hero-nav-btn.next-btn {
+                right: 3px;
+            }
+            
+            .hero-slider-indicators {
+                bottom: 20px;
+            }
         }
         
         /* Enhanced Sections */
@@ -430,93 +685,306 @@
         }
         
         .product-main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 30px !important;
             margin-top: 30px;
-            align-items: start;
+            align-items: flex-start;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
         }
         
         .product-image-gallery {
             position: relative;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 20px;
+            align-items: flex-start;
+            flex: 1.2;
+            min-width: 0;
         }
         
-        .product-main-image {
+        .product-image-gallery-top {
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 20px;
+            align-items: flex-start;
             width: 100%;
-            border-radius: 12px;
-            background: #f9fafb;
-            padding: 30px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 450px;
-        }
-        
-        .product-main-image img {
-            width: 100%;
-            max-width: 350px;
-            height: 350px;
-            max-height: 350px;
-            border-radius: 8px;
-            object-fit: contain;
-            margin: 0 auto;
-            display: block;
         }
         
         .product-thumbnails {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 12px;
+            flex-shrink: 0;
+            width: 90px;
         }
         
         .product-thumbnail {
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
+            width: 90px;
+            height: 110px;
+            border-radius: 10px;
             border: 2px solid #e5e7eb;
-            padding: 5px;
             cursor: pointer;
             transition: all 0.3s ease;
             background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         
-        .product-thumbnail:hover {
+        .product-thumbnail:hover,
+        .product-thumbnail.active {
             border-color: #22c55e;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.25);
         }
         
         .product-thumbnail img {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            border-radius: 4px;
+            border-radius: 6px;
+        }
+        
+        .product-main-image {
+            flex: 1;
+            border-radius: 12px;
+            background: #f9fafb;
+            padding: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 550px;
+            max-width: 550px;
+        }
+        
+        .product-main-image img {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            max-height: 550px;
+            border-radius: 8px;
+            object-fit: contain;
+            margin: 0 auto;
+            display: block;
         }
         
         .product-details-section {
-            padding-left: 20px;
+            flex: 1 !important;
+            padding-left: 30px;
+            max-width: 650px;
+            min-width: 0;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 20px;
+            max-height: 600px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 10px;
         }
         
-        .product-price-display {
-            font-size: 1.3rem;
+        /* Custom scrollbar for product details section */
+        .product-details-section::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .product-details-section::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .product-details-section::-webkit-scrollbar-thumb {
+            background: #22c55e;
+            border-radius: 10px;
+        }
+        
+        .product-details-section::-webkit-scrollbar-thumb:hover {
+            background: #16a34a;
+        }
+        
+        /* Home Product Cards */
+        .home-product-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .home-product-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-color: #22c55e;
+        }
+        
+        .home-product-title {
+            font-size: 1.1rem;
             color: #15803d;
             font-weight: 700;
-            margin: 20px 0;
+            margin: 0 0 15px 0;
+            text-align: left;
         }
         
-        .sales-indicator {
+        .home-product-price-section {
+            background: #f0fdf4;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
-            gap: 8px;
-            color: #6b7280;
-            font-size: 0.9rem;
-            margin-bottom: 25px;
+            gap: 12px;
         }
         
-        .key-features {
+        .home-original-price {
+            font-size: 0.95rem;
+            color: #9ca3af;
+            text-decoration: line-through;
+            font-weight: 500;
+        }
+        
+        .home-current-price {
+            font-size: 1.5rem;
+            color: #15803d;
+            font-weight: 700;
+        }
+        
+        .home-product-description {
+            color: #6b7280;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin: 0 0 20px 0;
+        }
+        
+        .home-quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: flex-start;
+        }
+        
+        .home-qty-btn {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            border-radius: 6px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .home-qty-btn:hover {
+            background: #f9fafb;
+            border-color: #22c55e;
+            color: #22c55e;
+        }
+        
+        .home-qty-btn:active {
+            background: #f3f4f6;
+            transform: scale(0.95);
+        }
+        
+        .home-qty-input {
+            width: 80px;
+            height: 40px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .home-qty-input:focus {
+            outline: none;
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+        
+        /* Product Information Section */
+        .product-info-section {
+            margin-top: 30px;
+            width: 100%;
+        }
+        
+        .product-info-content {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+        }
+        
+        .product-info-title {
+            font-size: 1.5rem;
+            color: #166534;
+            margin-bottom: 25px;
+            font-weight: 700;
+            border-bottom: 2px solid #22c55e;
+            padding-bottom: 10px;
+        }
+        
+        .product-info-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin: 25px 0;
+            gap: 25px;
+        }
+        
+        .info-item {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #22c55e;
+        }
+        
+        .info-item h4 {
+            font-size: 1.1rem;
+            color: #166534;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        .info-item p {
+            font-size: 0.95rem;
+            color: #4b5563;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .info-item ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .info-item ul li {
+            font-size: 0.95rem;
+            color: #4b5563;
+            line-height: 1.8;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .info-item ul li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #22c55e;
+            font-weight: bold;
         }
         
         .key-feature-item {
@@ -1144,7 +1612,8 @@
             display: flex;
             justify-content: center;
             gap: 15px;
-            margin-top: 40px;
+            margin-top: 20px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
         
@@ -1261,27 +1730,72 @@
             .mobile-nav-dropdown a {
                 display: block;
                 padding: 12px 20px;
-                color: #374151;
+                color: #475569;
                 text-decoration: none;
                 font-weight: 500;
                 font-size: 0.9rem;
-                border-bottom: 1px solid #f3f4f6;
-                transition: background 0.3s ease, color 0.3s ease;
+                border-bottom: 1px solid #e2e8f0;
+                transition: all 0.3s ease;
+                letter-spacing: 0.2px;
+                position: relative;
+            }
+            
+            .mobile-nav-dropdown a::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 4px;
+                background: linear-gradient(180deg, #22c55e, #16a34a);
+                transform: scaleY(0);
+                transition: transform 0.3s ease;
             }
             
             .mobile-nav-dropdown a:hover,
             .mobile-nav-dropdown a:active {
-                background: #f9fafb;
+                background: #f1f5f9;
                 color: #22c55e;
+                padding-left: 24px;
+            }
+            
+            .mobile-nav-dropdown a:hover::before,
+            .mobile-nav-dropdown a:active::before {
+                transform: scaleY(1);
             }
             
             .mobile-nav-dropdown a:last-child {
                 border-bottom: none;
             }
             
+            /* Hero Slider - Mobile */
+            .hero-slider-container {
+                height: 250px;
+            }
+            
+            .hero-slide img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            .hero-slider-indicators {
+                bottom: 15px;
+            }
+            
+            .hero-slider-indicators .indicator {
+                width: 10px;
+                height: 10px;
+            }
+            
+            .hero-slider-indicators .indicator.active {
+                width: 25px;
+            }
+            
             /* Product Main Content - Mobile */
             .product-main-content {
-                grid-template-columns: 1fr;
+                display: flex !important;
+                flex-direction: column !important;
                 gap: 30px;
             }
             
@@ -1433,20 +1947,190 @@
                 border-radius: 14px;
             }
             
+            .product-main-content {
+                flex-direction: column;
+                padding: 15px 10px;
+                gap: 20px;
+            }
+            
+            .product-image-gallery {
+                flex-direction: column;
+                gap: 12px;
+                width: 100%;
+            }
+            
+            .product-image-gallery-top {
+                flex-direction: column !important;
+                gap: 12px;
+            }
+            
+            .cart-summary {
+                margin-top: 12px;
+                padding: 15px;
+                border-radius: 10px;
+            }
+            
+            .cart-summary h3 {
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+            }
+            
+            .product-thumbnails {
+                flex-direction: row;
+                justify-content: center;
+                gap: 8px;
+                width: 100%;
+            }
+            
+            .product-thumbnail {
+                width: 70px;
+                height: 85px;
+            }
+            
+            .product-thumbnail img {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }
+            
             .product-main-image {
-                padding: 20px;
-                min-height: 350px;
+                padding: 15px;
+                min-height: 280px;
+                max-width: 100%;
             }
             
             .product-main-image img {
                 width: 100%;
                 max-width: 100%;
-                height: 280px;
+                height: auto;
                 max-height: 280px;
+            }
+            
+            .product-details-section {
+                padding-left: 0;
+                padding-top: 15px;
+                max-width: 100%;
+                max-height: none;
+                overflow-y: visible;
+                gap: 15px;
+            }
+            
+            .home-product-card {
+                padding: 12px;
+                border-radius: 10px;
+            }
+            
+            .home-product-title {
+                font-size: 0.95rem;
+                margin-bottom: 8px;
+            }
+            
+            .home-product-price-section {
+                padding: 8px 12px;
+                margin-bottom: 10px;
+            }
+            
+            .home-original-price {
+                font-size: 0.85rem;
+            }
+            
+            .home-current-price {
+                font-size: 1.2rem;
+            }
+            
+            .home-product-description {
+                font-size: 0.85rem;
+                margin-bottom: 12px;
+                line-height: 1.5;
+            }
+            
+            .home-quantity-controls {
+                gap: 8px;
+            }
+            
+            .home-qty-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+            
+            .home-qty-input {
+                width: 60px;
+                height: 32px;
+                font-size: 0.9rem;
+            }
+            
+            .product-info-section {
+                margin-top: 15px;
+            }
+            
+            .product-info-content {
+                padding: 15px;
+                border-radius: 10px;
+            }
+            
+            .product-info-title {
+                font-size: 1.1rem;
+                margin-bottom: 15px;
+                padding-bottom: 8px;
+            }
+            
+            .product-info-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .info-item {
+                padding: 12px;
+                border-radius: 8px;
+            }
+            
+            .info-item h4 {
+                font-size: 0.95rem;
+                margin-bottom: 8px;
+            }
+            
+            .info-item p,
+            .info-item ul li {
+                font-size: 0.85rem;
+                line-height: 1.5;
+            }
+            
+            .info-item ul li {
+                padding-left: 18px;
+                margin-bottom: 4px;
             }
             
             .product-box img {
                 min-height: 240px;
+            }
+            
+            /* Home Section Title */
+            #home h2 {
+                font-size: 1.5rem;
+                margin-bottom: 20px;
+                padding: 0 10px;
+            }
+            
+            /* Section spacing */
+            section {
+                padding: 30px 10px;
+            }
+            
+            /* Cart items mobile */
+            .cart-item {
+                padding: 12px 0;
+                font-size: 0.9rem;
+            }
+            
+            .cart-item-info img {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .checkout-btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
             }
             
             .product-box h3 {
@@ -1494,36 +2178,67 @@
             
             /* Cart Summary */
             .cart-summary {
-                padding: 12px;
-                margin: 12px 0;
-                border-radius: 10px;
+                padding: 10px;
+                margin: 10px 0;
+                border-radius: 8px;
             }
             
             .cart-summary h3 {
-                font-size: 1rem;
-                margin-bottom: 10px;
+                font-size: 0.95rem;
+                margin-bottom: 8px;
             }
             
             .cart-item {
-                padding: 6px 0;
-                flex-wrap: wrap;
-                gap: 6px;
+                padding: 8px 0;
+                flex-wrap: nowrap;
+                gap: 8px;
+            }
+            
+            .cart-item-info {
+                gap: 8px;
+            }
+            
+            .cart-item-info img {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .cart-item-info span {
+                font-size: 0.8rem;
+            }
+            
+            .cart-item > span:last-child {
+                font-size: 0.85rem;
+            }
+            
+            .cart-total {
+                font-size: 1rem;
+                margin: 10px 0;
+                padding: 10px;
+            }
+            
+            .checkout-btn {
+                padding: 10px 15px;
+                font-size: 0.85rem;
             }
             
             /* Feature List */
             .feature-list {
-                gap: 10px;
-                margin-top: 20px;
-                flex-direction: column;
-                align-items: center;
+                gap: 8px;
+                margin-top: 12px;
+                margin-bottom: 12px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
             }
             
             .feature-list span {
-                padding: 8px 16px;
-                font-size: 0.8rem;
-                width: 100%;
-                max-width: 280px;
-                text-align: center;
+                padding: 6px 12px;
+                font-size: 0.75rem;
+                border-radius: 15px;
+                flex: 0 0 auto;
+                min-width: auto;
+                max-width: none;
             }
             
             /* Reviews Section */
@@ -1773,18 +2488,18 @@
         .cart-summary {
             background: #ffffff;
             border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 25px;
-            margin: 30px auto;
-            max-width: 600px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            width: 100%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
         
         .cart-summary h3 {
             color: #1f2937;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             text-align: center;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             font-weight: 600;
         }
         
@@ -1792,7 +2507,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #e5e7eb;
         }
         
@@ -1803,21 +2518,40 @@
         .cart-item-info {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
         }
         
         .cart-item-info img {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             object-fit: contain;
             border-radius: 6px;
+            flex-shrink: 0;
+        }
+        
+        .cart-item-info span {
+            font-size: 0.9rem;
+            color: #4b5563;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .cart-item > span:last-child {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1f2937;
+            flex-shrink: 0;
+            margin-left: 8px;
         }
         
         .cart-total {
             text-align: center;
-            font-size: 1.3em;
-            margin: 20px 0;
-            padding: 15px;
+            font-size: 1.1rem;
+            margin: 12px 0;
+            padding: 12px;
             background: #f0fdf4;
             color: #15803d;
             border-radius: 8px;
@@ -1830,10 +2564,11 @@
             background: linear-gradient(135deg, #22c55e, #16a34a);
             color: white;
             text-align: center;
-            padding: 14px;
+            padding: 12px 20px;
             text-decoration: none;
             border-radius: 8px;
             font-weight: 600;
+            font-size: 0.95rem;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
         }
@@ -1861,8 +2596,8 @@
     <header class="modern-header">
         <div class="header-wrapper">
             <div class="logo-section">
-                <img src="{% static 'store/images/Shiv Logo (1).png' %}" alt="SHIV Logo" class="header-logo" />
-                <div class="header-title">
+        <img src="{% static 'store/images/Shiv Logo (1).png' %}" alt="SHIV Logo" class="header-logo" />
+        <div class="header-title">
                     <h1 class="desktop-title">SHIV Organic Dairy Farm</h1>
                     <h1 class="mobile-title">SHIV Dairy</h1>
                 </div>
@@ -1874,7 +2609,7 @@
             </button>
             <nav class="main-nav main-nav-right" id="mainNav">
                 <a href="#home">HOME</a>
-                <a href="#buy">SHOP</a>
+                <a href="#home">SHOP</a>
                 <a href="#about">ABOUT US</a>
                 <a href="#contact">CONTACT US</a>
                 <a href="#benefits">BENEFITS</a>
@@ -1882,127 +2617,236 @@
             </nav>
             <nav class="mobile-nav-dropdown" id="mobileNavDropdown">
                 <a href="#home">HOME</a>
-                <a href="#buy">SHOP</a>
+                <a href="#home">SHOP</a>
                 <a href="#about">ABOUT US</a>
                 <a href="#contact">CONTACT US</a>
                 <a href="#benefits">BENEFITS</a>
                 <a href="#reviews">REVIEWS</a>
             </nav>
         </div>
-    </header>
+    </header><div class="hero-slider-container">
+        <div class="hero-slider">
+            <!-- Slide 1: Front1 -->
+            <div class="hero-slide">
+                <div class="hero-slide-images">
+                    <img src="{% static 'store/images/Front1.png' %}" alt="SHIV A2 GIR COW GHEE - Promotional Banner 1" loading="eager">
+                </div>
+            </div>
+            <!-- Slide 2: Front2 -->
+            <div class="hero-slide">
+                <div class="hero-slide-images">
+                    <img src="{% static 'store/images/front2.png' %}" alt="SHIV A2 GIR COW GHEE - Promotional Banner 2" loading="eager">
+                </div>
+            </div>
+            <!-- Slide 3: Front3 -->
+            <div class="hero-slide">
+                <div class="hero-slide-images">
+                    <img src="{% static 'store/images/Front3.png' %}" alt="SHIV A2 GIR COW GHEE - Promotional Banner 3" loading="eager">
+                </div>
+            </div>
+            <!-- Slide 4: Front4 -->
+            <div class="hero-slide">
+                <div class="hero-slide-images">
+                    <img src="{% static 'store/images/Front4.png' %}" alt="SHIV A2 GIR COW GHEE - Promotional Banner 4" loading="eager">
+                </div>
+            </div>
+            <!-- Slide 5: Front5 -->
+            <div class="hero-slide">
+                <div class="hero-slide-images">
+                    <img src="{% static 'store/images/Front5.png' %}" alt="SHIV A2 GIR COW GHEE - Promotional Banner 5" loading="eager">
+                </div>
+            </div>
+        </div>
+        <!-- Navigation Buttons -->
+        <div class="hero-slider-nav">
+            <button class="hero-nav-btn prev-btn" id="heroPrevBtn">‹</button>
+            <button class="hero-nav-btn next-btn" id="heroNextBtn">›</button>
+        </div>
+        <!-- Slider Indicators -->
+        <div class="hero-slider-indicators">
+            <span class="indicator active" data-slide="0"></span>
+            <span class="indicator" data-slide="1"></span>
+            <span class="indicator" data-slide="2"></span>
+            <span class="indicator" data-slide="3"></span>
+            <span class="indicator" data-slide="4"></span>
+        </div>
+    </div>
 
     <section id="home">
         <h2>A2 Pure Desi Gir Cow Ghee</h2>
         <div class="product-main-content">
             <div class="product-image-gallery">
-                <div class="product-main-image">
-                    <img src="{% static 'store/images/250ml.png' %}" alt="A2 Gir Cow Ghee" id="mainProductImage">
+                <div class="product-image-gallery-top">
+                    <div class="product-thumbnails">
+                        <div class="product-thumbnail active" onclick="changeMainImage('{% static 'store/images/250ml.png' %}', this, '250')">
+                            <img src="{% static 'store/images/250ml.png' %}" alt="250ml">
+                        </div>
+                        <div class="product-thumbnail" onclick="changeMainImage('{% static 'store/images/500 Ml.png' %}', this, '500')">
+                            <img src="{% static 'store/images/500 Ml.png' %}" alt="500ml">
+                        </div>
+                        <div class="product-thumbnail" onclick="changeMainImage('{% static 'store/images/1000 Ml.png' %}', this, '1000')">
+                            <img src="{% static 'store/images/1000 Ml.png' %}" alt="1000ml">
+                        </div>
+                    </div>
+                    <div class="product-main-image">
+                        <img src="{% static 'store/images/250ml.png' %}" alt="A2 Gir Cow Ghee" id="mainProductImage">
+                    </div>
                 </div>
-                <div class="product-thumbnails">
-                    <div class="product-thumbnail" onclick="changeMainImage('{% static 'store/images/250ml.png' %}')">
-                        <img src="{% static 'store/images/250ml.png' %}" alt="250ml">
+                
+                <!-- Cart Summary -->
+                <div id="cart-summary" class="cart-summary" style="display: none;">
+                    <h3>Your Cart</h3>
+                    <div id="cart-items"></div>
+                    <div class="cart-total">
+                        <strong>Total: ₹<span id="cart-total-amount">0</span></strong>
                     </div>
-                    <div class="product-thumbnail" onclick="changeMainImage('{% static 'store/images/500 Ml.png' %}')">
-                        <img src="{% static 'store/images/500 Ml.png' %}" alt="500ml">
-                    </div>
-                    <div class="product-thumbnail" onclick="changeMainImage('{% static 'store/images/1000 Ml.png' %}')">
-                        <img src="{% static 'store/images/1000 Ml.png' %}" alt="1000ml">
-                    </div>
+                    <a href="{% url 'place_order' %}" class="checkout-btn" id="checkout-btn">Proceed to Checkout</a>
                 </div>
             </div>
             <div class="product-details-section">
-                <div class="product-price-display">₹549.00 – ₹1,999.00</div>
-                <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 15px;">Price range: ₹549.00 through ₹1,999.00</p>
-                <div class="sales-indicator">
-                    <span>🕐</span>
-                    <span>14 Items sold in last 2 hours</span>
-                </div>
-                <div class="key-features">
-                    <div class="key-feature-item">
-                        <div class="key-feature-icon">🚚</div>
-                        <div class="key-feature-text">Delivering Only in PUNE</div>
+                <!-- Product Card 1: 250ml -->
+                <div class="home-product-card" id="product-card-250" style="display: block;">
+                    <h3 class="home-product-title">A2 GIR COW GHEE - 250ML</h3>
+                    <div class="home-product-price-section">
+                        <span class="home-original-price">₹599</span>
+                        <span class="home-current-price">₹549</span>
                     </div>
-                    <div class="key-feature-item">
-                        <div class="key-feature-icon">✅</div>
-                        <div class="key-feature-text">100% Certified A2 Ghee</div>
-                    </div>
-                    <div class="key-feature-item">
-                        <div class="key-feature-icon">🌱</div>
-                        <div class="key-feature-text">Organic and Traditional Farming</div>
-                    </div>
-                    <div class="key-feature-item">
-                        <div class="key-feature-icon">🐄</div>
-                        <div class="key-feature-text">Happy, Free-Ranging Cows</div>
+                    <p class="home-product-description">Perfect for small families and first-time buyers. Experience the authentic taste of pure A2 Gir cow ghee.</p>
+                    <div class="home-quantity-controls">
+                        <button type="button" class="home-qty-btn home-qty-minus" data-target="home_qty_250">-</button>
+                        <input type="number" id="home_qty_250" value="0" min="0" data-size="250" class="home-qty-input">
+                        <button type="button" class="home-qty-btn home-qty-plus" data-target="home_qty_250">+</button>
                     </div>
                 </div>
-                <p>Enjoy the rich, creamy texture and exceptional purity of SHIV Organic Dairy Farm A2 Pure Desi Gir Cow Ghee. Sourced from Gir cows, it's full of A2 proteins and packed with essential nutrients. Ideal for a healthier dairy choice, it enhances your family's wellness with every spoonful.</p>
+                
+                <!-- Product Card 2: 500ml -->
+                <div class="home-product-card" id="product-card-500" style="display: none;">
+                    <h3 class="home-product-title">A2 GIR COW GHEE - 500ML</h3>
+                    <div class="home-product-price-section">
+                        <span class="home-original-price">₹1089</span>
+                        <span class="home-current-price">₹1035</span>
+                    </div>
+                    <p class="home-product-description">Most popular choice! Ideal for regular cooking and daily use. Premium quality at great value.</p>
+                    <div class="home-quantity-controls">
+                        <button type="button" class="home-qty-btn home-qty-minus" data-target="home_qty_500">-</button>
+                        <input type="number" id="home_qty_500" value="0" min="0" data-size="500" class="home-qty-input">
+                        <button type="button" class="home-qty-btn home-qty-plus" data-target="home_qty_500">+</button>
+                    </div>
+                </div>
+                
+                <!-- Product Card 3: 1000ml -->
+                <div class="home-product-card" id="product-card-1000" style="display: none;">
+                    <h3 class="home-product-title">A2 GIR COW GHEE - 1000ML</h3>
+                    <div class="home-product-price-section">
+                        <span class="home-original-price">₹2169</span>
+                        <span class="home-current-price">₹1999</span>
+                    </div>
+                    <p class="home-product-description">Best value for large families! Stock up on premium A2 Gir cow ghee with maximum savings.</p>
+                    <div class="home-quantity-controls">
+                        <button type="button" class="home-qty-btn home-qty-minus" data-target="home_qty_1000">-</button>
+                        <input type="number" id="home_qty_1000" value="0" min="0" data-size="1000" class="home-qty-input">
+                        <button type="button" class="home-qty-btn home-qty-plus" data-target="home_qty_1000">+</button>
+                    </div>
+                </div>
+                
+                <div class="feature-list">
+                    <span>✅ 100% Pure</span>
+                    <span>🔒 Secure Payment</span>
+                    <span>🚚 Fast Delivery</span>
+                    <span>🌱 Organic</span>
+                    <span>🐄 A2 Certified</span>
+                </div>
+                
+                <!-- Product Information Section -->
+                <div class="product-info-section">
+                    <!-- Product Info for 250ml -->
+                    <div class="product-info-content" id="product-info-250" style="display: block;">
+                        <h3 class="product-info-title">Product Information</h3>
+                        <div class="product-info-grid">
+                            <div class="info-item">
+                                <h4>Key Features</h4>
+                                <ul>
+                                    <li>100% Pure A2 Gir Cow Ghee</li>
+                                    <li>Traditional Bilona Method</li>
+                                    <li>No Preservatives or Additives</li>
+                                    <li>Organic & Natural</li>
+                                    <li>Rich in Vitamins A, D, E, K</li>
+                                </ul>
+                            </div>
+                            <div class="info-item">
+                                <h4>Ingredients</h4>
+                                <p>Pure A2 Gir Cow Milk Butter (Bilona Method)</p>
+                            </div>
+                            <div class="info-item">
+                                <h4>Storage Instructions</h4>
+                                <p>Store in a cool, dry place. Keep away from direct sunlight. No refrigeration required. Use a clean, dry spoon to maintain freshness.</p>
+                            </div>
+                            <div class="info-item">
+                                <h4>Usage</h4>
+                                <p>Perfect for cooking, frying, and as a spread. Can be consumed directly for health benefits. Ideal for traditional Indian recipes.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Info for 500ml -->
+                    <div class="product-info-content" id="product-info-500" style="display: none;">
+                        <h3 class="product-info-title">Product Information</h3>
+                        <div class="product-info-grid">
+                            <div class="info-item">
+                                <h4>Key Features</h4>
+                                <ul>
+                                    <li>100% Pure A2 Gir Cow Ghee</li>
+                                    <li>Traditional Bilona Method</li>
+                                    <li>No Preservatives or Additives</li>
+                                    <li>Organic & Natural</li>
+                                    <li>Rich in Vitamins A, D, E, K</li>
+                                </ul>
+                            </div>
+                            <div class="info-item">
+                                <h4>Ingredients</h4>
+                                <p>Pure A2 Gir Cow Milk Butter (Bilona Method)</p>
+                            </div>
+                            <div class="info-item">
+                                <h4>Storage Instructions</h4>
+                                <p>Store in a cool, dry place. Keep away from direct sunlight. No refrigeration required. Use a clean, dry spoon to maintain freshness.</p>
+                            </div>
+                            <div class="info-item">
+                                <h4>Usage</h4>
+                                <p>Perfect for cooking, frying, and as a spread. Can be consumed directly for health benefits. Ideal for traditional Indian recipes.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Info for 1000ml -->
+                    <div class="product-info-content" id="product-info-1000" style="display: none;">
+                        <h3 class="product-info-title">Product Information</h3>
+                        <div class="product-info-grid">
+                            <div class="info-item">
+                                <h4>Key Features</h4>
+                                <ul>
+                                    <li>100% Pure A2 Gir Cow Ghee</li>
+                                    <li>Traditional Bilona Method</li>
+                                    <li>No Preservatives or Additives</li>
+                                    <li>Organic & Natural</li>
+                                    <li>Rich in Vitamins A, D, E, K</li>
+                                </ul>
+                            </div>
+                            <div class="info-item">
+                                <h4>Ingredients</h4>
+                                <p>Pure A2 Gir Cow Milk Butter (Bilona Method)</p>
+                            </div>
+                            <div class="info-item">
+                                <h4>Storage Instructions</h4>
+                                <p>Store in a cool, dry place. Keep away from direct sunlight. No refrigeration required. Use a clean, dry spoon to maintain freshness.</p>
+                            </div>
+                            <div class="info-item">
+                                <h4>Usage</h4>
+                                <p>Perfect for cooking, frying, and as a spread. Can be consumed directly for health benefits. Ideal for traditional Indian recipes.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </section>
-
-    <section id="buy" style="background: #ffffff; padding: 60px 20px;">
-        <h2 style="text-align: center; margin-bottom: 40px; font-size: 2rem; color: #1f2937;">Our Products</h2>
-        <div class="buy-grid">
-            <div class="product-box">
-                <img src="{% static 'store/images/250ml.png' %}" alt="250ml Ghee">
-                <h3>A2 Gir Cow Ghee - 250ml</h3>
-                <div class="product-price">
-                    <span class="original-price">₹599</span>
-                    <span class="current-price">₹549</span>
-                </div>
-                <p class="description" style="text-align: center; color: #6b7280; margin-bottom: 20px; font-size: 0.95rem;">Perfect for small families and first-time buyers. Experience the authentic taste of pure A2 Gir cow ghee.</p>
-                <div class="quantity-controls">
-                    <button type="button" class="qty-btn qty-minus" data-target="home_qty_250">-</button>
-                    <input type="number" id="home_qty_250" value="0" min="0" data-size="250" class="qty-input">
-                    <button type="button" class="qty-btn qty-plus" data-target="home_qty_250">+</button>
-                </div>
-            </div>
-            <div class="product-box">
-                <img src="{% static 'store/images/500 Ml.png' %}" alt="500ml Ghee">
-                <h3>A2 Gir Cow Ghee - 500ml</h3>
-                <div class="product-price">
-                    <span class="original-price">₹1089</span>
-                    <span class="current-price">₹1035</span>
-                </div>
-                <p class="description" style="text-align: center; color: #6b7280; margin-bottom: 20px; font-size: 0.95rem;">Most popular choice! Ideal for regular cooking and daily use. Premium quality at great value.</p>
-                <div class="quantity-controls">
-                    <button type="button" class="qty-btn qty-minus" data-target="home_qty_500">-</button>
-                    <input type="number" id="home_qty_500" value="0" min="0" data-size="500" class="qty-input">
-                    <button type="button" class="qty-btn qty-plus" data-target="home_qty_500">+</button>
-                </div>
-            </div>
-            <div class="product-box">
-                <img src="{% static 'store/images/1000 Ml.png' %}" alt="1000ml Ghee">
-                <h3>A2 Gir Cow Ghee - 1 Litre</h3>
-                <div class="product-price">
-                    <span class="original-price">₹2169</span>
-                    <span class="current-price">₹1999</span>
-                </div>
-                <p class="description" style="text-align: center; color: #6b7280; margin-bottom: 20px; font-size: 0.95rem;">Best value for large families! Stock up on premium A2 Gir cow ghee with maximum savings.</p>
-                <div class="quantity-controls">
-                    <button type="button" class="qty-btn qty-minus" data-target="home_qty_1000">-</button>
-                    <input type="number" id="home_qty_1000" value="0" min="0" data-size="1000" class="qty-input">
-                    <button type="button" class="qty-btn qty-plus" data-target="home_qty_1000">+</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Cart Summary -->
-        <div id="cart-summary" class="cart-summary" style="display: none;">
-            <h3>Your Cart</h3>
-            <div id="cart-items"></div>
-            <div class="cart-total">
-                <strong>Total: ₹<span id="cart-total-amount">0</span></strong>
-            </div>
-            <a href="{% url 'place_order' %}" class="checkout-btn" id="checkout-btn">Proceed to Checkout</a>
-        </div>
-        
-        <div class="feature-list">
-            <span>✅ 100% Pure</span>
-            <span>🔒 Secure Payment</span>
-            <span>🚚 Fast Delivery</span>
-            <span>🌱 Organic</span>
-            <span>🐄 A2 Certified</span>
         </div>
     </section>
 
@@ -2020,7 +2864,7 @@
             <p>
                 Our commitment extends beyond just producing ghee—we are dedicated to preserving traditional methods, supporting sustainable farming, and promoting the health benefits of pure, unadulterated dairy products. Every jar of our ghee represents our passion for quality and our respect for traditional Indian dairy practices.
             </p>
-        </div>
+            </div>
         
         <div class="about-section">
             <h3>Our Traditional Process</h3>
@@ -2030,7 +2874,7 @@
             <p>
                 Our 100% Pure Gir Cow Ghee comes exclusively from A2 milk of free-grazing Gir cows, ethically raised on lush pastures under the open sky. This traditional process preserves the rich golden hue, nutty aroma, and nutrient-packed goodness—rich in omega-3 fatty acids, vitamins A, D, E, K, and butyric acid—offering an authentic, wholesome superfood with no additives or impurities.
             </p>
-        </div>
+            </div>
         
         <div class="about-section">
             <h3>Why Choose Us</h3>
@@ -2040,14 +2884,14 @@
                     <div class="about-feature-content">
                         <h4>100% Pure A2 Milk</h4>
                         <p>Our ghee is made from the rich, nutritious milk of Gir cows—an indigenous breed renowned for its high-quality A2 milk.</p>
-                    </div>
-                </div>
+            </div>
+            </div>
                 <div class="about-feature-item">
                     <div class="about-feature-icon">🌱</div>
                     <div class="about-feature-content">
                         <h4>Organic & Natural</h4>
                         <p>Completely free of preservatives, additives, or vegetable oils—ensuring a rich, authentic flavor and granular texture.</p>
-                    </div>
+        </div>
                 </div>
                 <div class="about-feature-item">
                     <div class="about-feature-icon">🔄</div>
@@ -2074,26 +2918,26 @@
             <p>
                 When you choose SHIV Organic Dairy Farm, you're choosing quality, tradition, and purity. We invite you to experience the difference that authentic, traditionally-made A2 Gir Cow Ghee can make in your daily life.
             </p>
-        </div>
+                </div>
         
         <div class="about-image-grid">
             <div class="about-image-item">
                 <img src="{% static 'store/images/Bilona.png' %}" alt="Bilona Method" />
                 <p>Traditional Bilona</p>
-            </div>
+                </div>
             <div class="about-image-item">
                 <img src="{% static 'store/images/100%.png' %}" alt="100% Natural" />
                 <p>100% Natural</p>
-            </div>
+                </div>
             <div class="about-image-item">
                 <img src="{% static 'store/images/COW.png' %}" alt="Gir Cow" />
                 <p>Gir Cows</p>
-            </div>
+                </div>
             <div class="about-image-item">
                 <img src="{% static 'store/images/500 Ml.png' %}" alt="Pure Ghee" />
                 <p>Pure Ghee</p>
             </div>
-        </div>
+                </div>
     </section>
 
     <section id="benefits">
@@ -2126,14 +2970,14 @@
                 <div class="benefit-content">
                     <h4>Abundant in Minerals</h4>
                     <p>Provides key minerals such as calcium, potassium, and phosphorus for balanced nutrition. These essential minerals support various bodily functions and maintain overall health.</p>
-                </div>
+            </div>
             </li>
             <li class="benefit-item">
                 <div class="benefit-icon">🌿</div>
                 <div class="benefit-content">
                     <h4>Packed with Essential Vitamins</h4>
                     <p>Includes vitamins A and B12 to boost immunity and support overall health. Our A2 ghee is rich in fat-soluble vitamins that enhance immune function and promote healthy skin and vision.</p>
-                </div>
+        </div>
             </li>
             <li class="benefit-item">
                 <div class="benefit-icon">🛡️</div>
@@ -2345,7 +3189,7 @@
                     <h3>USEFUL LINKS</h3>
                     <ul>
                         <li><a href="#about">About Us</a></li>
-                        <li><a href="#buy">Shop</a></li>
+                        <li><a href="#home">Shop</a></li>
                         <li><a href="#benefits">Benefits</a></li>
                         <li><a href="#contact">Contact Us</a></li>
                     </ul>
@@ -2353,10 +3197,10 @@
                 <div class="footer-column">
                     <h3>CATEGORIES</h3>
                     <ul>
-                        <li><a href="#buy">A2 Gir Cow Ghee</a></li>
-                        <li><a href="#buy">250ml Ghee</a></li>
-                        <li><a href="#buy">500ml Ghee</a></li>
-                        <li><a href="#buy">1 Litre Ghee</a></li>
+                        <li><a href="#home">A2 Gir Cow Ghee</a></li>
+                        <li><a href="#home">250ml Ghee</a></li>
+                        <li><a href="#home">500ml Ghee</a></li>
+                        <li><a href="#home">1 Litre Ghee</a></li>
                     </ul>
                 </div>
                 <div class="footer-column">
@@ -2401,8 +3245,145 @@
     <button class="scroll-to-top" id="scrollToTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
         ↑
     </button>
-    
+
     <script>
+        // Hero Banner Slider - Continuous Loop
+        (function() {
+            let currentHeroSlide = 0;
+            let heroSliderInterval;
+            
+            function initHeroSlider() {
+                const heroSlides = document.querySelectorAll('.hero-slide');
+                const heroIndicators = document.querySelectorAll('.hero-slider-indicators .indicator');
+                const totalHeroSlides = heroSlides.length;
+                
+                console.log('Initializing hero slider, found', totalHeroSlides, 'slides');
+                
+                if (totalHeroSlides === 0) {
+                    console.error('No hero slides found!');
+                    return;
+                }
+                
+                // Reset currentHeroSlide to 0 to start from first slide
+                currentHeroSlide = 0;
+                
+                function showHeroSlide(index) {
+                    if (index < 0 || index >= totalHeroSlides) return;
+                    
+                    // Remove active class from all slides and indicators
+                    heroSlides.forEach((slide, i) => {
+                        slide.classList.remove('active');
+                        if (heroIndicators[i]) heroIndicators[i].classList.remove('active');
+                    });
+                    
+                    // Add active class to current slide and indicator
+                    if (heroSlides[index]) {
+                        heroSlides[index].classList.add('active');
+                        console.log('Showing slide', index + 1);
+                    }
+                    if (heroIndicators[index]) {
+                        heroIndicators[index].classList.add('active');
+                    }
+                }
+                
+                function nextHeroSlide() {
+                    currentHeroSlide = (currentHeroSlide + 1) % totalHeroSlides;
+                    showHeroSlide(currentHeroSlide);
+                }
+                
+                // Initialize first slide immediately (before starting interval)
+                showHeroSlide(0);
+                
+                // Auto-advance slider every 3.5 seconds (faster)
+                heroSliderInterval = setInterval(nextHeroSlide, 3500);
+                
+                // Pause on hover
+                const heroSliderContainer = document.querySelector('.hero-slider-container');
+                if (heroSliderContainer) {
+                    heroSliderContainer.addEventListener('mouseenter', () => {
+                        if (heroSliderInterval) {
+                            clearInterval(heroSliderInterval);
+                            heroSliderInterval = null;
+                        }
+                    });
+                    heroSliderContainer.addEventListener('mouseleave', () => {
+                        if (!heroSliderInterval) {
+                            // Restart interval without advancing immediately
+                            heroSliderInterval = setInterval(nextHeroSlide, 3500);
+                        }
+                    });
+                }
+                
+                function prevHeroSlide() {
+                    currentHeroSlide = (currentHeroSlide - 1 + totalHeroSlides) % totalHeroSlides;
+                    showHeroSlide(currentHeroSlide);
+                }
+                
+                // PREV and NEXT button handlers
+                const prevBtn = document.getElementById('heroPrevBtn');
+                const nextBtn = document.getElementById('heroNextBtn');
+                
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', () => {
+                        if (heroSliderInterval) clearInterval(heroSliderInterval);
+                        prevHeroSlide();
+                        heroSliderInterval = setInterval(nextHeroSlide, 3500);
+                    });
+                }
+                
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', () => {
+                        if (heroSliderInterval) clearInterval(heroSliderInterval);
+                        nextHeroSlide();
+                        heroSliderInterval = setInterval(nextHeroSlide, 3500);
+                    });
+                }
+                
+                // Click on indicators to jump to specific slide
+                heroIndicators.forEach((indicator, index) => {
+                    indicator.addEventListener('click', () => {
+                        if (heroSliderInterval) clearInterval(heroSliderInterval);
+                        currentHeroSlide = index;
+                        showHeroSlide(currentHeroSlide);
+                        heroSliderInterval = setInterval(nextHeroSlide, 3500);
+                    });
+                });
+                
+                // Verify images are loading
+                heroSlides.forEach((slide, index) => {
+                    const imgs = slide.querySelectorAll('img');
+                    imgs.forEach((img, imgIndex) => {
+                        if (img) {
+                            // Force image to be visible
+                            img.style.display = 'block';
+                            img.style.visibility = 'visible';
+                            img.style.opacity = '1';
+                            
+                            img.addEventListener('load', () => {
+                                console.log(`✓ Hero slide ${index + 1}, image ${imgIndex + 1} loaded successfully`);
+                                img.style.opacity = '1';
+                            });
+                            img.addEventListener('error', function() {
+                                console.error(`✗ Hero slide ${index + 1}, image ${imgIndex + 1} failed to load:`, this.src);
+                            });
+                            
+                            // Check if image already loaded
+                            if (img.complete && img.naturalHeight !== 0) {
+                                console.log(`✓ Hero slide ${index + 1}, image ${imgIndex + 1} already loaded`);
+                            }
+                        }
+                    });
+                });
+            }
+            
+            // Initialize immediately if DOM is ready, otherwise wait
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initHeroSlider);
+            } else {
+                initHeroSlider();
+            }
+        })();
+        
         // Scroll to Top Button Visibility
         // Mobile Menu Toggle
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
@@ -2566,16 +3547,16 @@
             }
         }
         
-        // Quantity control buttons
-        document.querySelectorAll('.qty-btn').forEach(function(btn) {
+        // Quantity control buttons (for both home and buy sections)
+        document.querySelectorAll('.qty-btn, .home-qty-btn').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 const targetId = this.getAttribute('data-target');
                 const input = document.getElementById(targetId);
                 const currentValue = parseInt(input.value) || 0;
                 
-                if (this.classList.contains('qty-plus')) {
+                if (this.classList.contains('qty-plus') || this.classList.contains('home-qty-plus')) {
                     input.value = currentValue + 1;
-                } else if (this.classList.contains('qty-minus') && currentValue > 0) {
+                } else if ((this.classList.contains('qty-minus') || this.classList.contains('home-qty-minus')) && currentValue > 0) {
                     input.value = currentValue - 1;
                 }
                 
@@ -2584,7 +3565,7 @@
         });
         
         // Update cart when quantities change manually
-        document.querySelectorAll('.qty-input').forEach(function(input) {
+        document.querySelectorAll('.qty-input, .home-qty-input').forEach(function(input) {
             input.addEventListener('input', updateCart);
         });
         
@@ -2592,8 +3573,49 @@
         updateCart();
         
         // Change main product image function
-        function changeMainImage(imageSrc) {
+        function changeMainImage(imageSrc, element, size) {
             document.getElementById('mainProductImage').src = imageSrc;
+            // Update active thumbnail
+            document.querySelectorAll('.product-thumbnail').forEach(thumb => {
+                thumb.classList.remove('active');
+            });
+            if (element) {
+                element.closest('.product-thumbnail').classList.add('active');
+            }
+            
+            // Show/hide product cards based on selected size
+            const cards = {
+                '250': document.getElementById('product-card-250'),
+                '500': document.getElementById('product-card-500'),
+                '1000': document.getElementById('product-card-1000')
+            };
+            
+            // Show/hide product info based on selected size
+            const infoSections = {
+                '250': document.getElementById('product-info-250'),
+                '500': document.getElementById('product-info-500'),
+                '1000': document.getElementById('product-info-1000')
+            };
+            
+            // Hide all cards
+            Object.values(cards).forEach(card => {
+                if (card) card.style.display = 'none';
+            });
+            
+            // Hide all info sections
+            Object.values(infoSections).forEach(info => {
+                if (info) info.style.display = 'none';
+            });
+            
+            // Show selected card
+            if (size && cards[size]) {
+                cards[size].style.display = 'block';
+            }
+            
+            // Show selected info section
+            if (size && infoSections[size]) {
+                infoSections[size].style.display = 'block';
+            }
         }
         
         // Handle checkout button click
