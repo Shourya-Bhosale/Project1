@@ -973,6 +973,11 @@
             overflow: hidden;
         }
         
+        /* Mobile Sticky Buy Now Bar */
+        .mobile-buy-bar {
+            display: none;
+        }
+        
         .product-info-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -2031,11 +2036,11 @@
             }
             
             .product-main-image {
-                padding: 5px;
+                padding: 8px;
                 min-height: auto;
                 max-width: none;
                 flex: 1;
-                height: 75px;
+                height: 250px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -2045,7 +2050,7 @@
                 width: auto;
                 max-width: 100%;
                 height: 100%;
-                max-height: 75px;
+                max-height: 250px;
                 object-fit: contain;
             }
             
@@ -2268,6 +2273,76 @@
             .checkout-btn {
                 padding: 10px 15px;
                 font-size: 0.85rem;
+            }
+            
+            /* Mobile Sticky Buy Now Bar */
+            .mobile-buy-bar {
+                display: block;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+                z-index: 1000;
+                padding: 12px 15px;
+                border-top: 2px solid #15803d;
+            }
+            
+            .mobile-buy-content {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 15px;
+                max-width: 100%;
+            }
+            
+            .mobile-buy-info {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .mobile-buy-price {
+                font-size: 1.1rem;
+                font-weight: 700;
+                color: #ffffff;
+                line-height: 1.2;
+            }
+            
+            .mobile-buy-text {
+                font-size: 0.85rem;
+                color: rgba(255, 255, 255, 0.9);
+                line-height: 1.2;
+                margin-top: 2px;
+            }
+            
+            .mobile-buy-btn {
+                background: #ffffff;
+                color: #22c55e;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 1rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            
+            .mobile-buy-btn:active {
+                transform: scale(0.95);
+                background: #f0fdf4;
+            }
+            
+            /* Add padding to body on mobile to prevent content from being hidden behind sticky bar */
+            @media (max-width: 768px) {
+                body {
+                    padding-bottom: 70px;
+                }
             }
             
             /* Feature List */
@@ -2805,11 +2880,22 @@
                     <span>🐄 A2 Certified</span>
                 </div>
                 
+                <!-- Mobile Sticky Buy Now Bar -->
+                <div class="mobile-buy-bar" id="mobileBuyBar">
+                    <div class="mobile-buy-content">
+                        <div class="mobile-buy-info">
+                            <span class="mobile-buy-price">Starting at ₹549</span>
+                            <span class="mobile-buy-text">Pure A2 Gir Cow Ghee</span>
+                        </div>
+                        <button class="mobile-buy-btn" onclick="scrollToProduct()">Buy Now</button>
+                    </div>
+                </div>
+                
                 <!-- Product Information Section -->
                 <div class="product-info-section">
                     <!-- Product Info for 250ml -->
-                    <div class="product-info-content" id="product-info-250" style="display: block;">
-                        <h3 class="product-info-title" onclick="toggleProductInfo('product-info-250')">
+                    <div class="product-info-content collapsed" id="product-info-250" style="display: block;">
+                        <h3 class="product-info-title collapsed" onclick="toggleProductInfo('product-info-250')">
                             Product Information
                             <span class="product-info-toggle">▼</span>
                         </h3>
@@ -2840,8 +2926,8 @@
                     </div>
                     
                     <!-- Product Info for 500ml -->
-                    <div class="product-info-content" id="product-info-500" style="display: none;">
-                        <h3 class="product-info-title" onclick="toggleProductInfo('product-info-500')">
+                    <div class="product-info-content collapsed" id="product-info-500" style="display: none;">
+                        <h3 class="product-info-title collapsed" onclick="toggleProductInfo('product-info-500')">
                             Product Information
                             <span class="product-info-toggle">▼</span>
                         </h3>
@@ -2872,8 +2958,8 @@
                     </div>
                     
                     <!-- Product Info for 1000ml -->
-                    <div class="product-info-content" id="product-info-1000" style="display: none;">
-                        <h3 class="product-info-title" onclick="toggleProductInfo('product-info-1000')">
+                    <div class="product-info-content collapsed" id="product-info-1000" style="display: none;">
+                        <h3 class="product-info-title collapsed" onclick="toggleProductInfo('product-info-1000')">
                             Product Information
                             <span class="product-info-toggle">▼</span>
                         </h3>
@@ -3673,6 +3759,9 @@
             if (size && infoSections[size]) {
                 infoSections[size].style.display = 'block';
             }
+            
+            // Update mobile buy bar price
+            updateMobileBuyBar(size);
         }
         
         // Toggle Product Information dropdown
@@ -3683,6 +3772,42 @@
             if (infoContent) {
                 infoContent.classList.toggle('collapsed');
                 title.classList.toggle('collapsed');
+            }
+        }
+        
+        // Scroll to product section and focus on quantity controls
+        function scrollToProduct() {
+            const productSection = document.getElementById('home');
+            if (productSection) {
+                productSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Small delay to ensure scroll completes
+                setTimeout(() => {
+                    // Try to focus on the first visible quantity input
+                    const visibleCard = document.querySelector('.home-product-card[style*="display: block"]');
+                    if (visibleCard) {
+                        const qtyInput = visibleCard.querySelector('.home-qty-input');
+                        if (qtyInput) {
+                            qtyInput.focus();
+                        }
+                    }
+                }, 500);
+            }
+        }
+        
+        // Update mobile buy bar price based on selected product
+        function updateMobileBuyBar(size) {
+            const mobileBuyBar = document.getElementById('mobileBuyBar');
+            const priceElement = mobileBuyBar ? mobileBuyBar.querySelector('.mobile-buy-price') : null;
+            
+            if (priceElement) {
+                const prices = {
+                    '250': '₹549',
+                    '500': '₹1035',
+                    '1000': '₹1999'
+                };
+                if (prices[size]) {
+                    priceElement.textContent = 'Starting at ' + prices[size];
+                }
             }
         }
         
