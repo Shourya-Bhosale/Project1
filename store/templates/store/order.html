@@ -665,6 +665,10 @@
                 <span class="total-label">Subtotal</span>
                 <span class="total-value" id="cartSubtotal">₹0.00</span>
             </div>
+            <div class="total-row" id="discountRow" style="display: none;">
+                <span class="total-label">Discount (10%)</span>
+                <span class="total-value" id="discountAmount" style="color: #dc2626;">-₹0.00</span>
+            </div>
             <div class="total-row">
                 <span class="total-label">Shipping</span>
                 <span class="shipping-link" id="shippingLink">Calculate shipping</span>
@@ -682,6 +686,8 @@
         <form method="post" class="customer-details-form" id="orderForm" style="display: none;">
                 {% csrf_token %}
                 <input type="hidden" name="__from_home" value="1" />
+                <input type="hidden" name="coupon_code" id="couponCodeInput" value="">
+                <input type="hidden" name="discount_amount" id="discountAmountInput" value="0.00">
             
             <h2 class="form-section-title">Customer Details</h2>
             <div class="form-grid">
@@ -850,6 +856,15 @@
             initializeProducts();
         }
         
+        // Coupon state
+        let appliedCoupon = null;
+        
+        // Coupon codes and their discount percentages
+        const COUPON_CODES = {
+            'WELCOME10': 10,
+            'SHIV99': 15
+        };
+        
         // Update cart display
         function updateCartDisplay() {
             const cartItemsSection = document.getElementById('cartItemsSection');
@@ -857,8 +872,10 @@
             const cartSubtotal = document.getElementById('cartSubtotal');
             const cartTotal = document.getElementById('cartTotal');
             const cartBadge = document.getElementById('cartBadge');
+            const discountRow = document.getElementById('discountRow');
+            const discountAmount = document.getElementById('discountAmount');
             
-            let total = 0;
+            let subtotal = 0;
             let itemCount = 0;
             const cartItems = [];
             
@@ -867,24 +884,46 @@
                 const qty = parseInt(qtyInput ? qtyInput.value : 0) || 0;
                 
                 if (qty > 0) {
-                    const subtotal = qty * product.price;
-                    total += subtotal;
+                    const itemSubtotal = qty * product.price;
+                    subtotal += itemSubtotal;
                     itemCount += qty;
                     cartItems.push({
                         ...product,
                         quantity: qty,
-                        subtotal: subtotal
+                        subtotal: itemSubtotal
                     });
                 }
             });
+            
+            // Calculate discount
+            let discount = 0;
+            if (appliedCoupon && COUPON_CODES[appliedCoupon] && subtotal > 0) {
+                const discountPercentage = COUPON_CODES[appliedCoupon];
+                discount = subtotal * (discountPercentage / 100);
+            }
+            
+            // Calculate final total
+            const finalTotal = subtotal - discount;
             
             // Update cart badge
             cartBadge.textContent = itemCount;
             
             // Update subtotal displays
-            subtotalDisplay.textContent = `₹${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-            cartSubtotal.textContent = `₹${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-            cartTotal.textContent = `₹${total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+            subtotalDisplay.textContent = `₹${subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+            cartSubtotal.textContent = `₹${subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+            
+            // Update discount display
+            if (discount > 0 && appliedCoupon) {
+                const discountPercentage = COUPON_CODES[appliedCoupon];
+                discountRow.style.display = 'flex';
+                discountRow.querySelector('.total-label').textContent = `Discount (${discountPercentage}%)`;
+                discountAmount.textContent = `-₹${discount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+            } else {
+                discountRow.style.display = 'none';
+            }
+            
+            // Update final total
+            cartTotal.textContent = `₹${finalTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
             
             // Update cart items display
             if (cartItems.length > 0) {
@@ -922,7 +961,13 @@
             // Update online payment amount
             const onlinePaymentAmount = document.getElementById('onlinePaymentAmount');
             if (onlinePaymentAmount) {
-                onlinePaymentAmount.textContent = total;
+                onlinePaymentAmount.textContent = finalTotal;
+            }
+            
+            // Store discount in hidden field for form submission
+            const discountInput = document.getElementById('discountAmountInput');
+            if (discountInput) {
+                discountInput.value = discount.toFixed(2);
             }
         }
         
@@ -982,13 +1027,53 @@
             document.getElementById('orderForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
         
-        // Apply coupon (placeholder)
+        // Apply coupon
         document.getElementById('applyCouponBtn').addEventListener('click', function() {
-            const couponCode = document.getElementById('couponInput').value;
-            if (couponCode) {
-                alert('Coupon code functionality will be implemented soon.');
-            } else {
+            const couponCode = document.getElementById('couponInput').value.trim().toUpperCase();
+            const couponInput = document.getElementById('couponInput');
+            const applyBtn = document.getElementById('applyCouponBtn');
+            
+            if (!couponCode) {
                 alert('Please enter a coupon code.');
+                return;
+            }
+            
+            // Validate coupon code
+            if (COUPON_CODES.hasOwnProperty(couponCode)) {
+                appliedCoupon = couponCode;
+                couponInput.style.borderColor = '#dc2626';
+                couponInput.style.backgroundColor = '#fef2f2';
+                applyBtn.textContent = 'Applied ✓';
+                applyBtn.style.backgroundColor = '#dc2626';
+                applyBtn.disabled = true;
+                
+                // Update hidden fields
+                const couponCodeInput = document.getElementById('couponCodeInput');
+                if (couponCodeInput) {
+                    couponCodeInput.value = couponCode;
+                }
+                
+                updateCartDisplay();
+            } else {
+                alert('Invalid coupon code. Please enter a valid code.');
+                appliedCoupon = null;
+                couponInput.style.borderColor = '#e5e7eb';
+                couponInput.style.backgroundColor = '#ffffff';
+                applyBtn.textContent = 'Apply Coupon';
+                applyBtn.style.backgroundColor = '#b91c1c';
+                applyBtn.disabled = false;
+                
+                // Clear hidden fields
+                const couponCodeInput = document.getElementById('couponCodeInput');
+                if (couponCodeInput) {
+                    couponCodeInput.value = '';
+                }
+                const discountAmountInput = document.getElementById('discountAmountInput');
+                if (discountAmountInput) {
+                    discountAmountInput.value = '0.00';
+                }
+                
+                updateCartDisplay();
             }
         });
         

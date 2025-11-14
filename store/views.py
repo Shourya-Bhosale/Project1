@@ -79,9 +79,31 @@ def place_order(request: HttpRequest) -> HttpResponse:
                             )
                             total += qty * current_price
                             print(f"[ORDER] Added {qty}x {product.name} @ ₹{current_price} = ₹{qty * current_price}")
-                    order.total_amount = total
+                    
+                    # Apply discount if coupon code is provided
+                    discount_amount = 0.0
+                    coupon_code = request.POST.get('coupon_code', '').strip().upper()
+                    discount_str = request.POST.get('discount_amount', '0.00').strip()
+                    
+                    # Valid coupon codes and their discount percentages
+                    VALID_COUPONS = {
+                        'WELCOME10': 10,
+                        'SHIV99': 15
+                    }
+                    
+                    if coupon_code in VALID_COUPONS and discount_str:
+                        try:
+                            discount_amount = float(discount_str)
+                            if discount_amount > 0:
+                                total = total - discount_amount
+                                discount_percentage = VALID_COUPONS[coupon_code]
+                                print(f"[COUPON] Applied {coupon_code} ({discount_percentage}%): Discount ₹{discount_amount}, New total: ₹{total}")
+                        except (ValueError, TypeError):
+                            print(f"[COUPON] Invalid discount amount: {discount_str}")
+                    
+                    order.total_amount = max(0, total)  # Ensure total is not negative
                     order.save()
-                    print(f"[ORDER] Order #{order.order_number} total_amount set to ₹{total}")
+                    print(f"[ORDER] Order #{order.order_number} total_amount set to ₹{order.total_amount}")
 
                     if order.items.count() == 0:
                         order.delete()
