@@ -1235,6 +1235,19 @@ def cancellations_and_refunds(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponse(f"Error loading template: {str(e)}", status=500)
 
+
+def sitemap(request: HttpRequest) -> HttpResponse:
+    """Serve sitemap.xml for search engines"""
+    import os
+    
+    sitemap_path = os.path.join(settings.BASE_DIR, 'sitemap.xml')
+    if os.path.exists(sitemap_path):
+        with open(sitemap_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        return HttpResponse(content, content_type='application/xml')
+    else:
+        return HttpResponse('Sitemap not found', status=404)
+
 # Razorpay Payment Views
 @csrf_exempt
 def create_payment(request: HttpRequest) -> JsonResponse:

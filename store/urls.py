@@ -26,6 +26,7 @@ urlpatterns = [
     path('shipping-policy/', views.shipping_policy, name='shipping_policy'),
     path('terms-and-conditions/', views.terms_and_conditions, name='terms_and_conditions'),
     path('cancellations-and-refunds/', views.cancellations_and_refunds, name='cancellations_and_refunds'),
+    path('sitemap.xml', views.sitemap, name='sitemap'),
 ]
 
 
