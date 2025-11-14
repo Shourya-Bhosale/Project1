@@ -932,10 +932,45 @@
         .product-info-title {
             font-size: 1.5rem;
             color: #166534;
-            margin-bottom: 25px;
+            margin-bottom: 0;
             font-weight: 700;
             border-bottom: 2px solid #22c55e;
             padding-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+        
+        .product-info-title:hover {
+            color: #15803d;
+        }
+        
+        .product-info-toggle {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+            color: #22c55e;
+        }
+        
+        .product-info-title.collapsed .product-info-toggle {
+            transform: rotate(-90deg);
+        }
+        
+        .product-info-grid {
+            max-height: 1000px;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.3s ease, margin-top 0.3s ease;
+            opacity: 1;
+            margin-top: 25px;
+        }
+        
+        .product-info-content.collapsed .product-info-grid {
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+            overflow: hidden;
         }
         
         .product-info-grid {
@@ -1960,8 +1995,9 @@
             }
             
             .product-image-gallery-top {
-                flex-direction: column !important;
-                gap: 12px;
+                flex-direction: row !important;
+                gap: 8px;
+                align-items: center;
             }
             
             .cart-summary {
@@ -1978,13 +2014,14 @@
             .product-thumbnails {
                 flex-direction: row;
                 justify-content: center;
-                gap: 8px;
-                width: 100%;
+                gap: 6px;
+                width: auto;
+                flex-shrink: 0;
             }
             
             .product-thumbnail {
-                width: 70px;
-                height: 85px;
+                width: 50px;
+                height: 65px;
             }
             
             .product-thumbnail img {
@@ -1994,16 +2031,22 @@
             }
             
             .product-main-image {
-                padding: 15px;
-                min-height: 280px;
-                max-width: 100%;
+                padding: 5px;
+                min-height: auto;
+                max-width: none;
+                flex: 1;
+                height: 75px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
             
             .product-main-image img {
-                width: 100%;
+                width: auto;
                 max-width: 100%;
-                height: auto;
-                max-height: 280px;
+                height: 100%;
+                max-height: 75px;
+                object-fit: contain;
             }
             
             .product-details-section {
@@ -2071,11 +2114,16 @@
             
             .product-info-title {
                 font-size: 1.1rem;
-                margin-bottom: 15px;
+                margin-bottom: 0;
                 padding-bottom: 8px;
             }
             
+            .product-info-toggle {
+                font-size: 1rem;
+            }
+            
             .product-info-grid {
+                margin-top: 15px;
                 grid-template-columns: 1fr;
                 gap: 12px;
             }
@@ -2761,7 +2809,10 @@
                 <div class="product-info-section">
                     <!-- Product Info for 250ml -->
                     <div class="product-info-content" id="product-info-250" style="display: block;">
-                        <h3 class="product-info-title">Product Information</h3>
+                        <h3 class="product-info-title" onclick="toggleProductInfo('product-info-250')">
+                            Product Information
+                            <span class="product-info-toggle">▼</span>
+                        </h3>
                         <div class="product-info-grid">
                             <div class="info-item">
                                 <h4>Key Features</h4>
@@ -2790,7 +2841,10 @@
                     
                     <!-- Product Info for 500ml -->
                     <div class="product-info-content" id="product-info-500" style="display: none;">
-                        <h3 class="product-info-title">Product Information</h3>
+                        <h3 class="product-info-title" onclick="toggleProductInfo('product-info-500')">
+                            Product Information
+                            <span class="product-info-toggle">▼</span>
+                        </h3>
                         <div class="product-info-grid">
                             <div class="info-item">
                                 <h4>Key Features</h4>
@@ -2819,7 +2873,10 @@
                     
                     <!-- Product Info for 1000ml -->
                     <div class="product-info-content" id="product-info-1000" style="display: none;">
-                        <h3 class="product-info-title">Product Information</h3>
+                        <h3 class="product-info-title" onclick="toggleProductInfo('product-info-1000')">
+                            Product Information
+                            <span class="product-info-toggle">▼</span>
+                        </h3>
                         <div class="product-info-grid">
                             <div class="info-item">
                                 <h4>Key Features</h4>
@@ -3615,6 +3672,17 @@
             // Show selected info section
             if (size && infoSections[size]) {
                 infoSections[size].style.display = 'block';
+            }
+        }
+        
+        // Toggle Product Information dropdown
+        function toggleProductInfo(infoId) {
+            const infoContent = document.getElementById(infoId);
+            const title = infoContent.querySelector('.product-info-title');
+            
+            if (infoContent) {
+                infoContent.classList.toggle('collapsed');
+                title.classList.toggle('collapsed');
             }
         }
         
