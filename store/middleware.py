@@ -15,9 +15,10 @@ class AllowAllHostsMiddleware:
     def __call__(self, request):
         host = request.get_host().split(':')[0]  # Remove port if present
         
-        # PERMANENT FIX: Redirect Render URLs to custom domain
+        # PERMANENT FIX: ALWAYS redirect Render URLs to custom domain
         # This ensures your domain always shows in browser, not Render URL
-        if host.endswith('.onrender.com') and not settings.DEBUG:
+        # Works in both DEBUG and production mode
+        if host.endswith('.onrender.com'):
             # Redirect to custom domain (preserve path and query string)
             protocol = 'https' if request.is_secure() else 'http'
             path = request.get_full_path()
