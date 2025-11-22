@@ -12,14 +12,14 @@ def seed_products(sender, **kwargs):
                     Product(
                         name='Gir Cow Ghee 1L',
                         size_ml=1000,
-                        price=1199,
+                        price=1999,
                         description='Pure A2 Gir Cow Bilona Ghee (1L).',
                         image_url='/static/store/images/product_1l.jpg',
                     ),
                     Product(
                         name='Gir Cow Ghee 500ml',
                         size_ml=500,
-                        price=649,
+                        price=1035,
                         description='Pure A2 Gir Cow Bilona Ghee (500ml).',
                         image_url='/static/store/images/product_500ml.jpg',
                     ),

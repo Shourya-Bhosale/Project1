@@ -33,7 +33,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key-here'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
 
-# ALLOWED_HOSTS configuration
+# ALLOWED_HOSTS configuration - PERMANENT FIX FOR RENDER
 # Support both development and production domains
 env_hosts = os.environ.get('ALLOWED_HOSTS', '')
 if env_hosts:
@@ -46,9 +46,26 @@ else:
         '127.0.0.1',
         'shivorganicdairyfarms.com',
         'www.shivorganicdairyfarms.com',
-        '*.onrender.com',  # Keep for Render deployment
-        'shiv-dairy-website.onrender.com',  # Old Render URL (backward compatibility)
     ]
+
+# PERMANENT FIX: Always allow Render domains
+# Render sets RENDER_EXTERNAL_HOSTNAME environment variable
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+# Also allow common Render service names (add your actual Render service name here)
+# Check your Render dashboard to see your exact service URL
+ALLOWED_HOSTS.extend([
+    'shiv-dairy-website.onrender.com',
+    'shiv-dairy-dbweb.onrender.com',
+])
+
+# PERMANENT FIX: In production (Render), be more permissive
+# The middleware will handle dynamic Render domain detection
+if not DEBUG:
+    # Add any host that might be used (middleware will add more dynamically)
+    pass
 
 # Debug logging
 print(f"[CONFIG] ALLOWED_HOSTS = {ALLOWED_HOSTS}")
