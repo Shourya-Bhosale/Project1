@@ -1,0 +1,26 @@
+User-agent: *
+Allow: /
+Allow: /home/
+Allow: /order/
+Allow: /return-policy/
+Allow: /refund-policy/
+Allow: /privacy-policy/
+Allow: /shipping-policy/
+Allow: /terms-and-conditions/
+Allow: /cancellations-and-refunds/
+Allow: /contact-us/
+Allow: /disclaimer/
+
+# Disallow admin and private pages
+Disallow: /admin/
+Disallow: /submit-order/
+Disallow: /check-status/
+Disallow: /create-payment/
+Disallow: /payment/
+Disallow: /test-razorpay/
+Disallow: /check-email-config/
+Disallow: /get-order-history/
+
+# Sitemap location
+Sitemap: https://shivorganicdairyfarms.com/sitemap.xml
+

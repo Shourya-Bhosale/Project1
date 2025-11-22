@@ -2,31 +2,61 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>https://shivorganicdairyfarms.com/home/</loc>
-        <lastmod>2025-11-14</lastmod>
+        <lastmod>2025-11-22</lastmod>
         <changefreq>weekly</changefreq>
         <priority>1.0</priority>
     </url>
     <url>
         <loc>https://shivorganicdairyfarms.com/order/</loc>
-        <lastmod>2025-11-14</lastmod>
+        <lastmod>2025-11-22</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
     </url>
     <url>
-        <loc>https://shivorganicdairyfarms.com/return-policy/</loc>
-        <lastmod>2025-11-14</lastmod>
-        <changefreq>yearly</changefreq>
-        <priority>0.3</priority>
-    </url>
-    <url>
-        <loc>https://shivorganicdairyfarms.com/refund-policy/</loc>
-        <lastmod>2025-11-14</lastmod>
-        <changefreq>yearly</changefreq>
-        <priority>0.3</priority>
+        <loc>https://shivorganicdairyfarms.com/contact-us/</loc>
+        <lastmod>2025-11-22</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
     </url>
     <url>
         <loc>https://shivorganicdairyfarms.com/privacy-policy/</loc>
-        <lastmod>2025-11-14</lastmod>
+        <lastmod>2025-11-22</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://shivorganicdairyfarms.com/return-policy/</loc>
+        <lastmod>2025-11-22</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://shivorganicdairyfarms.com/refund-policy/</loc>
+        <lastmod>2025-11-22</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://shivorganicdairyfarms.com/shipping-policy/</loc>
+        <lastmod>2025-11-22</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://shivorganicdairyfarms.com/terms-and-conditions/</loc>
+        <lastmod>2025-11-22</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://shivorganicdairyfarms.com/cancellations-and-refunds/</loc>
+        <lastmod>2025-11-22</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.5</priority>
+    </url>
+    <url>
+        <loc>https://shivorganicdairyfarms.com/disclaimer/</loc>
+        <lastmod>2025-11-22</lastmod>
         <changefreq>yearly</changefreq>
         <priority>0.3</priority>
     </url>

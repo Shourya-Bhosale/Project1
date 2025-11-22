@@ -1270,6 +1270,15 @@ def sitemap(request: HttpRequest) -> HttpResponse:
     else:
         return HttpResponse('Sitemap not found', status=404)
 
+
+def robots_txt(request: HttpRequest) -> HttpResponse:
+    """Serve robots.txt for search engines"""
+    from django.template.loader import render_to_string
+    return HttpResponse(
+        render_to_string('robots.txt', {}, request=request),
+        content_type='text/plain'
+    )
+
 # Razorpay Payment Views
 @csrf_exempt
 def create_payment(request: HttpRequest) -> JsonResponse:

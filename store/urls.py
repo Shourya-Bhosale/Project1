@@ -27,6 +27,7 @@ urlpatterns = [
     path('terms-and-conditions/', views.terms_and_conditions, name='terms_and_conditions'),
     path('cancellations-and-refunds/', views.cancellations_and_refunds, name='cancellations_and_refunds'),
     path('sitemap.xml', views.sitemap, name='sitemap'),
+    path('robots.txt', views.robots_txt, name='robots_txt'),
 ]
 
 
