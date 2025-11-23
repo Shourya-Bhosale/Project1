@@ -3,8 +3,8 @@ from . import views
 
 
 urlpatterns = [
-    path('', views.welcome, name='welcome'),
-    path('home/', views.home, name='home'),
+    path('', views.home, name='home'),  # Serve home at root - best for SEO
+    path('home/', views.home, name='home_alt'),  # Keep as alias for backwards compatibility
     path('healthz', views.healthz, name='healthz'),
     path('order/', views.place_order, name='place_order'),
     path('submit-order/', views.submit_order, name='submit_order'),

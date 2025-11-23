@@ -18,8 +18,11 @@ from .models import Product, Order, OrderItem
 
 
 def welcome(request: HttpRequest) -> HttpResponse:
-    """Welcome page with animations - first page visitors see"""
-    return render(request, 'store/welcome.html')
+    """Welcome page with animations - redirects to home for SEO"""
+    # 301 permanent redirect to /home/ for better SEO
+    # This ensures Google always finds the main content page
+    from django.http import HttpResponsePermanentRedirect
+    return HttpResponsePermanentRedirect('/home/')
 
 
 def healthz(request: HttpRequest) -> HttpResponse:

@@ -6,9 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Terms and Conditions - Shiv Organic Dairy Farm</title>
   <link rel="stylesheet" href="{% static 'store/styles.css' %}">
+  <meta name="description" content="Terms and Conditions for Shiv Organic Dairy Farm - Pure A2 Gir Cow Ghee. Read our terms of service, pricing, orders, and policies.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://shivorganicdairyfarms.com/terms-and-conditions/">
 </head>
 <body>
-  <div class="container" style="max-width:900px;padding:24px">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="{% url 'home' %}">
+                    <img src="{% static 'store/images/Shiv Logo (1).png' %}" alt="SHIV Organic Dairy Farm">
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'home' %}#benefits">Benefits</a></li>
+                <li><a href="{% url 'home' %}#contact">Contact</a></li>
+                <li><a href="{% url 'place_order' %}">Order Now</a></li>
+            </ul>
+        </div>
+    </nav>
+  <div class="container" style="max-width:900px;padding:24px;margin-top:80px;">
     <h1>Terms and Conditions</h1>
     <p>Welcome to Shiv Organic Dairy Farm. By placing an order, you agree to the following:</p>
 
@@ -38,7 +56,23 @@
     <p><strong>Address:</strong> Bhosari Alandi road, Bhosari, Pune</p>
     <p><strong>GSTIN:</strong> <em>[If applicable]</em></p>
     <p><strong>Refunds:</strong> No refunds are applicable once an order is delivered. Cancellations are allowed before dispatch only.</p>
+    
+    <div style="margin-top: 24px;">
+        <a href="{% url 'home' %}" style="display:inline-block; padding:10px 16px; background:#2d5016; color:#fff; border-radius:6px; text-decoration:none;">← Back to Home</a>
+    </div>
   </div>
+  
+  <footer style="margin: 24px auto; max-width: 960px; padding: 16px; color:#555; text-align:center;">
+      <div>
+          <strong>SHIV ORGANIC DAIRY FARM</strong> · 📞 +91 9158019119 · 📧 wecare@shivorganicdairyfarms.com
+      </div>
+      <div style="margin-top: 12px;">
+          <a href="{% url 'home' %}" style="color:#2d5016; text-decoration:none; margin:0 8px;">Home</a> |
+          <a href="{% url 'privacy_policy' %}" style="color:#2d5016; text-decoration:none; margin:0 8px;">Privacy Policy</a> |
+          <a href="{% url 'return_policy' %}" style="color:#2d5016; text-decoration:none; margin:0 8px;">Return Policy</a> |
+          <a href="{% url 'shipping_policy' %}" style="color:#2d5016; text-decoration:none; margin:0 8px;">Shipping</a>
+      </div>
+  </footer>
 </body>
 </html>
 

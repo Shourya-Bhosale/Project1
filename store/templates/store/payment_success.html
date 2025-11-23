@@ -13,7 +13,7 @@
         <div class="container nav-flex">
             <div class="brand"><img class="logo" src="{% static 'store/images/Shiv Logo (1).png' %}" alt="Shiv Organic Dairy Farm" /> Shiv Organic Dairy Farm</div>
             <div class="links">
-                <a href="/home/">Home</a>
+                <a href="{% url 'home' %}">Home</a>
             </div>
         </div>
     </nav>
@@ -32,7 +32,7 @@
                 </div>
                 
                 <div style="margin-top: 30px;">
-                    <a href="/home/" class="btn btn-primary" style="margin-right: 10px;">Continue Shopping</a>
+                    <a href="{% url 'home' %}" class="btn btn-primary" style="margin-right: 10px;">Continue Shopping</a>
                     <a href="/check-status/" class="btn btn-secondary">Check Order Status</a>
                 </div>
             </div>

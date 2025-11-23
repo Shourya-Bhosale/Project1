@@ -6,9 +6,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Shipping Policy - Shiv Organic Dairy Farm</title>
   <link rel="stylesheet" href="{% static 'store/styles.css' %}">
+  <meta name="description" content="Shipping and delivery policy for Shiv Organic Dairy Farm - Pure A2 Gir Cow Ghee. Learn about our shipping timelines, fees, and delivery areas.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://shivorganicdairyfarms.com/shipping-policy/">
 </head>
 <body>
-  <div class="container" style="max-width:900px;padding:24px">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="{% url 'home' %}">
+                    <img src="{% static 'store/images/Shiv Logo (1).png' %}" alt="SHIV Organic Dairy Farm">
+                </a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="{% url 'home' %}">Home</a></li>
+                <li><a href="{% url 'home' %}#benefits">Benefits</a></li>
+                <li><a href="{% url 'home' %}#contact">Contact</a></li>
+                <li><a href="{% url 'place_order' %}">Order Now</a></li>
+            </ul>
+        </div>
+    </nav>
+  <div class="container" style="max-width:900px;padding:24px;margin-top:80px;">
     <h1>Shipping Policy</h1>
     <p>Shiv Organic Dairy Farm ships orders across India.</p>
 
@@ -32,7 +50,23 @@
 
     <h3>Damaged or Leaked Items</h3>
     <p>Report within 48 hours of delivery with photos to wecare@shivorganicdairyfarms.com.</p>
+    
+    <div style="margin-top: 24px;">
+        <a href="{% url 'home' %}" style="display:inline-block; padding:10px 16px; background:#2d5016; color:#fff; border-radius:6px; text-decoration:none;">← Back to Home</a>
+    </div>
   </div>
+  
+  <footer style="margin: 24px auto; max-width: 960px; padding: 16px; color:#555; text-align:center;">
+      <div>
+          <strong>SHIV ORGANIC DAIRY FARM</strong> · 📞 +91 9158019119 · 📧 wecare@shivorganicdairyfarms.com
+      </div>
+      <div style="margin-top: 12px;">
+          <a href="{% url 'home' %}" style="color:#2d5016; text-decoration:none; margin:0 8px;">Home</a> |
+          <a href="{% url 'privacy_policy' %}" style="color:#2d5016; text-decoration:none; margin:0 8px;">Privacy Policy</a> |
+          <a href="{% url 'return_policy' %}" style="color:#2d5016; text-decoration:none; margin:0 8px;">Return Policy</a> |
+          <a href="{% url 'terms_and_conditions' %}" style="color:#2d5016; text-decoration:none; margin:0 8px;">Terms</a>
+      </div>
+  </footer>
 </body>
 </html>
 
