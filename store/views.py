@@ -35,8 +35,15 @@ def healthz(request: HttpRequest) -> HttpResponse:
 
 
 def home(request: HttpRequest) -> HttpResponse:
+    """Home page - serves at root URL for best SEO"""
     products = Product.objects.filter(is_active=True).order_by('size_ml')
     return render(request, 'store/home.html', { 'products': products })
+
+
+def home_redirect(request: HttpRequest) -> HttpResponse:
+    """Redirect /home/ to root for SEO consolidation"""
+    from django.http import HttpResponsePermanentRedirect
+    return HttpResponsePermanentRedirect('/')
 
 
 @transaction.atomic
