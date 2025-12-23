@@ -32,6 +32,7 @@ urlpatterns = [
     path('blog/<str:slug>/', views.blog_post, name='blog_post'),
     path('about-us/', views.about_us, name='about_us'),
     path('faq/', views.faq, name='faq'),
+    path('download-orders/', views.download_orders_excel, name='download_orders_excel'),
 ]
 
 

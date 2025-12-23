@@ -1333,6 +1333,25 @@ def faq(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponse(f"Error loading template: {str(e)}", status=500)
 
+
+def download_orders_excel(request: HttpRequest) -> HttpResponse:
+    """Download orders Excel file"""
+    import os
+    from django.http import FileResponse, Http404
+    
+    excel_file_path = os.path.join(settings.BASE_DIR, 'orders.xlsx')
+    
+    if os.path.exists(excel_file_path):
+        try:
+            file = open(excel_file_path, 'rb')
+            response = FileResponse(file, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = f'attachment; filename="orders_{os.path.getmtime(excel_file_path):.0f}.xlsx"'
+            return response
+        except Exception as e:
+            return HttpResponse(f"Error reading file: {str(e)}", status=500)
+    else:
+        return HttpResponse("Orders file not found. No orders have been placed yet.", status=404)
+
 # Razorpay Payment Views
 @csrf_exempt
 def create_payment(request: HttpRequest) -> JsonResponse:
