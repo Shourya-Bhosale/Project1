@@ -2839,16 +2839,20 @@
             <nav class="main-nav main-nav-right" id="mainNav">
                 <a href="#home">HOME</a>
                 <a href="#home">SHOP</a>
-                <a href="#about">ABOUT US</a>
-                <a href="#contact">CONTACT US</a>
+                <a href="{% url 'about_us' %}">ABOUT US</a>
+                <a href="{% url 'blog_list' %}">BLOG</a>
+                <a href="{% url 'faq' %}">FAQ</a>
+                <a href="{% url 'contact_us' %}">CONTACT US</a>
                 <a href="#benefits">BENEFITS</a>
                 <a href="#reviews">REVIEWS</a>
             </nav>
             <nav class="mobile-nav-dropdown" id="mobileNavDropdown">
                 <a href="#home">HOME</a>
                 <a href="#home">SHOP</a>
-                <a href="#about">ABOUT US</a>
-                <a href="#contact">CONTACT US</a>
+                <a href="{% url 'about_us' %}">ABOUT US</a>
+                <a href="{% url 'blog_list' %}">BLOG</a>
+                <a href="{% url 'faq' %}">FAQ</a>
+                <a href="{% url 'contact_us' %}">CONTACT US</a>
                 <a href="#benefits">BENEFITS</a>
                 <a href="#reviews">REVIEWS</a>
             </nav>

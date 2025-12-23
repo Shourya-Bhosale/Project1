@@ -1289,6 +1289,52 @@ def robots_txt(request: HttpRequest) -> HttpResponse:
         content_type='text/plain'
     )
 
+
+# Blog and Content Pages for SEO
+def blog_list(request: HttpRequest) -> HttpResponse:
+    """Blog listing page"""
+    try:
+        return render(request, 'store/blog_list.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
+
+
+def blog_post(request: HttpRequest, slug: str) -> HttpResponse:
+    """Individual blog post page"""
+    try:
+        # Map slugs to template names
+        blog_templates = {
+            'benefits-of-a2-gir-cow-ghee': 'store/blog/benefits_a2_ghee.html',
+            'how-to-use-ghee-in-daily-cooking': 'store/blog/how_to_use_ghee.html',
+            'why-choose-organic-ghee': 'store/blog/why_organic_ghee.html',
+            'traditional-bilona-method-explained': 'store/blog/bilona_method.html',
+            'ghee-vs-butter-which-is-better': 'store/blog/ghee_vs_butter.html',
+        }
+        
+        template = blog_templates.get(slug)
+        if not template:
+            return HttpResponse('Blog post not found', status=404)
+        
+        return render(request, template)
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
+
+
+def about_us(request: HttpRequest) -> HttpResponse:
+    """About Us page"""
+    try:
+        return render(request, 'store/about_us.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
+
+
+def faq(request: HttpRequest) -> HttpResponse:
+    """FAQ page"""
+    try:
+        return render(request, 'store/faq.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
+
 # Razorpay Payment Views
 @csrf_exempt
 def create_payment(request: HttpRequest) -> JsonResponse:
