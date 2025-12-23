@@ -28,7 +28,6 @@ urlpatterns = [
     path('cancellations-and-refunds/', views.cancellations_and_refunds, name='cancellations_and_refunds'),
     path('sitemap.xml', views.sitemap, name='sitemap'),
     path('robots.txt', views.robots_txt, name='robots_txt'),
-    # Blog and Content Pages for SEO
     path('blog/', views.blog_list, name='blog_list'),
     path('blog/<str:slug>/', views.blog_post, name='blog_post'),
     path('about-us/', views.about_us, name='about_us'),
