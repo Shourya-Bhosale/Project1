@@ -1,7 +1,12 @@
+# Standard library imports
+import csv
+
+# Django imports
 from django.contrib import admin
 from django.http import HttpResponse
-import csv
-from .models import Product, Order, OrderItem
+
+# Local imports
+from .models import Order, OrderItem, Product
 
 
 class OrderItemInline(admin.TabularInline):

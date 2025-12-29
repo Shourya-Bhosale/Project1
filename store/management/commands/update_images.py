@@ -1,4 +1,7 @@
+# Django imports
 from django.core.management.base import BaseCommand
+
+# Local imports
 from store.models import Product
 
 

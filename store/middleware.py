@@ -1,6 +1,7 @@
-from django.http import HttpResponse, HttpResponseRedirect
+# Django imports
 from django.conf import settings
 from django.core.exceptions import DisallowedHost
+from django.http import HttpResponse, HttpResponseRedirect
 
 class AllowAllHostsMiddleware:
     """

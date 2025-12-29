@@ -1,9 +1,19 @@
+# Standard library imports
 import os
+import traceback
+
+# Django imports
+from django.conf import settings
 from django.db.models.signals import post_migrate, post_save
 from django.dispatch import receiver
-from django.conf import settings
 
 
+# Third-party imports (lazy imports in functions to avoid dependency issues)
+# from openpyxl import Workbook, load_workbook
+# from openpyxl.styles import Font, PatternFill, Alignment
+
+
+# Helper Functions
 def export_order_to_excel(order):
     """Export order to Excel file. Creates file if it doesn't exist, appends if it does."""
     try:
@@ -98,11 +108,11 @@ def export_order_to_excel(order):
         return True
     except Exception as e:
         print(f"[EXCEL ERROR] Failed to export order to Excel: {str(e)}")
-        import traceback
         traceback.print_exc()
         return False
 
 
+# Signal Handlers
 @receiver(post_save)
 def save_order_to_excel(sender, instance, created, **kwargs):
     """Automatically export order to Excel when saved."""
@@ -116,6 +126,7 @@ def save_order_to_excel(sender, instance, created, **kwargs):
 
 @receiver(post_migrate)
 def seed_products(sender, **kwargs):
+    """Seed initial products after migrations."""
     try:
         from .models import Product
         if Product.objects.count() == 0:

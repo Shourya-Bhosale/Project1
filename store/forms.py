@@ -1,13 +1,27 @@
+# Django imports
 from django import forms
+
+# Local imports
 from .models import Order, OrderItem, Product
 
 
+# Constants
+PAYMENT_METHOD_CHOICES = [
+    ('COD', 'Cash on Delivery'),
+    ('RAZORPAY', 'Online Payment')
+]
+
+
+# Forms
 class OrderItemForm(forms.Form):
+    """Form for order items."""
+    
     product_id = forms.IntegerField(widget=forms.HiddenInput)
     quantity = forms.IntegerField(min_value=1, initial=1)
 
 
 class OrderForm(forms.ModelForm):
+    """Form for order creation."""
     # Split customer_name into first_name and last_name for frontend
     first_name = forms.CharField(
         max_length=60,
@@ -51,7 +65,7 @@ class OrderForm(forms.ModelForm):
         }
 
     payment_method = forms.ChoiceField(
-        choices=[('COD','Cash on Delivery'),('RAZORPAY','Online Payment')],
+        choices=PAYMENT_METHOD_CHOICES,
         initial='RAZORPAY',
         widget=forms.Select(attrs={'class': 'form-select'})
     )

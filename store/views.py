@@ -1,27 +1,741 @@
+# Standard library imports
 import json
-import time
 import threading
-from django.conf import settings
-from django.core.mail import send_mail
-from django.db import transaction, close_old_connections
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
-from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
+import traceback
+from urllib.parse import quote_plus
+
+# Third-party imports
 import razorpay
 
-from .forms import OrderForm
-from .models import Product, Order, OrderItem
+# Django imports
+from django.conf import settings
+from django.core.mail import EmailMessage, send_mail
+from django.core.mail.backends.smtp import EmailBackend
+from django.db import transaction, close_old_connections
+from django.db.models import Q
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.http import (
+    FileResponse,
+    Http404,
+    HttpRequest,
+    HttpResponse,
+    HttpResponsePermanentRedirect,
+    JsonResponse
+)
+from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
+from django.urls import reverse
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
+# Local imports
+from .forms import OrderForm
+from .models import Order, OrderItem, Product
+
+
+# Constants
+VALID_COUPONS = {
+    'WELCOME10': 10,
+    'SHIV99': 15
+}
+
+
+# ============================================================================
+# EMAIL & NOTIFICATION HELPER FUNCTIONS
+# ============================================================================
+# These functions handle sending emails and WhatsApp notifications
+# They support multiple providers (Brevo, SendGrid, SMTP) with fallbacks
+
+def _send_email_brevo(to_email: str, subject: str, message: str) -> bool:
+    """Send email using Brevo (formerly Sendinblue) API - Simple and reliable"""
+    try:
+        import requests
+        
+        brevo_api_key = getattr(settings, 'BREVO_API_KEY', '').strip()
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'shivorganicdairyfarms@gmail.com')
+        from_name = getattr(settings, 'EMAIL_FROM_NAME', 'Shiv Organic Dairy Farms')
+        
+        if not brevo_api_key:
+            print("[EMAIL] Brevo API key not configured")
+            return False
+        
+        # Add xkeysib- prefix if missing (some systems don't allow it in env vars)
+        if not brevo_api_key.startswith('xkeysib-'):
+            brevo_api_key = f'xkeysib-{brevo_api_key}'
+            print(f"[EMAIL] Added xkeysib- prefix to Brevo API key")
+        
+        url = "https://api.brevo.com/v3/smtp/email"
+        headers = {
+            "accept": "application/json",
+            "api-key": brevo_api_key,
+            "content-type": "application/json"
+        }
+        payload = {
+            "sender": {
+                "name": from_name,
+                "email": from_email
+            },
+            "to": [{"email": to_email}],
+            "subject": subject,
+            "textContent": message
+        }
+        
+        print(f"[EMAIL] Sending email via Brevo to {to_email}...")
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        
+        if response.status_code in [200, 201]:
+            print(f"[SUCCESS] Brevo email sent to {to_email}")
+            return True
+        else:
+            print(f"[WARNING] Brevo returned status {response.status_code}: {response.text}")
+            return False
+    except Exception as e:
+        print(f"[ERROR] Brevo error: {str(e)}")
+        return False
+
+
+def _send_email_sendgrid(to_email: str, subject: str, message: str) -> bool:
+    """Send email using SendGrid API"""
+    try:
+        from sendgrid import SendGridAPIClient
+        from sendgrid.helpers.mail import Mail
+        
+        sendgrid_api_key = getattr(settings, 'SENDGRID_API_KEY', '')
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'shivorganicdairyfarms@gmail.com')
+        
+        if not sendgrid_api_key:
+            print("[EMAIL] SendGrid API key not configured")
+            return False
+        
+        # Debug: Check first few chars of API key (don't print full key)
+        print(f"[EMAIL] SendGrid API key length: {len(sendgrid_api_key)}, starts with: {sendgrid_api_key[:3] if len(sendgrid_api_key) >= 3 else 'N/A'}")
+        
+        message_obj = Mail(
+            from_email=from_email,
+            to_emails=to_email,
+            subject=subject,
+            plain_text_content=message
+        )
+        
+        sg = SendGridAPIClient(sendgrid_api_key)
+        response = sg.send(message_obj)
+        
+        if response.status_code in [200, 201, 202]:
+            print(f"[SUCCESS] SendGrid email sent to {to_email}")
+            return True
+        else:
+            print(f"[WARNING] SendGrid returned status {response.status_code}")
+            return False
+    except Exception as e:
+        print(f"[ERROR] SendGrid error: {str(e)}")
+        # Check if it's an auth error
+        if "401" in str(e) or "Unauthorized" in str(e):
+            print(f"[WARNING] SendGrid API key authentication failed. Check if the key is correct in Render environment.")
+        traceback.print_exc()
+        return False
+
+
+def _send_whatsapp_message(phone: str, message: str) -> bool:
+    """Send WhatsApp via Meta Cloud API when configured; otherwise fallback to Twilio."""
+    try:
+        import requests
+        
+        whatsapp_token = getattr(settings, 'WHATSAPP_ACCESS_TOKEN', '').strip()
+        phone_number_id = getattr(settings, 'WHATSAPP_PHONE_NUMBER_ID', '').strip()
+        whatsapp_api_version = getattr(settings, 'WHATSAPP_API_VERSION', 'v18.0').strip()
+        
+        use_meta = bool(whatsapp_token and phone_number_id)
+        
+        if use_meta:
+            print(f"[WHATSAPP] Sending WhatsApp to {phone} via Meta Cloud API")
+        
+        # Format phone number (Meta requires E.164 format: +1234567890)
+        original_phone = phone
+        # Remove any existing whatsapp: prefix
+        phone = phone.replace('whatsapp:', '').strip()
+        # Ensure starts with +
+        if not phone.startswith('+'):
+            # Assume Indian number if starts with 0 or doesn't have country code
+            if phone.startswith('0'):
+                phone = f'+91{phone[1:]}'
+            elif len(phone) == 10:
+                phone = f'+91{phone}'
+            else:
+                phone = f'+91{phone}'
+        
+        print(f"   Formatted: {phone} (from {original_phone})")
+        
+        # Meta WhatsApp Cloud API endpoint
+        url = f"https://graph.facebook.com/{whatsapp_api_version}/{phone_number_id}/messages"
+        
+        headers = {
+            "Authorization": f"Bearer {whatsapp_token}",
+            "Content-Type": "application/json"
+        }
+        
+        # Meta WhatsApp message payload
+        payload = {
+            "messaging_product": "whatsapp",
+            "recipient_type": "individual",
+            "to": phone,
+            "type": "text",
+            "text": {
+                "preview_url": False,
+                "body": message
+            }
+        }
+        
+        print(f"[WHATSAPP] Sending via Meta API...")
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        
+        if use_meta and response.status_code == 200:
+            result = response.json()
+            if result.get('messages'):
+                message_id = result['messages'][0].get('id', 'unknown')
+                print(f"[SUCCESS] WhatsApp sent via Meta Cloud API! Message ID: {message_id}")
+                return True
+            else:
+                print(f"[WARNING] Meta API returned success but no message ID: {result}")
+                return False
+        elif use_meta:
+            error_msg = response.text
+            print(f"[WARNING] Meta API returned status {response.status_code}: {error_msg}")
+            
+            # Check for common errors
+            if response.status_code == 401:
+                print(f"   -> Invalid access token. Check WHATSAPP_ACCESS_TOKEN")
+            elif response.status_code == 403:
+                print(f"   -> Access forbidden. Check phone number permissions")
+            elif response.status_code == 404:
+                print(f"   -> Phone number ID not found. Check WHATSAPP_PHONE_NUMBER_ID")
+            elif response.status_code == 429:
+                print(f"   -> Rate limit exceeded. Meta allows 1,000 free messages/month")
+            # If Meta configured but failed, try Twilio fallback below
+        
+        # Twilio fallback if Meta not configured or failed
+        try:
+            from twilio.rest import Client  # type: ignore
+            account_sid = getattr(settings, 'TWILIO_ACCOUNT_SID', '').strip()
+            auth_token = getattr(settings, 'TWILIO_AUTH_TOKEN', '').strip()
+            messaging_service_sid = getattr(settings, 'TWILIO_MESSAGING_SERVICE_SID', '').strip()
+            from_number = getattr(settings, 'TWILIO_WHATSAPP_FROM', 'whatsapp:+14155238886').strip()
+            from_number = from_number.replace(' ', '')
+            if not account_sid or not auth_token:
+                print("[WHATSAPP] Twilio credentials not configured; cannot send WhatsApp")
+                return False
+            if len(auth_token) < 20:
+                print(f"[WARNING] Twilio Auth Token length looks short ({len(auth_token)} chars)")
+            print(f"[WHATSAPP] Fallback to Twilio for {phone}")
+            original_phone = phone
+            if not phone.startswith('+'):
+                phone = f'+91{phone.lstrip("0")}'
+            if not phone.startswith('whatsapp:'):
+                phone = f'whatsapp:{phone}'
+            client = Client(account_sid, auth_token)
+            if messaging_service_sid:
+                try:
+                    msg = client.messages.create(body=message, messaging_service_sid=messaging_service_sid, to=phone)
+                    print(f"[SUCCESS] WhatsApp via Twilio Messaging Service. SID: {msg.sid}")
+                    return True
+                except Exception:
+                    pass
+            # Direct number
+            msg = client.messages.create(body=message, from_=from_number, to=phone)
+            print(f"[SUCCESS] WhatsApp via Twilio direct number. SID: {msg.sid}")
+            return True
+        except Exception as e_twilio:
+            print(f"[WARNING] Twilio fallback failed: {str(e_twilio)}")
+            return False
+        
+    except Exception as e:
+        print(f"[ERROR] WhatsApp error: {str(e)}")
+        traceback.print_exc()
+        return False
+
+
+def _send_order_emails(order: Order) -> None:
+    """Send order confirmation emails to customer and company (async)"""
+    subject_customer = f'Your Shiv Organic Dairy Farm order #{order.order_number} confirmation'
+    subject_company = f'New order #{order.order_number} received - Shiv Organic Dairy Farm'
+    lines = [
+        f'Thank you {order.customer_name} for your order!',
+        '',
+        f'Order Number: {order.order_number}',
+        'Order summary:',
+    ]
+    for item in order.items.select_related('product'):
+        lines.append(f"- {item.product.name} x {item.quantity} @ ₹{item.unit_price} = ₹{item.line_total()}")
+    lines.append(f'Total: ₹{order.total_amount}')
+    if order.latitude and order.longitude:
+        lines.append(f'Delivery location: {order.latitude}, {order.longitude}')
+        lines.append(f'Maps link: https://maps.google.com/?q={order.latitude},{order.longitude}')
+    elif order.address_line1:
+        # Fallback: address-based maps search link if precise coordinates missing
+        addr_parts = [order.address_line1]
+        if order.city and order.city != '-':
+            addr_parts.append(order.city)
+        if order.state and order.state != '-':
+            addr_parts.append(order.state)
+        if order.postal_code and order.postal_code != '-':
+            addr_parts.append(order.postal_code)
+        q = quote_plus(', '.join([p for p in addr_parts if p]))
+        lines.append('Delivery location: (address provided)')
+        lines.append(f'Maps search: https://www.google.com/maps/search/?api=1&query={q}')
+    lines.append('')
+    lines.append(f'Payment method: {order.get_payment_method_display()}')
+    if order.payment_method == 'RAZORPAY' and order.payment_status == 'paid':
+        lines.append(f'Payment status: Paid')
+        if order.razorpay_payment_id:
+            lines.append(f'Razorpay Payment ID: {order.razorpay_payment_id}')
+    elif order.payment_reference:
+        lines.append(f'Payment reference (customer provided): {order.payment_reference}')
+    lines.append('')
+    lines.append('We will contact you shortly about delivery details.')
+    message = '\n'.join(lines)
+
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
+    company_email = getattr(settings, 'ORDER_NOTIFICATION_EMAIL', None) or 'shivorganicdairyfarms@gmail.com'
+    company_whatsapp = getattr(settings, 'COMPANY_WHATSAPP_PHONE', '').strip()
+    
+    # Load order items with products (do this before async to avoid DB issues)
+    order_items = list(order.items.select_related('product'))
+    
+    # Create customer WhatsApp message (shorter format)
+    whatsapp_msg = f"Order #{order.order_number} Confirmed!\n\n"
+    whatsapp_msg += f"Total: Rs {order.total_amount}\n"
+    whatsapp_msg += f"Payment: {order.get_payment_method_display()}\n"
+    if order.address_line1:
+        whatsapp_msg += f"Location: {order.address_line1}, {order.city}\n"
+    whatsapp_msg += "\nWe'll contact you for delivery details soon!"
+    
+    # Create company WhatsApp message (detailed format)
+    company_whatsapp_msg = f"NEW ORDER #{order.order_number}\n\n"
+    company_whatsapp_msg += f"Customer: {order.customer_name}\n"
+    company_whatsapp_msg += f"Phone: {order.phone}\n"
+    company_whatsapp_msg += f"Payment: {order.get_payment_method_display()}\n"
+    if order.payment_method == 'RAZORPAY' and order.payment_status == 'paid':
+        company_whatsapp_msg += f"Payment Status: Paid\n"
+    company_whatsapp_msg += f"Total: Rs {order.total_amount}\n\n"
+    
+    # Add order items
+    company_whatsapp_msg += "Items:\n"
+    for item in order_items:
+        company_whatsapp_msg += f"   - {item.product.name} x {item.quantity} = Rs {item.line_total()}\n"
+    
+    company_whatsapp_msg += "\nDelivery:\n"
+    if order.latitude and order.longitude:
+        company_whatsapp_msg += f"   {order.address_line1}\n"
+        company_whatsapp_msg += f"   {order.city}, {order.state} {order.postal_code}\n"
+        company_whatsapp_msg += f"   https://maps.google.com/?q={order.latitude},{order.longitude}\n"
+    else:
+        company_whatsapp_msg += f"   {order.address_line1}\n"
+        company_whatsapp_msg += f"   {order.city}, {order.state} {order.postal_code}\n"
+    
+    if order.notes:
+        company_whatsapp_msg += f"\nNotes: {order.notes}\n"
+    
+    def send_notifications_async():
+        """Send emails and WhatsApp in background - try both, don't let one failure block the other"""
+        try:
+            # Send WhatsApp to customer FIRST (most reliable)
+            whatsapp_sent = False
+            if order.phone:
+                print(f"[NOTIFICATION] Attempting WhatsApp to customer {order.phone}...")
+                whatsapp_sent = _send_whatsapp_message(order.phone, whatsapp_msg)
+                if whatsapp_sent:
+                    print(f"[SUCCESS] Customer WhatsApp notification sent successfully!")
+            
+            # Send WhatsApp to company (instant notification)
+            company_whatsapp_sent = False
+            if company_whatsapp:
+                print(f"[NOTIFICATION] Attempting WhatsApp to company {company_whatsapp}...")
+                company_whatsapp_sent = _send_whatsapp_message(company_whatsapp, company_whatsapp_msg)
+                if company_whatsapp_sent:
+                    print(f"[SUCCESS] Company WhatsApp notification sent successfully!")
+                else:
+                    print(f"[WARNING] Company WhatsApp failed, will try email...")
+            else:
+                print(f"[INFO] Company WhatsApp not configured (set COMPANY_WHATSAPP_PHONE)")
+            
+            # Try email providers: Brevo (simplest) → SendGrid → SMTP
+            brevo_key = getattr(settings, 'BREVO_API_KEY', '').strip()
+            sendgrid_key = getattr(settings, 'SENDGRID_API_KEY', '').strip()
+            
+            # Debug email provider selection
+            print(f"[EMAIL] Email providers check:")
+            print(f"   Brevo key: {'Set' if brevo_key and len(brevo_key) > 20 else 'Not set or too short'}")
+            print(f"   SendGrid key: {'Set' if sendgrid_key and len(sendgrid_key) > 30 else 'Not set'}")
+            
+            # Send customer email
+            if order.email:
+                email_sent = False
+                # Try Brevo first (simplest and most reliable)
+                if brevo_key and len(brevo_key) > 20:
+                    print(f"[EMAIL] Trying Brevo first for customer email...")
+                    email_sent = _send_email_brevo(order.email, subject_customer, message)
+                # Fallback to SendGrid if Brevo not configured
+                if not email_sent and sendgrid_key and len(sendgrid_key) > 30:
+                    email_sent = _send_email_sendgrid(order.email, subject_customer, message)
+                
+                if not email_sent:
+                    # Try SMTP as fallback - force use SMTP backend
+                    try:
+                        smtp_backend = EmailBackend(
+                            host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                            port=getattr(settings, 'EMAIL_PORT', 587),
+                            username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                            password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                            use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                            timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
+                        )
+                        
+                        email = EmailMessage(
+                            subject=subject_customer,
+                            body=message,
+                            from_email=from_email,
+                            to=[order.email],
+                            connection=smtp_backend
+                        )
+                        email.send()
+                        print(f"[SUCCESS] SMTP email sent to customer: {order.email}")
+                        email_sent = True
+                        smtp_backend.close()
+                    except Exception as e:
+                        print(f"[WARNING] SMTP email failed: {str(e)}")
+                        traceback.print_exc()
+            
+                if not email_sent and not whatsapp_sent:
+                    print(f"[WARNING] Both email and WhatsApp failed. Order #{order.order_number} placed successfully.")
+                    print(f"   Customer can view order at: https://shivorganicdairyfarms.com/order/success/?order_id={order.order_number}")
+            
+            # Send company email (always try, as backup to WhatsApp)
+            if company_email:
+                company_message = message + "\n\n--\nReference: If payment method is RAZORPAY, verify payment in Razorpay dashboard."
+                company_email_sent = False
+                
+                # Try Brevo first (simplest and most reliable)
+                if brevo_key and len(brevo_key) > 20:
+                    print(f"[EMAIL] Trying Brevo first for company email...")
+                    company_email_sent = _send_email_brevo(company_email, subject_company, company_message)
+                # Fallback to SendGrid if Brevo not configured
+                if not company_email_sent and sendgrid_key and len(sendgrid_key) > 30:
+                    company_email_sent = _send_email_sendgrid(company_email, subject_company, company_message)
+                
+                if not company_email_sent:
+                    # Try SMTP as fallback - force use SMTP backend
+                    try:
+                        smtp_backend = EmailBackend(
+                            host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                            port=getattr(settings, 'EMAIL_PORT', 587),
+                            username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                            password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                            use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                            timeout=getattr(settings, 'EMAIL_TIMEOUT', 30),
+                        )
+                        
+                        # Build detailed company email with all order fields
+                        company_lines = []
+                        company_lines.append(f"NEW ORDER #{order.order_number}")
+                        company_lines.append("")
+                        company_lines.append("Customer Details:")
+                        company_lines.append(f"Full Name: {order.customer_name}")
+                        company_lines.append(f"Email: {order.email if order.email else '-'}")
+                        company_lines.append(f"Phone: {order.phone if order.phone else '-'}")
+                        company_lines.append("")
+                        company_lines.append("Delivery Address:")
+                        company_lines.append(f"Address Line 1: {order.address_line1}")
+                        company_lines.append(f"Address Line 2: {order.address_line2 if order.address_line2 else '-'}")
+                        company_lines.append(f"City: {order.city}")
+                        company_lines.append(f"State: {order.state}")
+                        company_lines.append(f"Pincode: {order.postal_code}")
+                        # Location link
+                        maps_link = None
+                        if order.latitude and order.longitude:
+                            maps_link = f"https://maps.google.com/?q={order.latitude},{order.longitude}"
+                        elif order.address_line1:
+                            addr_parts = [order.address_line1, order.city, order.state, order.postal_code]
+                            q = quote_plus(', '.join([p for p in addr_parts if p and p != '-']))
+                            maps_link = f"https://www.google.com/maps/search/?api=1&query={q}"
+                        if maps_link:
+                            company_lines.append(f"Location Link: {maps_link}")
+                        company_lines.append("")
+                        company_lines.append("Payment:")
+                        company_lines.append(f"Payment Method: {order.get_payment_method_display()}")
+                        if order.payment_reference:
+                            company_lines.append(f"Payment Reference (COD note): {order.payment_reference}")
+                        if order.payment_method == 'RAZORPAY':
+                            company_lines.append(f"Payment Status: {order.payment_status}")
+                            if order.razorpay_payment_id:
+                                company_lines.append(f"Razorpay Payment ID: {order.razorpay_payment_id}")
+                        company_lines.append("")
+                        company_lines.append("Order Items:")
+                        for item in order_items:
+                            company_lines.append(f"- {item.product.name} x {item.quantity} @ ₹{item.unit_price} = ₹{item.line_total()}")
+                        company_lines.append(f"Total Amount: ₹{order.total_amount}")
+                        if order.notes:
+                            company_lines.append("")
+                            company_lines.append("Order Instructions:")
+                            company_lines.append(order.notes)
+                        company_lines.append("")
+                        company_lines.append("--")
+                        company_lines.append("Reference: If payment method is RAZORPAY, verify payment in Razorpay dashboard.")
+                        company_message = "\n".join(company_lines)
+                        
+                        email = EmailMessage(
+                            subject=subject_company,
+                            body=company_message,
+                            from_email=from_email,
+                            to=[company_email],
+                            connection=smtp_backend
+                        )
+                        email.send()
+                        print(f"[SUCCESS] Company SMTP email sent (backup to WhatsApp)")
+                        company_email_sent = True
+                        smtp_backend.close()
+                    except Exception as e:
+                        print(f"[WARNING] Company SMTP email failed: {str(e)}")
+                        traceback.print_exc()
+            
+                if not company_email_sent and not company_whatsapp_sent:
+                    print(f"[WARNING] Company notification failed (both WhatsApp and email), but order was saved. Check admin panel.")
+        except Exception as e:
+            print(f"[ERROR] Exception in notification thread: {str(e)}")
+            traceback.print_exc()
+    
+    # Start notifications in background thread (non-daemon so it completes)
+    print(f"[EMAIL] Starting email notification for order #{order.order_number}")
+    print(f"[EMAIL] Customer email: {order.email if order.email else 'NOT PROVIDED'}")
+    try:
+        thread = threading.Thread(target=send_notifications_async, daemon=False)
+        thread.start()
+        print(f"[EMAIL] Notification thread started for order #{order.order_number}")
+    except Exception as e:
+        print(f"[ERROR] Failed to start notification thread: {str(e)}")
+        traceback.print_exc()
+        # Fallback: try sending synchronously if thread fails
+        try:
+            print(f"[EMAIL] Falling back to synchronous email sending...")
+            send_notifications_async()
+        except Exception as e2:
+            print(f"[ERROR] Synchronous notification also failed: {str(e2)}")
+            traceback.print_exc()
+
+
+def _send_paid_order_notifications_async(order_id: int) -> None:
+    """Send paid Razorpay order notifications in a background thread."""
+    def worker():
+        close_old_connections()
+        try:
+            order = Order.objects.prefetch_related('items__product').get(id=order_id)
+        except Order.DoesNotExist:
+            print(f"[NOTIFY] Order {order_id} not found for async notifications")
+            return
+        
+        try:
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'shivorganicdairyfarms@gmail.com')
+            company_email = getattr(settings, 'ORDER_NOTIFICATION_EMAIL', 'shivorganicdairyfarms@gmail.com')
+            company_whatsapp = getattr(settings, 'COMPANY_WHATSAPP_PHONE', '').strip()
+            
+            subject_customer = f'Your Shiv Organic Dairy Farm order #{order.order_number} confirmation'
+            lines = [
+                f'Thank you {order.customer_name} for your order!',
+                '',
+                f'Order Number: {order.order_number}',
+                'Order summary:',
+            ]
+            for item in order.items.select_related('product'):
+                lines.append(f"- {item.product.name} x {item.quantity} @ ₹{item.unit_price} = ₹{item.line_total()}")
+            lines.append(f'Total: ₹{order.total_amount}')
+            if order.latitude and order.longitude:
+                lines.append(f'Delivery location: {order.latitude}, {order.longitude}')
+                lines.append(f'Maps link: https://maps.google.com/?q={order.latitude},{order.longitude}')
+            lines.append('')
+            lines.append(f'Payment method: {order.get_payment_method_display()}')
+            lines.append('Payment status: Paid')
+            if order.razorpay_payment_id:
+                lines.append(f'Payment ID: {order.razorpay_payment_id}')
+            lines.append('')
+            lines.append('We will contact you shortly about delivery details.')
+            message = '\n'.join(lines)
+            
+            if order.phone:
+                print(f"[WHATSAPP] Sending customer WhatsApp to {order.phone}...")
+                customer_whatsapp_msg = f"Order #{order.order_number} Confirmed!\n\n"
+                customer_whatsapp_msg += f"Payment: Paid ✅\n"
+                customer_whatsapp_msg += f"Total: Rs {order.total_amount}\n"
+                if order.address_line1:
+                    customer_whatsapp_msg += f"Location: {order.address_line1}, {order.city}\n"
+                customer_whatsapp_msg += "\nWe'll contact you for delivery details soon!"
+                try:
+                    whatsapp_sent = _send_whatsapp_message(order.phone, customer_whatsapp_msg)
+                    if whatsapp_sent:
+                        print(f"[SUCCESS] Customer WhatsApp sent to {order.phone}")
+                except Exception as e:
+                    print(f"[ERROR] Customer WhatsApp error: {str(e)}")
+            
+            if order.email:
+                print(f"[EMAIL] Sending customer email asynchronously to {order.email}...")
+                email_sent = False
+                # Try Brevo API first (most reliable on Render free tier)
+                if getattr(settings, 'BREVO_API_KEY', '').strip():
+                    email_sent = _send_email_brevo(order.email, subject_customer, message)
+                    if email_sent:
+                        print(f"[SUCCESS] Customer email sent via Brevo to {order.email}")
+                # Fallback to SendGrid if configured
+                if not email_sent and getattr(settings, 'SENDGRID_API_KEY', '').strip():
+                    email_sent = _send_email_sendgrid(order.email, subject_customer, message)
+                    if email_sent:
+                        print(f"[SUCCESS] Customer email sent via SendGrid to {order.email}")
+                # Final fallback to SMTP (may be blocked on some hosts)
+                if not email_sent:
+                    try:
+                        smtp_backend = EmailBackend(
+                            host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                            port=getattr(settings, 'EMAIL_PORT', 587),
+                            username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                            password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                            use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                            timeout=getattr(settings, 'EMAIL_TIMEOUT', 15),
+                        )
+                        email = EmailMessage(
+                            subject=subject_customer,
+                            body=message,
+                            from_email=from_email,
+                            to=[order.email],
+                            connection=smtp_backend
+                        )
+                        email.send(fail_silently=False)
+                        smtp_backend.close()
+                        email_sent = True
+                        print(f"[SUCCESS] Customer email sent via SMTP to {order.email}")
+                    except Exception as e:
+                        print(f"[WARNING] Customer email failed: {str(e)}")
+                if not email_sent:
+                    print(f"[WARNING] Unable to send customer email to {order.email} via any provider")
+            
+            if company_whatsapp:
+                print(f"[WHATSAPP] Sending company WhatsApp to {company_whatsapp}...")
+                company_whatsapp_msg = f"NEW ORDER #{order.order_number} - PAID ✅\n\n"
+                company_whatsapp_msg += f"Customer: {order.customer_name}\n"
+                company_whatsapp_msg += f"Phone: {order.phone}\n"
+                company_whatsapp_msg += f"Payment: {order.get_payment_method_display()} - PAID ✅\n"
+                if order.razorpay_payment_id:
+                    company_whatsapp_msg += f"Payment ID: {order.razorpay_payment_id}\n"
+                company_whatsapp_msg += f"Total: Rs {order.total_amount}\n\n"
+                company_whatsapp_msg += "Items:\n"
+                for item in order.items.select_related('product'):
+                    company_whatsapp_msg += f"   - {item.product.name} x {item.quantity} = Rs {item.line_total()}\n"
+                company_whatsapp_msg += "\nDelivery:\n"
+                company_whatsapp_msg += f"   {order.address_line1}\n"
+                company_whatsapp_msg += f"   {order.city}, {order.state} {order.postal_code}\n"
+                if order.latitude and order.longitude:
+                    company_whatsapp_msg += f"   https://maps.google.com/?q={order.latitude},{order.longitude}\n"
+                if order.notes:
+                    company_whatsapp_msg += f"\nNotes: {order.notes}\n"
+                try:
+                    whatsapp_sent = _send_whatsapp_message(company_whatsapp, company_whatsapp_msg)
+                    if whatsapp_sent:
+                        print(f"[SUCCESS] Company WhatsApp sent to {company_whatsapp}")
+                except Exception as e:
+                    print(f"[ERROR] Company WhatsApp error: {str(e)}")
+            
+            if company_email:
+                print(f"[EMAIL] Sending company email asynchronously to {company_email}...")
+                company_lines = []
+                company_lines.append(f"NEW ORDER #{order.order_number} - PAYMENT RECEIVED ✅")
+                company_lines.append("")
+                company_lines.append("Customer Details:")
+                company_lines.append(f"Full Name: {order.customer_name}")
+                company_lines.append(f"Email: {order.email if order.email else '-'}")
+                company_lines.append(f"Phone: {order.phone if order.phone else '-'}")
+                company_lines.append("")
+                company_lines.append("Delivery Address:")
+                company_lines.append(f"Address Line 1: {order.address_line1}")
+                company_lines.append(f"Address Line 2: {order.address_line2 if order.address_line2 else '-'}")
+                company_lines.append(f"City: {order.city}")
+                company_lines.append(f"State: {order.state}")
+                company_lines.append(f"Pincode: {order.postal_code}")
+                if order.latitude and order.longitude:
+                    maps_link = f"https://maps.google.com/?q={order.latitude},{order.longitude}"
+                    company_lines.append(f"Location Link: {maps_link}")
+                company_lines.append("")
+                company_lines.append("Payment:")
+                company_lines.append(f"Payment Method: {order.get_payment_method_display()}")
+                company_lines.append("Payment Status: Paid ✅")
+                if order.razorpay_payment_id:
+                    company_lines.append(f"Razorpay Payment ID: {order.razorpay_payment_id}")
+                if order.razorpay_order_id:
+                    company_lines.append(f"Razorpay Order ID: {order.razorpay_order_id}")
+                company_lines.append("")
+                company_lines.append("Order Items:")
+                for item in order.items.select_related('product'):
+                    company_lines.append(f"- {item.product.name} x {item.quantity} @ ₹{item.unit_price} = ₹{item.line_total()}")
+                company_lines.append(f"Total Amount: ₹{order.total_amount}")
+                if order.notes:
+                    company_lines.append("")
+                    company_lines.append("Order Instructions:")
+                    company_lines.append(order.notes)
+                company_lines.append("")
+                company_lines.append("--")
+                company_lines.append("Reference: Payment received via Razorpay - Order confirmed ✅")
+                company_message = "\n".join(company_lines)
+                subject_company = f'New order #{order.order_number} received - PAYMENT RECEIVED ✅ - Shiv Organic Dairy Farm'
+                
+                company_email_sent = False
+                if getattr(settings, 'BREVO_API_KEY', '').strip():
+                    company_email_sent = _send_email_brevo(company_email, subject_company, company_message)
+                    if company_email_sent:
+                        print(f"[SUCCESS] Company email sent via Brevo to {company_email}")
+                if not company_email_sent and getattr(settings, 'SENDGRID_API_KEY', '').strip():
+                    company_email_sent = _send_email_sendgrid(company_email, subject_company, company_message)
+                    if company_email_sent:
+                        print(f"[SUCCESS] Company email sent via SendGrid to {company_email}")
+                if not company_email_sent:
+                    try:
+                        smtp_backend = EmailBackend(
+                            host=getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com'),
+                            port=getattr(settings, 'EMAIL_PORT', 587),
+                            username=getattr(settings, 'EMAIL_HOST_USER', 'shivorganicdairyfarms@gmail.com'),
+                            password=getattr(settings, 'EMAIL_HOST_PASSWORD', ''),
+                            use_tls=getattr(settings, 'EMAIL_USE_TLS', True),
+                            timeout=getattr(settings, 'EMAIL_TIMEOUT', 15),
+                        )
+                        email = EmailMessage(
+                            subject=subject_company,
+                            body=company_message,
+                            from_email=from_email,
+                            to=[company_email],
+                            connection=smtp_backend
+                        )
+                        email.send(fail_silently=False)
+                        smtp_backend.close()
+                        company_email_sent = True
+                        print(f"[SUCCESS] Company email sent via SMTP to {company_email}")
+                    except Exception as e:
+                        print(f"[WARNING] Company email failed via SMTP: {str(e)}")
+                if not company_email_sent:
+                    print(f"[WARNING] Unable to send company email to {company_email} via any provider")
+            
+            print(f"[ORDER] Async notifications completed for order #{order.order_number}")
+        except Exception as exc:
+            print(f"[ERROR] Async notification failure for order {order_id}: {str(exc)}")
+            traceback.print_exc()
+        finally:
+            close_old_connections()
+    
+    threading.Thread(target=worker, name=f"order-{order_id}-notify", daemon=True).start()
+
+
+# ============================================================================
+# HOME & PAGE VIEWS
+# ============================================================================
+# These views handle the main pages: home, about, FAQ, blog, etc.
 
 def welcome(request: HttpRequest) -> HttpResponse:
     """Welcome page with animations - redirects to home for SEO"""
     # 301 permanent redirect to /home/ for better SEO
     # This ensures Google always finds the main content page
-    from django.http import HttpResponsePermanentRedirect
     return HttpResponsePermanentRedirect('/home/')
 
 
@@ -37,17 +751,72 @@ def healthz(request: HttpRequest) -> HttpResponse:
 def home(request: HttpRequest) -> HttpResponse:
     """Home page - serves at root URL for best SEO"""
     products = Product.objects.filter(is_active=True).order_by('size_ml')
-    return render(request, 'store/home.html', { 'products': products })
+    return render(request, 'store/home.html', {'products': products})
 
 
 def home_redirect(request: HttpRequest) -> HttpResponse:
     """Redirect /home/ to root for SEO consolidation"""
-    from django.http import HttpResponsePermanentRedirect
     return HttpResponsePermanentRedirect('/')
 
 
+def about_us(request: HttpRequest) -> HttpResponse:
+    """About Us page"""
+    try:
+        return render(request, 'store/about_us.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
+
+
+def faq(request: HttpRequest) -> HttpResponse:
+    """FAQ page"""
+    try:
+        return render(request, 'store/faq.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
+
+
+def blog_list(request: HttpRequest) -> HttpResponse:
+    """Blog listing page"""
+    try:
+        return render(request, 'store/blog_list.html')
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
+
+
+def blog_post(request: HttpRequest, slug: str) -> HttpResponse:
+    """Individual blog post page"""
+    try:
+        blog_templates = {
+            'benefits-of-a2-gir-cow-ghee': 'store/blog/benefits_a2_ghee.html',
+            'how-to-use-ghee-in-daily-cooking': 'store/blog/how_to_use_ghee.html',
+            'why-choose-organic-ghee': 'store/blog/why_organic_ghee.html',
+            'traditional-bilona-method-explained': 'store/blog/bilona_method.html',
+            'ghee-vs-butter-which-is-better': 'store/blog/ghee_vs_butter.html',
+        }
+        
+        template = blog_templates.get(slug)
+        if not template:
+            return HttpResponse('Blog post not found', status=404)
+        
+        return render(request, template)
+    except Exception as e:
+        return HttpResponse(f"Error loading template: {str(e)}", status=500)
+
+
+# ============================================================================
+# ORDER MANAGEMENT VIEWS
+# ============================================================================
+# These views handle order creation, processing, and status checking
+
+
+# ============================================================================
+# ORDER MANAGEMENT VIEWS
+# ============================================================================
+# These views handle order creation, processing, and status checking
+
 @transaction.atomic
 def place_order(request: HttpRequest) -> HttpResponse:
+    """Main order placement view - handles both COD and Razorpay orders"""
     try:
         try:
             products = Product.objects.filter(is_active=True).order_by('size_ml')
@@ -94,12 +863,6 @@ def place_order(request: HttpRequest) -> HttpResponse:
                     discount_amount = 0.0
                     coupon_code = request.POST.get('coupon_code', '').strip().upper()
                     discount_str = request.POST.get('discount_amount', '0.00').strip()
-                    
-                    # Valid coupon codes and their discount percentages
-                    VALID_COUPONS = {
-                        'WELCOME10': 10,
-                        'SHIV99': 15
-                    }
                     
                     if coupon_code in VALID_COUPONS and discount_str:
                         try:
@@ -1117,6 +1880,7 @@ def _send_payment_success_notifications(order: Order) -> None:
         traceback.print_exc()
 
 def check_status(request: HttpRequest, order_number: str) -> JsonResponse:
+    """Check order status by order number - returns JSON response"""
     try:
         order = Order.objects.get(order_number=order_number)
     except Order.DoesNotExist:
@@ -1138,6 +1902,7 @@ def check_status(request: HttpRequest, order_number: str) -> JsonResponse:
 
 @transaction.atomic
 def submit_order(request: HttpRequest) -> HttpResponse:
+    """Submit order from modal form - simplified order flow"""
     if request.method != 'POST':
         return redirect('home')
 
@@ -1207,6 +1972,11 @@ def submit_order(request: HttpRequest) -> HttpResponse:
     return redirect(reverse('order_success') + f'?order_id={order.order_number}')
 
 
+# ============================================================================
+# LEGAL & POLICY VIEWS
+# ============================================================================
+# These views serve legal compliance pages required for e-commerce
+
 def return_policy(request: HttpRequest) -> HttpResponse:
     """Return policy page for legal compliance"""
     try:
@@ -1241,6 +2011,7 @@ def disclaimer(request: HttpRequest) -> HttpResponse:
 
 # Additional policy pages
 def contact_us(request: HttpRequest) -> HttpResponse:
+    """Contact Us page"""
     try:
         return render(request, 'store/contact_us.html')
     except Exception as e:
@@ -1248,6 +2019,7 @@ def contact_us(request: HttpRequest) -> HttpResponse:
 
 
 def shipping_policy(request: HttpRequest) -> HttpResponse:
+    """Shipping policy page for legal compliance"""
     try:
         return render(request, 'store/shipping_policy.html')
     except Exception as e:
@@ -1255,6 +2027,7 @@ def shipping_policy(request: HttpRequest) -> HttpResponse:
 
 
 def terms_and_conditions(request: HttpRequest) -> HttpResponse:
+    """Terms and conditions page for legal compliance"""
     try:
         return render(request, 'store/terms_and_conditions.html')
     except Exception as e:
@@ -1262,11 +2035,17 @@ def terms_and_conditions(request: HttpRequest) -> HttpResponse:
 
 
 def cancellations_and_refunds(request: HttpRequest) -> HttpResponse:
+    """Cancellations and refunds policy page for legal compliance"""
     try:
         return render(request, 'store/cancellations_and_refunds.html')
     except Exception as e:
         return HttpResponse(f"Error loading template: {str(e)}", status=500)
 
+
+# ============================================================================
+# UTILITY & SYSTEM VIEWS
+# ============================================================================
+# These views handle system utilities, SEO, and admin functions
 
 def sitemap(request: HttpRequest) -> HttpResponse:
     """Serve sitemap.xml for search engines"""
@@ -1335,7 +2114,7 @@ def faq(request: HttpRequest) -> HttpResponse:
 
 
 def download_orders_excel(request: HttpRequest) -> HttpResponse:
-    """Download orders Excel file"""
+    """Download orders Excel file - admin utility function"""
     import os
     from django.http import FileResponse, Http404
     
@@ -1352,7 +2131,11 @@ def download_orders_excel(request: HttpRequest) -> HttpResponse:
     else:
         return HttpResponse("Orders file not found. No orders have been placed yet.", status=404)
 
-# Razorpay Payment Views
+# ============================================================================
+# PAYMENT PROCESSING VIEWS
+# ============================================================================
+# These views handle Razorpay payment integration and processing
+
 @csrf_exempt
 def create_payment(request: HttpRequest) -> JsonResponse:
     """Create Razorpay payment order"""
@@ -1458,7 +2241,7 @@ def create_payment(request: HttpRequest) -> JsonResponse:
 
 
 def check_email_config(request: HttpRequest) -> JsonResponse:
-    """Diagnostic endpoint to check email configuration"""
+    """Diagnostic endpoint to check email configuration - returns JSON with config status"""
     from django.conf import settings
     import os
     
@@ -1485,7 +2268,7 @@ def check_email_config(request: HttpRequest) -> JsonResponse:
     return JsonResponse(config, json_dumps_params={'indent': 2})
 
 def test_razorpay(request: HttpRequest) -> JsonResponse:
-    """Test Razorpay configuration"""
+    """Test Razorpay configuration - diagnostic endpoint"""
     try:
         client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
         return JsonResponse({
@@ -1652,8 +2435,8 @@ def payment_failure(request: HttpRequest) -> HttpResponse:
         'order_id': request.session.get('order_id')
     })
 
-def get_order_history(request):
-    """Get order history for a customer"""
+def get_order_history(request: HttpRequest) -> JsonResponse:
+    """Get order history for a customer - returns JSON with order list"""
     try:
         email = request.GET.get('email', '').strip()
         phone = request.GET.get('phone', '').strip()
